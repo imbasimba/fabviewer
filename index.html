@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>FABViewer</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+
+<link rel="stylesheet" type="text/css" href="css/style.css">
+
+<script src="lib/Healpix/Xyf.js"></script>
+<script src="lib/Healpix/Vec3.js"></script>
+<script src="lib/Healpix/Pointing.js"></script> 
+<script src="lib/Healpix/Hploc.js"></script>
+<script src="lib/Healpix/Fxyf.js"></script>
+<script src="lib/Healpix/Healpix.js"></script>
+
+<script type="text/javascript" src="lib/glMatrix-0.js"></script>
+<script type="text/javascript" src="lib/webgl-utils.js"></script>
+
+<script type="text/javascript" src="js/model/AbstractSkyEntity.js"></script>
+<script type="text/javascript" src="js/model/Camera.js"></script>
+<script type="text/javascript" src="js/model/HiPS.js"></script>
+<script type="text/javascript" src="js/model/Moon.js"></script>
+
+<script type="text/javascript" src="js/utils/FoVUtils.js"></script>
+<script type="text/javascript" src="js/utils/RayPickingUtils.js"></script>
+<script type="text/javascript" src="js/utils/Utils.js"></script>
+
+<script type="text/javascript" src="js/FVView.js"></script>
+<script type="text/javascript" src="js/FVPresenter.js"></script>
+<script type="text/javascript" src="js/FVApp.js"></script>
+
+
+<script id="hips-shader-vs" type="x-shader/x-vertex">
+	attribute vec3 aVertexPosition;
+	attribute vec2 aTextureCoord;
+	
+	uniform mat4 uMMatrix;
+	uniform mat4 uVMatrix;
+	uniform mat4 uPMatrix;
+
+  	varying vec2 vTextureCoord;
+
+	void main() {
+		gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+		vTextureCoord = aTextureCoord;
+	}
+</script>
+
+<script id="hips-shader-fs" type="x-shader/x-fragment">
+  	precision mediump float;
+
+	varying vec2 vTextureCoord;
+	uniform sampler2D uSampler0;
+	uniform float uFactor0;
+
+
+  	void main() {
+		vec3 finalColor;
+		vec4 color0 = texture2D(uSampler0, vTextureCoord);
+		finalColor = vec3(finalColor.x +  color0.x *uFactor0 ,finalColor.y +  color0.y*uFactor0,finalColor.z +  color0.z*uFactor0); 
+		gl_FragColor = vec4(finalColor, 1);
+  	} 
+</script>
+
+
+
+<script id="moon-shader-fs" type="x-shader/x-fragment">
+
+    precision mediump float;
+
+    varying vec2 vTextureCoord;
+    varying vec3 vLightWeighting;
+
+    uniform sampler2D uSampler;
+
+    void main(void) {
+		vec4 textureColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+		
+        gl_FragColor = vec4(textureColor.rgb * vLightWeighting, textureColor.a);
+    }
+</script>
+
+<script id="moon-shader-vs" type="x-shader/x-vertex">
+
+	attribute vec3 aVertexPosition;
+	//attribute vec3 aVertexNormal;    
+	attribute vec2 aTextureCoord;
+	
+    uniform mat4 uVMatrix;
+	uniform mat4 uMMatrix;
+    uniform mat4 uPMatrix;
+    uniform mat3 uNMatrix;
+
+    varying vec2 vTextureCoord;
+    varying vec3 vLightWeighting;
+
+    void main(void) {
+        gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+        vTextureCoord = aTextureCoord;
+		vLightWeighting = vec3(1.0, 1.0, 1.0);
+    }
+</script>
+
+
+<script>
+
+var DEBUG = false;
+var fabViewer;
+
+function run(){
+	if (DEBUG){
+		console.log("[index::run]");
+	}
+	fabViewer = new FVApp();
+	fabViewer.run();
+}
+</script>
+
+</head>
+<body onload="run();">
+
+	<div id="fabvcontainer">
+		<canvas id="fabviewer"></canvas>
+	</div>
+	
+	<div id="controlpanel">
+		<div id="pickedobject">
+			Working object:<div id="pickedobjectvalue"></div>
+		</div>
+		<hr>
+		<div id="fov">
+			FoV:<div id="fovvalue"></div>
+		</div>
+		<hr>
+		<div id="coords">
+			<span><i>Spherical coords:</i></span>
+			<br>
+			<span>phi</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>theta</span>
+			<br>
+			<span id="phi"></span>&nbsp; &nbsp;<span id="theta"></span>
+			<br>
+			<span><i>Astro coords:</i></span>
+			<br>
+			<span>RA</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Dec</span>
+			<br>
+			<span id="RA_deg"></span>&nbsp; &nbsp;<span id="Dec_deg"></span>
+			<br>
+			<span>RA(hms)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Dec(dms)</span>
+			<br>
+			<span id="RA_hms"></span>&nbsp; &nbsp;<span id="Dec_dms"></span>
+		</div>
+		<hr>
+	</div>
+	
+	<div id="datapanel">
+	</div>
+	
+
+</body>
+</html>

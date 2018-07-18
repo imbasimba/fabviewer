@@ -1,0 +1,302 @@
+/**
+ * @author Fabrizio Giordano (Fab)
+ */
+function FVPresenter(in_view, in_gl){
+	if (DEBUG){
+		console.log("[FVPresenter::FVPresenter]");
+	}
+	var currentObj = this;
+	
+	this.init = function (){
+		if (DEBUG){
+			console.log("[FVPresenter::init]");
+		}
+		currentObj.view = in_view;
+
+		currentObj.camera = new Camera([0.0, 0.0, 0.5]);
+
+		currentObj.raypicker = new RayPickingUtils();
+		currentObj.fovUtils = new FoVUtils();
+		
+		currentObj.objModels = [];
+		
+		//in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad
+		currentObj.objModels[0] = new Moon(2, in_gl, currentObj.view.canvas, [0.0, 0.0, -7.0], 0, 0, "Moon", currentObj.fovUtils);
+		
+		currentObj.objModels[1] = new HiPS(2, in_gl, currentObj.view.canvas, [-6.0, 0.0, -7.0], 0, 0, "HiPS", currentObj.fovUtils);
+				
+		currentObj.aspectRatio;
+		currentObj.fovDeg = 45;
+		currentObj.nearPlane = 0.1;
+		currentObj.farPlane = 100.0;
+		
+		// projection matrix
+		currentObj.pMatrix = mat4.create();
+		mat4.identity(currentObj.pMatrix);
+		
+		currentObj.mouseDown = false;
+		currentObj.lastMouseX = null;
+		currentObj.lastMouseY = null;
+		
+		currentObj.addEventListeners();
+		
+		currentObj.currentSeconds;
+		currentObj.elapsedTime;
+		currentObj.previousSeconds;
+		
+		currentObj.nearestVisibleObjectIdx = 0;
+		currentObj.getNearestObjectOnRay(currentObj.view.canvas.width / 2, currentObj.view.canvas.heigth / 2);
+		currentObj.view.setPickedObjectName(currentObj.objModels[currentObj.nearestVisibleObjectIdx].name);
+	};
+	
+	this.getNearestObjectOnRay = function(mouseX, mouseY){
+		
+		currentObj.mouseDown = false;
+		document.getElementsByTagName("body")[0].style.cursor = "auto";
+		currentObj.lastMouseX = mouseX;
+		currentObj.lastMouseY = mouseY;
+		
+		var intersectionDistance;
+		currentObj.nearestVisibleObjectIdx = 0;
+		var currModel;
+		var nearestVisibleIntersectionDistance = undefined;
+		
+		var rayWorld = currentObj.raypicker.getRayFromMouse(currentObj.lastMouseX, 
+				currentObj.lastMouseY, 
+				currentObj.pMatrix, 
+				currentObj.camera.getCameraMatrix(), 
+				in_gl.canvas);
+		if (DEBUG){
+			console.log("[FVPresenter::getNearestObjectOnRay] rayWorld "+rayWorld);
+			console.log(currentObj.objModels);
+		}
+		
+		for (var i = 0; i < currentObj.objModels.length; i++){
+			
+			currModel = currentObj.objModels[i];
+			intersectionDistance = currentObj.raypicker.raySphere(currentObj.camera.getCameraPosition(), rayWorld, currModel);
+			if (DEBUG){
+				console.log("[FVPresenter::getNearestObjectOnRay] intersectionDistance "+intersectionDistance + " object "+currModel.name);
+			}
+			if (intersectionDistance >= 0){
+				if (nearestVisibleIntersectionDistance === undefined || intersectionDistance < nearestVisibleIntersectionDistance){
+					nearestVisibleIntersectionDistance = intersectionDistance;
+					currentObj.nearestVisibleObjectIdx = i;
+				}
+			}
+		}
+		if (nearestVisibleIntersectionDistance >= 0){
+			if (DEBUG){
+				console.log("[FVPresenter]::getNearestObjectOnRay nearest object name "+currModel.name);
+				
+			}
+			return nearestVisibleIntersectionDistance;
+		}
+		return -1;
+	};
+	
+	this.addEventListeners = function(){
+		if (DEBUG){
+			console.log("[FVPresenter::addEventListeners]");
+		}
+		function handleMouseDown(event) {
+//			if (DEBUG){
+//				console.log("[FVPresenter::addEventListeners->handleMouseDown]");
+//			}
+			currentObj.mouseDown = true;
+			
+		}
+		
+		function handleMouseUp(event) {
+//			if (DEBUG){
+//				console.log("[FVPresenter::addEventListeners->handleMouseUp]");
+//			}
+			currentObj.mouseDown = false;
+			document.getElementsByTagName("body")[0].style.cursor = "auto";
+			currentObj.lastMouseX = event.clientX;
+			currentObj.lastMouseY = event.clientY;
+			
+			var closestObj = -1;
+			var closestIntersection = 0.0;
+
+			var rayWorld = currentObj.raypicker.getRayFromMouse(currentObj.lastMouseX, 
+											currentObj.lastMouseY, 
+											currentObj.pMatrix, 
+											currentObj.camera.getCameraMatrix(), 
+											in_gl.canvas);
+			
+			var intersectionPoint;
+			var intersectionModelPoint = [];
+			var intersectionPoint4d;
+			var pickedObject;
+			
+			currentObj.nearestVisibleObjectIdx = 0;
+			
+			var nearestVisibleIntersectionDistance = currentObj.getNearestObjectOnRay(event.clientX, event.clientY);
+			
+			if (DEBUG){
+				console.log("[FVPresenter::handleMouseUp] nearestVisibleIntersectionDistance " + nearestVisibleIntersectionDistance);
+			}
+			
+			if (nearestVisibleIntersectionDistance >= 0){
+				
+				pickedObject = currentObj.objModels[currentObj.nearestVisibleObjectIdx];
+				
+				intersectionPoint = vec3.create();
+				vec3.scale(rayWorld, nearestVisibleIntersectionDistance, intersectionPoint);
+				vec3.add(currentObj.camera.getCameraPosition(), intersectionPoint, intersectionPoint);
+				console.log("World intersectionPoint:");
+				console.log(intersectionPoint);
+				
+				intersectionModelPoint = [];
+				
+				intersectionPoint4d = [intersectionPoint[0], intersectionPoint[1], intersectionPoint[2], 1.0];
+				mat4.multiplyVec4(pickedObject.getModelMatrixInverse(), intersectionPoint4d, intersectionModelPoint);
+				
+				console.log("Model intersectionPoint:");
+				console.log(intersectionModelPoint);
+				
+				var phiThetaDeg = cartesianToSpherical(intersectionModelPoint);
+				var raDecDeg = sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
+				var raHMS = raDegToHMS(raDecDeg.ra);
+				var decDMS = decDegToDMS(raDecDeg.dec);
+				currentObj.view.setPickedSphericalCoordinates(phiThetaDeg);
+				currentObj.view.setPickedAstroCoordinates(raDecDeg, raHMS, decDMS);
+				
+				currentObj.view.setPickedObjectName(pickedObject.name);
+				
+			}else{
+				console.log("no intersection");
+			}	
+			
+		}
+		
+
+		function handleMouseMove(event) {
+//			if (DEBUG){
+//				console.log("[FVPresenter::addEventListeners->handleMouseMove]");
+//			}
+			var newX = event.clientX;
+			var newY = event.clientY;
+
+			if (currentObj.mouseDown) {
+				
+				console.log("MOUSE DOWN");
+				
+				document.getElementsByTagName("body")[0].style.cursor = "grab";
+
+				var deltaX = newX - currentObj.lastMouseX;
+		     	var deltaY = newY - currentObj.lastMouseY;
+					
+				var currModel = currentObj.objModels[currentObj.nearestVisibleObjectIdx];
+				console.log("[FVPresenter::ROTATING] "+currModel.name);
+				currModel.rotate(degToRad(deltaX / 1), degToRad(deltaY / 1));
+			}
+
+			currentObj.lastMouseX = newX;
+			currentObj.lastMouseY = newY;
+		}
+		
+		function handleKeyPress(event) {
+//			if (DEBUG){
+//				console.log("[FVPresenter::addEventListeners->handleKeyPress]");
+//			}
+			var code = event.keyCode;
+			console.log(code);
+			console.log("elapsedTime " + currentObj.elapsedTime);
+			console.log("performance.now() " + performance.now());
+			
+			var move = vec3.create([0, 0, 0]);
+			
+			switch (code) {
+				// W
+				case 87:
+					move[2] = -0.1;
+					break;
+				// S
+				case 83:
+					move[2] = +0.1;
+					break;
+				// A
+				case 68:
+					// TODO check and update nearest object
+					move[0] = +0.1;
+					break;
+				// D
+				case 65:
+					// TODO check and update nearest object
+					move[0] = -0.1;
+					break;
+			}
+			currentObj.camera.translate(move);
+//			console.log("[FVPresenter]move " + move);
+//			console.log("[FVPresenter]currentObj.camera ");
+//			console.log(currentObj.camera);
+			move = [0, 0, 0];
+			currentObj.computeFov();
+		}
+
+		function resizeCanvas() {
+			if (DEBUG){
+				console.log("[FVPresenter::addEventListeners->resizeCanvas]");
+			}
+		   	currentObj.view.resize(in_gl);
+		   	currentObj.draw();
+		   	
+		}
+		
+		window.addEventListener('resize', resizeCanvas);
+		window.addEventListener('keydown', handleKeyPress);
+		
+		currentObj.view.canvas.onmousedown = handleMouseDown;
+		currentObj.view.canvas.onmouseup = handleMouseUp;
+		currentObj.view.canvas.onmousemove = handleMouseMove;
+		
+		resizeCanvas();
+	};
+	
+	this.computeFov = function(){
+		if (DEBUG){
+			console.log("[FVPresenter::computeFov]");
+		}
+		// compute FoV against the nearest object
+		var fovXY = currentObj.fovUtils.getFoV(
+				currentObj.view.canvas, 
+				currentObj.pMatrix,
+				currentObj.camera, 
+				currentObj.objModels[currentObj.nearestVisibleObjectIdx], 
+				currentObj.raypicker );
+		currentObj.view.updateFoV(fovXY);
+	};
+	
+	var idx = 0;
+	
+	this.draw = function(){
+		
+		currentObj.currentSeconds = performance.now();
+		currentObj.elapsedTime = currentObj.currentSeconds - currentObj.previousSeconds;
+		currentObj.previousSeconds = currentObj.currentSeconds;
+
+		currentObj.aspectRatio = currentObj.view.canvas.width / currentObj.view.canvas.height;
+
+		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
+		in_gl.clear(in_gl.COLOR_BUFFER_BIT | in_gl.DEPTH_BUFFER_BIT);
+		mat4.perspective( currentObj.fovDeg, currentObj.aspectRatio, currentObj.nearPlane, currentObj.farPlane, currentObj.pMatrix );
+		
+		for (var i = 0; i < currentObj.objModels.length; i++){
+			
+			if (idx == 0){
+				console.log(currentObj.objModels[i]);
+				idx = 1;
+			}
+//			currentObj.objModels[i].setMatricesUniform(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
+			currentObj.objModels[i].draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
+			
+		}
+		
+	};
+	
+	
+	
+	this.init();
+}
