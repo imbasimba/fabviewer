@@ -10,7 +10,17 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	
 	this.init = function(){
 		
-		currentObj.fovUtils = in_fovUtils;
+		currentObj.refreshGeometryOnFoVChanged = false;
+		
+		currentObj.fovObj = new FoV(in_gl, in_canvas, currentObj);
+		
+		currentObj.minFoV = 180;
+		
+		currentObj.prevMinFoV = 180;
+		
+		currentObj.fovX_deg = 180;
+		
+		currentObj.fovY_deg = 180;
 		
 		currentObj.name = in_name;
 		
@@ -56,8 +66,6 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	};
 	
 	this.rotate = function(in_xRad, in_yRad){
-//		mat4.rotate(currentObj.modelMatrix, in_xRad, [0, 1, 0], currentObj.modelMatrix);
-//	    mat4.rotate(currentObj.modelMatrix, in_yRad, [1, 0, 0], currentObj.modelMatrix);
 	    mat4.rotate(currentObj.R, in_xRad, [0, 1, 0]);
 	    mat4.rotate(currentObj.R, in_yRad, [1, 0, 0]);
 	    currentObj.refreshModelMatrix();
@@ -98,6 +106,23 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	this.drawAndSetMatrixUniform = function(projectionMatrix, cameraMatrix){
 		currentObj.draw();
 		currentObj.setMatricesUniform(projectionMatrix, cameraMatrix);
+	};
+	
+	this.getFoV = function (in_pMatrix, in_camera, in_raypicker){
+		var fovXY = currentObj.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
+		currentObj.setGeometryNeedsToBeRefreshed();
+//		currentObj.prevMinFoV = currentObj.getMinFoV();
+		return fovXY;
+		
+	};
+	
+	this.getMinFoV = function(){
+		return currentObj.fovObj.minFoV;
+	};
+	
+	// Method overwritten by sons having hierarchical geometry (e.g. HiPS)
+	this.setGeometryNeedsToBeRefreshed = function (){
+		currentObj.refreshGeometryOnFoVChanged = false;
 	};
 	
 	this.init();

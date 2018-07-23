@@ -34,7 +34,7 @@ function FVView(in_canvas){
 		currentObj.fovX_deg = 180.0;
 		currentObj.fovY_deg = 180.0;
 //		currentObj.previousFoV = 180;
-		currentObj.updateFoV([currentObj.fovX_deg, currentObj.fovY_deg]);
+//		currentObj.updateFoV([currentObj.fovX_deg, currentObj.fovY_deg]);
 				
 		currentObj.widthToHeight = 4 / 3;
 	};

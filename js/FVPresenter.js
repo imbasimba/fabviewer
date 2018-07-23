@@ -16,15 +16,9 @@ function FVPresenter(in_view, in_gl){
 		currentObj.camera = new Camera([0.0, 0.0, 0.5]);
 
 		currentObj.raypicker = new RayPickingUtils();
-		currentObj.fovUtils = new FoVUtils();
+
+		currentObj.modelRepo = new ModelRepo(in_gl, currentObj.view.canvas);
 		
-		currentObj.objModels = [];
-		
-		//in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad
-		currentObj.objModels[0] = new Moon(2, in_gl, currentObj.view.canvas, [0.0, 0.0, -7.0], 0, 0, "Moon", currentObj.fovUtils);
-		
-		currentObj.objModels[1] = new HiPS(2, in_gl, currentObj.view.canvas, [-6.0, 0.0, -7.0], 0, 0, "HiPS", currentObj.fovUtils);
-				
 		currentObj.aspectRatio;
 		currentObj.fovDeg = 45;
 		currentObj.nearPlane = 0.1;
@@ -46,7 +40,7 @@ function FVPresenter(in_view, in_gl){
 		
 		currentObj.nearestVisibleObjectIdx = 0;
 		currentObj.getNearestObjectOnRay(currentObj.view.canvas.width / 2, currentObj.view.canvas.heigth / 2);
-		currentObj.view.setPickedObjectName(currentObj.objModels[currentObj.nearestVisibleObjectIdx].name);
+		currentObj.view.setPickedObjectName(currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx].name);
 	};
 	
 	this.getNearestObjectOnRay = function(mouseX, mouseY){
@@ -68,12 +62,12 @@ function FVPresenter(in_view, in_gl){
 				in_gl.canvas);
 		if (DEBUG){
 			console.log("[FVPresenter::getNearestObjectOnRay] rayWorld "+rayWorld);
-			console.log(currentObj.objModels);
+			console.log(currentObj.modelRepo.objModels);
 		}
 		
-		for (var i = 0; i < currentObj.objModels.length; i++){
+		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
 			
-			currModel = currentObj.objModels[i];
+			currModel = currentObj.modelRepo.objModels[i];
 			intersectionDistance = currentObj.raypicker.raySphere(currentObj.camera.getCameraPosition(), rayWorld, currModel);
 			if (DEBUG){
 				console.log("[FVPresenter::getNearestObjectOnRay] intersectionDistance "+intersectionDistance + " object "+currModel.name);
@@ -99,18 +93,13 @@ function FVPresenter(in_view, in_gl){
 		if (DEBUG){
 			console.log("[FVPresenter::addEventListeners]");
 		}
+
 		function handleMouseDown(event) {
-//			if (DEBUG){
-//				console.log("[FVPresenter::addEventListeners->handleMouseDown]");
-//			}
 			currentObj.mouseDown = true;
 			
 		}
 		
 		function handleMouseUp(event) {
-//			if (DEBUG){
-//				console.log("[FVPresenter::addEventListeners->handleMouseUp]");
-//			}
 			currentObj.mouseDown = false;
 			document.getElementsByTagName("body")[0].style.cursor = "auto";
 			currentObj.lastMouseX = event.clientX;
@@ -140,7 +129,7 @@ function FVPresenter(in_view, in_gl){
 			
 			if (nearestVisibleIntersectionDistance >= 0){
 				
-				pickedObject = currentObj.objModels[currentObj.nearestVisibleObjectIdx];
+				pickedObject = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
 				
 				intersectionPoint = vec3.create();
 				vec3.scale(rayWorld, nearestVisibleIntersectionDistance, intersectionPoint);
@@ -173,22 +162,18 @@ function FVPresenter(in_view, in_gl){
 		
 
 		function handleMouseMove(event) {
-//			if (DEBUG){
-//				console.log("[FVPresenter::addEventListeners->handleMouseMove]");
-//			}
+
 			var newX = event.clientX;
 			var newY = event.clientY;
 
 			if (currentObj.mouseDown) {
-				
-				console.log("MOUSE DOWN");
 				
 				document.getElementsByTagName("body")[0].style.cursor = "grab";
 
 				var deltaX = newX - currentObj.lastMouseX;
 		     	var deltaY = newY - currentObj.lastMouseY;
 					
-				var currModel = currentObj.objModels[currentObj.nearestVisibleObjectIdx];
+				var currModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
 				console.log("[FVPresenter::ROTATING] "+currModel.name);
 				currModel.rotate(degToRad(deltaX / 1), degToRad(deltaY / 1));
 			}
@@ -198,9 +183,6 @@ function FVPresenter(in_view, in_gl){
 		}
 		
 		function handleKeyPress(event) {
-//			if (DEBUG){
-//				console.log("[FVPresenter::addEventListeners->handleKeyPress]");
-//			}
 			var code = event.keyCode;
 			console.log(code);
 			console.log("elapsedTime " + currentObj.elapsedTime);
@@ -209,67 +191,50 @@ function FVPresenter(in_view, in_gl){
 			var move = vec3.create([0, 0, 0]);
 			
 			switch (code) {
-				// W
-				case 87:
+				case 87:// W
 					move[2] = -0.1;
 					break;
-				// S
-				case 83:
+				case 83:// S
 					move[2] = +0.1;
 					break;
-				// A
-				case 68:
+				case 68:// A
 					// TODO check and update nearest object
 					move[0] = +0.1;
 					break;
-				// D
-				case 65:
+				case 65:// D
 					// TODO check and update nearest object
 					move[0] = -0.1;
 					break;
 			}
 			currentObj.camera.translate(move);
-//			console.log("[FVPresenter]move " + move);
-//			console.log("[FVPresenter]currentObj.camera ");
-//			console.log(currentObj.camera);
 			move = [0, 0, 0];
 			currentObj.computeFov();
 		}
 
-		function resizeCanvas() {
-			if (DEBUG){
-				console.log("[FVPresenter::addEventListeners->resizeCanvas]");
-			}
-		   	currentObj.view.resize(in_gl);
-		   	currentObj.draw();
-		   	
-		}
-		
-		window.addEventListener('resize', resizeCanvas);
 		window.addEventListener('keydown', handleKeyPress);
 		
 		currentObj.view.canvas.onmousedown = handleMouseDown;
 		currentObj.view.canvas.onmouseup = handleMouseUp;
 		currentObj.view.canvas.onmousemove = handleMouseMove;
 		
-		resizeCanvas();
 	};
 	
 	this.computeFov = function(){
 		if (DEBUG){
 			console.log("[FVPresenter::computeFov]");
 		}
+		var selectedModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
 		// compute FoV against the nearest object
-		var fovXY = currentObj.fovUtils.getFoV(
-				currentObj.view.canvas, 
+		var fovXY =  selectedModel.getFoV(
 				currentObj.pMatrix,
 				currentObj.camera, 
-				currentObj.objModels[currentObj.nearestVisibleObjectIdx], 
-				currentObj.raypicker );
+				currentObj.raypicker);
+				
 		currentObj.view.updateFoV(fovXY);
+		
+//		selectedModel.setGeometryNeedsToBeRefreshed();
+		
 	};
-	
-	var idx = 0;
 	
 	this.draw = function(){
 		
@@ -283,14 +248,9 @@ function FVPresenter(in_view, in_gl){
 		in_gl.clear(in_gl.COLOR_BUFFER_BIT | in_gl.DEPTH_BUFFER_BIT);
 		mat4.perspective( currentObj.fovDeg, currentObj.aspectRatio, currentObj.nearPlane, currentObj.farPlane, currentObj.pMatrix );
 		
-		for (var i = 0; i < currentObj.objModels.length; i++){
+		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
 			
-			if (idx == 0){
-				console.log(currentObj.objModels[i]);
-				idx = 1;
-			}
-//			currentObj.objModels[i].setMatricesUniform(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
-			currentObj.objModels[i].draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
+			currentObj.modelRepo.objModels[i].draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 			
 		}
 		

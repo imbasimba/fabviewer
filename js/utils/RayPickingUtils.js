@@ -56,8 +56,8 @@ function RayPickingUtils(){
 			console.log("TAKEN!!!");
 			var t_a = -b + Math.sqrt(bSquaredMinus_c);
 			var t_b = -b - Math.sqrt(bSquaredMinus_c);
-			console.log("t_a ->"+t_a);
-			console.log("t_b->"+t_b);
+//			console.log("t_a ->"+t_a);
+//			console.log("t_b->"+t_b);
 			if (t_a < 0.0){
 				if (t_b < 0.0){
 					console.log("intersection behind your shoulder");

@@ -10,7 +10,7 @@ function Moon(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	
 	AbstractSkyEntity.call(this, in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils);
 	var currentObj = this;
-	console.log(currentObj);
+//	console.log(currentObj);
 	
 	
 	this.initShaders = function () {
@@ -82,28 +82,6 @@ function Moon(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.shaderProgram.vMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uVMatrix");
 		currentObj.shaderProgram.samplerUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uSampler");
 	};
-	
-//	this.refreshBuffers = function(){
-//		
-//		currentObj.shaderProgram.vertexPositionAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aVertexPosition");
-//		in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
-//
-//		currentObj.shaderProgram.textureCoordAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aTextureCoord");
-//		in_gl.enableVertexAttribArray(currentObj.shaderProgram.textureCoordAttribute);
-//
-////		currentObj.shaderProgram.vertexNormalAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aVertexNormal");
-////		in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexNormalAttribute);
-//
-//		
-////		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexNormalBuffer);
-//	    
-//	    in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexTextureCoordBuffer);
-//	    
-//	    in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexPositionBuffer);
-//	    
-//	    in_gl.bindBuffer(in_gl.ELEMENT_ARRAY_BUFFER, currentObj.vertexIndexBuffer);
-//
-//	};
 	
 	this.initBuffer = function () {
 		var vertexPositionData = [];
@@ -251,39 +229,6 @@ function Moon(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			
 	};
 	
-	
-//	this.drawBK = function(){
-//
-//		in_gl.useProgram(currentObj.shaderProgram);
-//	    currentObj.setUniformLocation();
-//
-//	    currentObj.refreshBuffers();
-//	    
-//	    in_gl.uniformMatrix4fv(currentObj.shaderProgram.mMatrixUniform, false, currentObj.modelMatrix);
-//		
-//		in_gl.activeTexture(in_gl.TEXTURE0);
-//		in_gl.bindTexture(in_gl.TEXTURE_2D, currentObj.textures[0]);
-//		
-//		in_gl.uniform1i(currentObj.shaderProgram.samplerUniform, 0);
-//		
-//		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexPositionBuffer);
-//		in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, currentObj.vertexPositionBuffer.itemSize, in_gl.FLOAT, false, 0, 0);
-//		
-//		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexTextureCoordBuffer);
-//		in_gl.vertexAttribPointer(currentObj.shaderProgram.textureCoordAttribute, currentObj.vertexTextureCoordBuffer.itemSize, in_gl.FLOAT, false, 0, 0);
-//		
-////		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexNormalBuffer);
-////		in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexNormalAttribute, currentObj.vertexNormalBuffer.itemSize, in_gl.FLOAT, false, 0, 0);
-//	    
-//		in_gl.bindBuffer(in_gl.ELEMENT_ARRAY_BUFFER, currentObj.vertexIndexBuffer);
-//	    
-//		in_gl.drawElements(in_gl.TRIANGLES, currentObj.vertexIndexBuffer.numItems, in_gl.UNSIGNED_SHORT, 0);	
-//		
-////		in_gl.uniformMatrix4fv(currentObj.shaderProgram.mMatrixUniform, false, currentObj.modelMatrix);
-//	};
-	
-	
-	var id = 0;
 	this.initShaders();
 	this.initBuffer();
 	this.initTexture();
