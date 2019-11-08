@@ -30,7 +30,15 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.maxOrder = 9;
 		
 		currentObj.sphericalGrid = true;
+		currentObj.xyzRefCoord = true;
 		currentObj.equatorialGrid = false;
+		
+		// below this value we switch from AllSky to HEALPix geometry/texture
+		currentObj.allskyFovLimit = 0.0;
+		
+		currentObj.sphericalGrid = new SphericalGrid(1.004, in_gl);
+		
+		currentObj.xyzRefSystem = new XYZSystem(in_gl);
 		
 	};
 	
@@ -117,6 +125,9 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		var epsilon = 0.0;
 		for (var i=0; i < nPixels; i++){
+//		for (var i=nPixels - 1; i >= 0; i--){	
+			
+			
 			facesVec3Array = new Array();
 			facesVec3Array = currentObj.healpix.getBoundaries(currentObj.pixels[i]);
 			
@@ -173,7 +184,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		
 		var textureCoordinates = new Float32Array(8*nPixels);
-	    if (currentObj.fovObj.getMinFoV() >= 50){
+	    if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){
 	    	//0.037037037
 	    	var s_step=1/27;
 	    	//0.034482759
@@ -182,6 +193,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    	var sindex = 0;
 	    	var tindex = 0;
 	    	for (var i=0; i < nPixels; i++){
+//    		for (var i=nPixels - 1; i >= 0; i--){
 	    		// AllSky map. One map texture
 	        	// [1, 0],[1, 1],[0, 1],[0, 0]
 	        	textureCoordinates[8*i] = (s_step + (s_step * sindex)).toFixed(9);
@@ -201,7 +213,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    }else{
 	    	for (var i=0; i < nPixels; i++){
 	        	// [1, 0],[1, 1],[0, 1],[0, 0]
-	        	textureCoordinates[8*i] = 1.0;
+	    		textureCoordinates[8*i] = 1.0;
 	        	textureCoordinates[8*i+1] = 0.0;
 	        	textureCoordinates[8*i+2] = 1.0;
 	        	textureCoordinates[8*i+3] = 1.0;
@@ -209,6 +221,15 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	        	textureCoordinates[8*i+5] = 1.0;
 	        	textureCoordinates[8*i+6] = 0.0;
 	        	textureCoordinates[8*i+7] = 0.0;
+	        	
+//	        	textureCoordinates[8*i] = 0.0;
+//	        	textureCoordinates[8*i+1] = 0.0;
+//	        	textureCoordinates[8*i+2] = 0.0;
+//	        	textureCoordinates[8*i+3] = 1.0;
+//	        	textureCoordinates[8*i+4] = 1.0;
+//	        	textureCoordinates[8*i+5] = 1.0;
+//	        	textureCoordinates[8*i+6] = 1.0;
+//	        	textureCoordinates[8*i+7] = 0.0;
 
 	        }
 	    }		
@@ -216,7 +237,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    var vertexIndices = new Uint16Array(6*nPixels);
 	    var baseFaceIndex = 0; 
 	    for (var j=0; j< nPixels; j++){
-	    	
+//	    for (var j=nPixels-1; j>= 0; j--){
 	    	vertexIndices[6*j] = baseFaceIndex;
 	    	vertexIndices[6*j+1] = baseFaceIndex + 1;
 	    	vertexIndices[6*j+2] = baseFaceIndex + 2;
@@ -254,7 +275,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    
 		// if FoV >50 (norder <= 2) do the following
 		
-		if (currentObj.fovObj.getMinFoV() >= 50){
+		if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){
 			currentObj.textures[0] = in_gl.createTexture();
 			
 			currentObj.textures[0].image = new Image();
@@ -309,7 +330,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			in_gl.bindTexture(in_gl.TEXTURE_2D, texture);			
 			in_gl.texImage2D(in_gl.TEXTURE_2D, 0, in_gl.RGBA, in_gl.RGBA, in_gl.UNSIGNED_BYTE, texture.image);
 			
-			if (currentObj.fovObj.getMinFoV() >= 50){
+			if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){
 				// it's not a power of 2. Turn off mip and set wrapping to clamp to edge
 				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_WRAP_S, in_gl.CLAMP_TO_EDGE);
 				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_WRAP_T, in_gl.CLAMP_TO_EDGE);
@@ -343,6 +364,9 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		var pixNo = healpix.ang2pix(p);
 		
 		var ccPixNo = getPixNo(cc);
+		
+		// TODO: PWGL?!? this comes from the other prototype
+		
 		if (pwgl.pixels.indexOf(ccPixNo) == -1){
 			pwgl.pixels.push(ccPixNo);	
 		}
@@ -490,7 +514,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		
 		
-		if (currentObj.minFoV >= 50){
+		if (currentObj.minFoV >= currentObj.allskyFovLimit){
 			in_gl.activeTexture(in_gl.TEXTURE0);
 			in_gl.bindTexture(in_gl.TEXTURE_2D, currentObj.textures[0]);
 			in_gl.uniform1f(currentObj.shaderProgram.uniformVertexTextureFactor, currentObj.opacity);
@@ -512,14 +536,18 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	        }	
 	
 		    if (currentObj.sphericalGrid) {
-		    	currentObj.drawSphericalGrid();
+		    	currentObj.sphericalGrid.draw(currentObj.shaderProgram);
+//		    	currentObj.drawSphericalGrid();
 		    }
 		    if (currentObj.equatorialGrid) {
 		    	currentObj.drawEquatorialGrid();
 		    }
 		    
+		    if (currentObj.xyzRefCoord){
+				currentObj.xyzRefSystem.draw(currentObj.shaderProgram);	
+			}
 		}else{
-			
+			alert("dsdsa");
 		}
 		
 				

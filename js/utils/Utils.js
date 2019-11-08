@@ -10,7 +10,7 @@ function cartesianToSpherical(xyz){
 	var theta = Math.acos(xyz[2]/r);
 	theta = radToDeg(theta);
 	// NB: in atan(y/x) is written with params switched atan2(x, y)
-	var phi = Math.atan2(xyz[0],xyz[1]);
+	var phi = Math.atan2(xyz[1],xyz[0]);
 	phi = radToDeg(phi);
 	if (phi < 0){
 		phi += 360;
@@ -34,8 +34,8 @@ function radToDeg(radians) {
 function sphericalToAstroDeg(phiDeg, thetaDeg){
 	
 	var raDeg, decDeg;
-	raDeg = 90 - phiDeg;
-//	raDeg = phiDeg;
+//	raDeg = 90 - phiDeg;
+	raDeg = phiDeg;
 	if (raDeg < 0){
 		raDeg += 360;
 	}
@@ -51,8 +51,8 @@ function sphericalToAstroDeg(phiDeg, thetaDeg){
 function astroDegToSpherical(raDeg, decDeg){
 	
 	var phiDeg, thetaDeg;
-	phiDeg = 90 - raDeg;
-//	phiDeg = raDeg;
+//	phiDeg = 90 - raDeg;
+	phiDeg = raDeg;
 	if (phiDeg < 0){
 		phiDeg += 360;
 	}

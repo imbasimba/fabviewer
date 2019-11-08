@@ -60,8 +60,8 @@ function ModelRepo(in_gl, in_canvas){
 		
 		// it does correct dec rotation
 //		var complRa = 1.0 * (- raDeg);
-		var phi =  (90.0 + raDeg);
-		var theta = 90.0 - decDeg;
+//		var phi =  raDeg;
+//		var theta = 90.0 - decDeg;
 //		var complDec = -1.0 * 90;
 		
 //		var complRa = 1.0 * (-raDeg);
@@ -71,12 +71,12 @@ function ModelRepo(in_gl, in_canvas){
 //		console.log(currentObj.objModels[0].R);
 		
 		// ref (ra,dec) (0,0) <-> (phi,theta) (90,90)
-		// rot phi 202 - 90 = 112
-		// rot theta 116 - 90 = 26
+		// rot phi 247 = 112
+		// rot theta 116 = 26
 		
 		//phi: 202 theta: 116
-//		currentObj.objModels[0].rotate(0.0, degToRad(-202.0));
-//		currentObj.objModels[0].rotate(degToRad(116), 0.0);
+//		currentObj.objModels[0].rotate(degToRad(-116.0), degToRad(-247.0));
+//		currentObj.objModels[0].rotate(0.0, 0.0);
 		
 		 
 		
@@ -88,7 +88,7 @@ function ModelRepo(in_gl, in_canvas){
 //				theta: degToRad(sphericalPhiThetaDeg.theta)
 //		};
 //		console.log("sphericalPhiThetaRad" + JSON.stringify(sphericalPhiThetaRad));
-//		currentObj.objModels[0].rotate(sphericalPhiThetaRad.theta, sphericalPhiThetaRad.phi);
+//		currentObj.objModels[0].rotate(-sphericalPhiThetaRad.theta, -sphericalPhiThetaRad.phi);
 		
 		
 	};
