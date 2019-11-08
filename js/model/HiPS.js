@@ -13,6 +13,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 
 	this.localInit = function(){
 		
+		currentObj.radius = in_radius;
+		
 		currentObj.updateOnFoV = true;
 		
 		currentObj.pixels = [];
@@ -26,6 +28,9 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		currentObj.URL = "http://skies.esac.esa.int/DSSColor/";
 		currentObj.maxOrder = 9;
+		
+		currentObj.sphericalGrid = true;
+		currentObj.equatorialGrid = false;
 		
 	};
 	
@@ -331,7 +336,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		
 		// Model point having only Z as radius
-		var modelZPoint = [in_position[0], in_position[1], in_position[2] + in_radius, 1.0];
+		var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
 		mat4.multiplyVec4(currentObj.R, modelZPoint, modelZPoint);
 		
 		var p = new Pointing(new Vec3(modelZPoint[0], modelZPoint[1], modelZPoint[2]));
@@ -453,6 +458,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.shaderProgram.vMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uVMatrix");
 		currentObj.shaderProgram.samplerUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uSampler0");
 		currentObj.shaderProgram.uniformVertexTextureFactor = in_gl.getUniformLocation(currentObj.shaderProgram, "uFactor0");
+		currentObj.shaderProgram.sphericalGridEnabledUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uSphericalGrid");
+		
 		currentObj.shaderProgram.vertexPositionAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aVertexPosition");
 		currentObj.shaderProgram.textureCoordAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aTextureCoord");
 
@@ -468,6 +475,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		// 3. refresh textures
 		// 4. draw
 		
+		in_gl.uniform1f(currentObj.shaderProgram.sphericalGridEnabledUniform, 0.0);
 		
 		// 1. check weather, basing on FoV, the HEALPix needs to be refreshed. If yes continue above, otherwise jump to point 4
 		if (currentObj.refreshGeometryOnFoVChanged == true){
@@ -479,6 +487,9 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		}
 
 		// 4. draw
+		
+		
+		
 		if (currentObj.minFoV >= 50){
 			in_gl.activeTexture(in_gl.TEXTURE0);
 			in_gl.bindTexture(in_gl.TEXTURE_2D, currentObj.textures[0]);
@@ -500,11 +511,148 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		    	in_gl.drawElements(in_gl.TRIANGLES, 6, in_gl.UNSIGNED_SHORT, 12*i);
 	        }	
 	
+		    if (currentObj.sphericalGrid) {
+//		    	currentObj.drawSphericalGrid();
+		    }
+		    if (currentObj.equatorialGrid) {
+		    	currentObj.drawEquatorialGrid();
+		    }
+		    
 		}else{
 			
 		}
 		
 				
+	};
+	
+	this.drawSphericalGrid = function(){
+		
+		var x, y, z;
+		var r = 1.02;
+		var thetaRad, phiRad;
+		
+		var thetaStep, phiStep;
+		
+		in_gl.uniform1f(currentObj.shaderProgram.sphericalGridEnabledUniform, 1.0);
+		
+		thetaStep = 10;
+		phiStep = 10;
+		
+		for (var theta = 0; theta < 180; theta += thetaStep){
+			
+			var phiVertexPosition = new Float32Array(360/phiStep * 3);
+			
+			thetaRad = degToRad(theta);
+
+			for (var phi = 0; phi <360; phi += phiStep){
+				
+				phiRad = degToRad(phi);
+				
+				x = r * Math.sin(thetaRad) * Math.cos(phiRad);
+				y = r * Math.sin(thetaRad) * Math.sin(phiRad);
+				z = r * Math.cos(thetaRad);
+				
+				phiVertexPosition[ 3 * (phi/phiStep)] = x; 
+				phiVertexPosition[ 3 * (phi/phiStep) + 1] = y;
+				phiVertexPosition[ 3 * (phi/phiStep) + 2] = z;
+	
+			}
+
+			var phiVertexPositionBuffer = in_gl.createBuffer();
+			in_gl.bindBuffer(in_gl.ARRAY_BUFFER, phiVertexPositionBuffer);
+			in_gl.bufferData(in_gl.ARRAY_BUFFER, phiVertexPosition, in_gl.STATIC_DRAW);
+
+			in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
+
+			in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+
+			in_gl.drawArrays(in_gl.LINE_LOOP, 0, 360/phiStep);
+		}
+		
+
+		thetaStep = 20;
+		phiStep = 10;
+		
+		for (var phi = 0; phi <360; phi += phiStep){
+			
+			var thetaVertexPosition = new Float32Array(360/thetaStep * 3);
+			
+			phiRad = degToRad(phi);
+			
+
+			for (var theta = 0; theta <360; theta += thetaStep){
+				
+				thetaRad = degToRad(theta);
+				
+				x = r * Math.sin(thetaRad) * Math.cos(phiRad);
+				y = r * Math.sin(thetaRad) * Math.sin(phiRad);
+				z = r * Math.cos(thetaRad);
+				
+				
+				thetaVertexPosition[ 3 * (theta/thetaStep)] = x; 
+				thetaVertexPosition[ 3 * (theta/thetaStep) + 1] = y;
+				thetaVertexPosition[ 3 * (theta/thetaStep) + 2] = z;
+	
+			}
+			
+			var thetaVertexPositionBuffer = in_gl.createBuffer();
+			in_gl.bindBuffer(in_gl.ARRAY_BUFFER, thetaVertexPositionBuffer);
+			in_gl.bufferData(in_gl.ARRAY_BUFFER, thetaVertexPosition, in_gl.STATIC_DRAW);
+
+			in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
+
+			in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+
+			in_gl.drawArrays(in_gl.LINE_LOOP, 0, 360/thetaStep);
+
+		}
+			
+			
+			var versors = [
+				[1.5, 0.0, 0.0],
+				[0.0, 1.5, 0.0],
+				[0.0, 0.0, 1.5],
+				];
+			
+			var refSysPosition = new Float32Array(3 * 2);
+			
+			refSysPosition[0] = 0.0;
+			refSysPosition[1] = 0.0;
+			refSysPosition[2] = 0.0;
+			
+			/*
+			 * x red
+			 * y green
+			 * z blue
+			 */
+			for (var k=0; k<3; k++){
+				
+				in_gl.uniform1f(currentObj.shaderProgram.sphericalGridEnabledUniform, k + 2.0);
+				
+				refSysPosition[3] = versors[k][0];
+				refSysPosition[4] = versors[k][1];
+				refSysPosition[5] = versors[k][2];
+				
+				var refSysPositionBuffer = in_gl.createBuffer();
+				in_gl.bindBuffer(in_gl.ARRAY_BUFFER, refSysPositionBuffer);
+				in_gl.bufferData(in_gl.ARRAY_BUFFER, refSysPosition, in_gl.STATIC_DRAW);
+
+				in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
+
+				in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+
+				in_gl.drawArrays(in_gl.LINE_STRIP, 0, 2);
+				
+			}
+		
+		
+		
+        
+		
+	};
+
+	this.drawEquatorialGrid = function(){
+		
 	};
 	
 

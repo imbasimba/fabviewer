@@ -22,10 +22,13 @@ function Camera(in_position){
 		currentObj.R_inverse = mat4.create();
 		mat4.identity(currentObj.R_inverse);
 		
-		mat4.translate(currentObj.T, currentObj.cam_pos, currentObj.T);
+//		mat4.translate(currentObj.T, currentObj.cam_pos, currentObj.T);
 		
 		currentObj.vMatrix = mat4.create();
-		mat4.multiply(currentObj.R, currentObj.T, currentObj.vMatrix);	
+		mat4.multiply(currentObj.R, currentObj.T, currentObj.vMatrix);
+		
+		this.translate(in_position);
+		
 	};
 	
 	this.translate = function (vec3movement){

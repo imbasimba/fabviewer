@@ -13,7 +13,8 @@ function FVPresenter(in_view, in_gl){
 		}
 		currentObj.view = in_view;
 
-		currentObj.camera = new Camera([0.0, 0.0, 0.5]);
+//		currentObj.camera = new Camera([0.0, 0.0, 0.5]);
+		currentObj.camera = new Camera([0.0, 0.0, 1.5]);
 
 		currentObj.raypicker = new RayPickingUtils();
 
@@ -22,7 +23,7 @@ function FVPresenter(in_view, in_gl){
 		currentObj.aspectRatio;
 		currentObj.fovDeg = 45;
 		currentObj.nearPlane = 0.1;
-		currentObj.farPlane = 100.0;
+		currentObj.farPlane = 10.0;
 		
 		// projection matrix
 		currentObj.pMatrix = mat4.create();
@@ -41,6 +42,9 @@ function FVPresenter(in_view, in_gl){
 		currentObj.nearestVisibleObjectIdx = 0;
 		currentObj.getNearestObjectOnRay(currentObj.view.canvas.width / 2, currentObj.view.canvas.heigth / 2);
 		currentObj.view.setPickedObjectName(currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx].name);
+		
+		currentObj.THETA = 0;
+		currentObj.PHI = 0;
 	};
 	
 	this.getNearestObjectOnRay = function(mouseX, mouseY){
@@ -97,6 +101,11 @@ function FVPresenter(in_view, in_gl){
 		function handleMouseDown(event) {
 			currentObj.mouseDown = true;
 			
+			currentObj.lastMouseX = event.pageX;
+			currentObj.lastMouseY = event.pageY;
+
+			event.preventDefault();
+            return false;
 		}
 		
 		function handleMouseUp(event) {
@@ -154,6 +163,9 @@ function FVPresenter(in_view, in_gl){
 				
 				currentObj.view.setPickedObjectName(pickedObject.name);
 				
+				console.log("ROTATION MATRIX on picking "+pickedObject.R);
+				console.log("MODEL MATRIX on picking "+pickedObject.modelMatrix);
+				
 			}else{
 				console.log("no intersection");
 			}	
@@ -170,16 +182,20 @@ function FVPresenter(in_view, in_gl){
 				
 				document.getElementsByTagName("body")[0].style.cursor = "grab";
 
-				var deltaX = newX - currentObj.lastMouseX;
-		     	var deltaY = newY - currentObj.lastMouseY;
-					
+				var deltaX = (newX - currentObj.lastMouseX)*2*Math.PI/currentObj.view.canvas.width;
+		     	var deltaY = (newY - currentObj.lastMouseY)*2*Math.PI/currentObj.view.canvas.height;
+				
+		     	currentObj.THETA = deltaX;
+		     	currentObj.PHI = deltaY;
+
 				var currModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
 				console.log("[FVPresenter::ROTATING] "+currModel.name);
-				currModel.rotate(degToRad(deltaX / 1), degToRad(deltaY / 1));
+				currModel.rotate(currentObj.PHI, currentObj.THETA);
 			}
 
 			currentObj.lastMouseX = newX;
 			currentObj.lastMouseY = newY;
+			event.preventDefault();
 		}
 		
 		function handleKeyPress(event) {

@@ -37,32 +37,48 @@
 <script id="hips-shader-vs" type="x-shader/x-vertex">
 	attribute vec3 aVertexPosition;
 	attribute vec2 aTextureCoord;
+	attribute float aSphericalGrid;
 	
 	uniform mat4 uMMatrix;
 	uniform mat4 uVMatrix;
 	uniform mat4 uPMatrix;
-
+	
+	varying float vSphericalGrid;
   	varying vec2 vTextureCoord;
 
 	void main() {
 		gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
 		vTextureCoord = aTextureCoord;
+		vSphericalGrid = aSphericalGrid;
 	}
 </script>
 
 <script id="hips-shader-fs" type="x-shader/x-fragment">
   	precision mediump float;
 
+	
 	varying vec2 vTextureCoord;
 	uniform sampler2D uSampler0;
 	uniform float uFactor0;
-
+	uniform float uSphericalGrid;
 
   	void main() {
 		vec3 finalColor;
-		vec4 color0 = texture2D(uSampler0, vTextureCoord);
-		finalColor = vec3(finalColor.x +  color0.x *uFactor0 ,finalColor.y +  color0.y*uFactor0,finalColor.z +  color0.z*uFactor0); 
-		gl_FragColor = vec4(finalColor, 1);
+		if (uSphericalGrid == 1.0){ 
+			gl_FragColor = vec4(0.5, 0.2, 0.7, 1.0);
+		}else if(uSphericalGrid == 2.0){
+			gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		}else if(uSphericalGrid == 3.0){
+			gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+		}else if(uSphericalGrid == 4.0){
+			gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+		}else{
+			vec4 color0 = texture2D(uSampler0, vTextureCoord);
+			finalColor = vec3(finalColor.x +  color0.x *uFactor0 ,finalColor.y +  color0.y*uFactor0,finalColor.z +  color0.z*uFactor0); 
+			gl_FragColor = vec4(finalColor, 1);	
+		}
+		
+		
   	} 
 </script>
 
