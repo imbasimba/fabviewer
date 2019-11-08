@@ -512,7 +512,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	        }	
 	
 		    if (currentObj.sphericalGrid) {
-//		    	currentObj.drawSphericalGrid();
+		    	currentObj.drawSphericalGrid();
 		    }
 		    if (currentObj.equatorialGrid) {
 		    	currentObj.drawEquatorialGrid();
@@ -528,7 +528,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	this.drawSphericalGrid = function(){
 		
 		var x, y, z;
-		var r = 1.02;
+		var r = 1.004;
 		var thetaRad, phiRad;
 		
 		var thetaStep, phiStep;
@@ -570,7 +570,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		}
 		
 
-		thetaStep = 20;
+		thetaStep = 10;
 		phiStep = 10;
 		
 		for (var phi = 0; phi <360; phi += phiStep){
