@@ -81,14 +81,16 @@ function ModelRepo(in_gl, in_canvas){
 		 
 		
 		
-//		var sphericalPhiThetaDeg = astroDegToSpherical(raDeg, decDeg);		
-//		console.log("sphericalPhiThetaDeg" + JSON.stringify(sphericalPhiThetaDeg));
-//		sphericalPhiThetaRad = {
-//				phi: degToRad(sphericalPhiThetaDeg.phi),
-//				theta: degToRad(sphericalPhiThetaDeg.theta)
-//		};
-//		console.log("sphericalPhiThetaRad" + JSON.stringify(sphericalPhiThetaRad));
-//		currentObj.objModels[0].rotate(-sphericalPhiThetaRad.theta, -sphericalPhiThetaRad.phi);
+		var sphericalPhiThetaDeg = astroDegToSpherical(raDeg, decDeg);		
+		console.log("sphericalPhiThetaDeg" + JSON.stringify(sphericalPhiThetaDeg));
+		sphericalPhiThetaRad = {
+				phi: degToRad(sphericalPhiThetaDeg.phi+90),
+				theta: degToRad(sphericalPhiThetaDeg.theta)
+		};
+		console.log("sphericalPhiThetaRad" + JSON.stringify(sphericalPhiThetaRad));
+		currentObj.objModels[0].rotateFromZero(-sphericalPhiThetaRad.theta, sphericalPhiThetaRad.phi);
+		//currentObj.objModels[0].rotate(-degToRad(0), degToRad(0+90));
+		currentObj.objModels[0].rotateFromZero(-degToRad(68), degToRad(85+90));
 		
 		
 	};

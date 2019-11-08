@@ -67,16 +67,34 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	
 	this.rotate = function(rad1, rad2){
 		
-//		mat4.identity(currentObj.R);
+		//mat4.identity(currentObj.R);
 		console.log("rotation matrix "+currentObj.R);
 		
 
-		//		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
-		currentObj.R = this.rotateX(currentObj.R, rad1);
+		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
+		//currentObj.R = this.rotateX(currentObj.R, rad1);
 	    console.log("rotation matrix "+currentObj.R);
 
-//	    mat4.rotate(currentObj.R, rad2, [0, 1, 0]);
-	    currentObj.R = this.rotateY(currentObj.R, rad2);
+	    mat4.rotate(currentObj.R, rad2, [0, 0, 1]);
+	    //currentObj.R = this.rotateY(currentObj.R, rad2);
+	    console.log("rotation matrix "+currentObj.R);
+	    
+	    currentObj.refreshModelMatrix();
+
+	};
+
+	this.rotateFromZero = function(rad1, rad2){
+		
+		mat4.identity(currentObj.R);
+		console.log("rotation matrix "+currentObj.R);
+		
+
+		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
+		//currentObj.R = this.rotateX(currentObj.R, rad1);
+	    console.log("rotation matrix "+currentObj.R);
+
+	    mat4.rotate(currentObj.R, rad2, [0, 0, 1]);
+	    //currentObj.R = this.rotateY(currentObj.R, rad2);
 	    console.log("rotation matrix "+currentObj.R);
 	    
 	    currentObj.refreshModelMatrix();
@@ -169,9 +187,8 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
         m[10] = c*m[10]-s*mv8;
         
         return m;
-     }
-	
-	
+	 }
+	 	
 	this.init();
 	
 	
