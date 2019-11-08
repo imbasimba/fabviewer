@@ -10,7 +10,7 @@ function cartesianToSpherical(xyz){
 	var theta = Math.acos(xyz[2]/r);
 	theta = radToDeg(theta);
 	// NB: in atan(y/x) is written with params switched atan2(x, y)
-	var phi = Math.atan2(xyz[1],xyz[0]);
+	var phi = Math.atan2(xyz[1],-xyz[0]);
 	phi = radToDeg(phi);
 	if (phi < 0){
 		phi += 360;

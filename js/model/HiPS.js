@@ -145,37 +145,37 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				phi2 = Math.atan2(facesVec3Array[2].y, facesVec3Array[2].x);
 				phi3 = Math.atan2(facesVec3Array[3].y, facesVec3Array[3].x);
 				
-				vertexPosition[12*i] = currentObj.radius * Math.sin(theta0) * Math.cos(phi0);
+				vertexPosition[12*i] = -currentObj.radius * Math.sin(theta0) * Math.cos(phi0);
 				vertexPosition[12*i+1] = currentObj.radius * Math.sin(theta0) * Math.sin(phi0);
 				vertexPosition[12*i+2] = currentObj.radius * Math.cos(theta0);
 				
-				vertexPosition[12*i+3] = currentObj.radius * Math.sin(theta1) * Math.cos(phi1);
+				vertexPosition[12*i+3] = -currentObj.radius * Math.sin(theta1) * Math.cos(phi1);
 				vertexPosition[12*i+4] = currentObj.radius * Math.sin(theta1) * Math.sin(phi1);
 				vertexPosition[12*i+5] = currentObj.radius * Math.cos(theta1);
 				
-				vertexPosition[12*i+6] = currentObj.radius * Math.sin(theta2) * Math.cos(phi2);
+				vertexPosition[12*i+6] = -currentObj.radius * Math.sin(theta2) * Math.cos(phi2);
 				vertexPosition[12*i+7] = currentObj.radius * Math.sin(theta2) * Math.sin(phi2);
 				vertexPosition[12*i+8] = currentObj.radius * Math.cos(theta2);
 				
-				vertexPosition[12*i+9] = currentObj.radius * Math.sin(theta3) * Math.cos(phi3);
+				vertexPosition[12*i+9] = -currentObj.radius * Math.sin(theta3) * Math.cos(phi3);
 				vertexPosition[12*i+10] = currentObj.radius * Math.sin(theta3) * Math.sin(phi3);
 				vertexPosition[12*i+11] = currentObj.radius * Math.cos(theta3);
 				
 			}else{
 				// Default Healpix radius 1
-				vertexPosition[12*i] = facesVec3Array[0].x ;
+				vertexPosition[12*i] = -facesVec3Array[0].x ;
 				vertexPosition[12*i+1] = facesVec3Array[0].y ;
 				vertexPosition[12*i+2] = facesVec3Array[0].z;
 				
-				vertexPosition[12*i+3] = facesVec3Array[1].x;
+				vertexPosition[12*i+3] = -facesVec3Array[1].x;
 				vertexPosition[12*i+4] = facesVec3Array[1].y;
 				vertexPosition[12*i+5] = facesVec3Array[1].z;
 				
-				vertexPosition[12*i+6] = facesVec3Array[2].x;
+				vertexPosition[12*i+6] = -facesVec3Array[2].x;
 				vertexPosition[12*i+7] = facesVec3Array[2].y;
 				vertexPosition[12*i+8] = facesVec3Array[2].z;
 				
-				vertexPosition[12*i+9] = facesVec3Array[3].x;
+				vertexPosition[12*i+9] = -facesVec3Array[3].x;
 				vertexPosition[12*i+10] = facesVec3Array[3].y;
 				vertexPosition[12*i+11] = facesVec3Array[3].z;
 				
