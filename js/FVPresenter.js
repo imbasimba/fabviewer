@@ -184,19 +184,14 @@ function FVPresenter(in_view, in_gl){
 				
 				document.getElementsByTagName("body")[0].style.cursor = "grab";
 
-				var deltaX = (newX - currentObj.lastMouseX)*2*Math.PI/currentObj.view.canvas.width;
-		     	var deltaY = (newY - currentObj.lastMouseY)*2*Math.PI/currentObj.view.canvas.height;
+				var deltaX = (newX - currentObj.lastMouseX)*Math.PI/currentObj.view.canvas.width;
+		     	var deltaY = (newY - currentObj.lastMouseY)*Math.PI/currentObj.view.canvas.height;
 				
 		     	currentObj.THETA = deltaY;
 		     	currentObj.PHI = deltaX;
 
-		     	if (Math.abs(deltaX) >= Math.abs(deltaY) ){
-		     		currentObj.THETA = 0.0;
-		     	}else if (Math.abs(deltaY) > Math.abs(deltaX) ){
-		     		currentObj.PHI = 0.0;
-		     	}
-		     	
-		     	
+				console.log("[FVPresenter::ROTATING] "+deltaY);
+		     			     	
 				var currModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
 				console.log("[FVPresenter::ROTATING] "+currModel.name);
 				currentObj.camera.rotate(currentObj.PHI, currentObj.THETA);

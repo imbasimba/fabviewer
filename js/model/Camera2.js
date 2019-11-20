@@ -240,8 +240,12 @@ function Camera2(in_position){
 		
 		var totRot = Math.sqrt(phi*phi + theta*theta);
 
+		pos = this.getCameraPosition();
+		dist2Center = Math.sqrt(vec3.dot(pos, pos));
+		usedRot = totRot * (dist2Center - 1) / 3.0
+
 		//mat4.rotate(currentObj.R, rad1, [currentObj.R[2], currentObj.R[6], currentObj.R[10]]);
-		mat4.rotate(currentObj.R, -(totRot), [theta/totRot, phi/totRot, 0]);
+		mat4.rotate(currentObj.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
 		//currentObj.R = this.rotateX(currentObj.R, rad1);
 	    console.log("totRotation "+ totRot);
 	    console.log("Camera rotation matrix "+ currentObj.R);
