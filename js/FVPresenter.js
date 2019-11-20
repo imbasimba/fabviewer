@@ -13,8 +13,9 @@ function FVPresenter(in_view, in_gl){
 		}
 		currentObj.view = in_view;
 
+		currentObj.then = 0;
 //		currentObj.camera = new Camera([0.0, 0.0, 0.5]);
-		currentObj.camera = new Camera([0.0, 0.0, 1.5]);
+		currentObj.camera = new Camera2([0.0, 0.0, 3.0]);
 
 		currentObj.raypicker = new RayPickingUtils();
 
@@ -45,6 +46,7 @@ function FVPresenter(in_view, in_gl){
 		
 		currentObj.THETA = 0;
 		currentObj.PHI = 0;
+		
 	};
 	
 	this.getNearestObjectOnRay = function(mouseX, mouseY){
@@ -169,7 +171,7 @@ function FVPresenter(in_view, in_gl){
 			}else{
 				console.log("no intersection");
 			}	
-			
+
 		}
 		
 
@@ -185,12 +187,19 @@ function FVPresenter(in_view, in_gl){
 				var deltaX = (newX - currentObj.lastMouseX)*2*Math.PI/currentObj.view.canvas.width;
 		     	var deltaY = (newY - currentObj.lastMouseY)*2*Math.PI/currentObj.view.canvas.height;
 				
-		     	currentObj.THETA = deltaX;
-		     	currentObj.PHI = deltaY;
+		     	currentObj.THETA = deltaY;
+		     	currentObj.PHI = deltaX;
 
+		     	if (Math.abs(deltaX) >= Math.abs(deltaY) ){
+		     		currentObj.THETA = 0.0;
+		     	}else if (Math.abs(deltaY) > Math.abs(deltaX) ){
+		     		currentObj.PHI = 0.0;
+		     	}
+		     	
+		     	
 				var currModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
 				console.log("[FVPresenter::ROTATING] "+currModel.name);
-				currModel.rotate(currentObj.PHI, currentObj.THETA);
+				currentObj.camera.rotate(currentObj.PHI, currentObj.THETA);
 			}
 
 			currentObj.lastMouseX = newX;
@@ -205,25 +214,62 @@ function FVPresenter(in_view, in_gl){
 			console.log("performance.now() " + performance.now());
 			
 			var move = vec3.create([0, 0, 0]);
-			
+			var rotStep = 0.01;
 			switch (code) {
-				case 87:// W
-					move[2] = -0.1;
+				case 38:// arrowUp
+//					move[2] = -0.01;
+//					currentObj.camera.translate(move);
+//					currentObj.camera.refreshViewMatrix();
+//					move = [0, 0, 0];
+					currentObj.camera.zoomIn(currentObj.elapsedTime);
+					
 					break;
-				case 83:// S
-					move[2] = +0.1;
+				case 40:// arrowDown
+//					move[2] = +0.01;
+//					currentObj.camera.translate(move);
+//					currentObj.camera.refreshViewMatrix();
+//					move = [0, 0, 0];
+					currentObj.camera.zoomOut(currentObj.elapsedTime);
+					break;
+				case 87:// W
+//					currentObj.camera.rotate(rotStep, 0.0);
+//					currentObj.camera.refreshViewMatrix();
+					currentObj.camera.rotateX(1);
+					
+					break;
+				case 88:// X
+//					currentObj.camera.rotate(-rotStep, 0.0);
+//					currentObj.camera.refreshViewMatrix();
+					currentObj.camera.rotateX(-1);
 					break;
 				case 68:// A
 					// TODO check and update nearest object
-					move[0] = +0.1;
+//					currentObj.camera.rotate(0.0, -rotStep);
+//					currentObj.camera.refreshViewMatrix();
+					currentObj.camera.rotateY(-1);
+					
+					
 					break;
 				case 65:// D
 					// TODO check and update nearest object
-					move[0] = -0.1;
+//					currentObj.camera.rotate(0.0, rotStep);
+//					currentObj.camera.refreshViewMatrix();
+					currentObj.camera.rotateY(1);
+					break;
+				case 81:// Q
+					currentObj.camera.rotate(rotStep, rotStep);
+					break;
+				case 69:// E
+					currentObj.camera.rotate(rotStep, -rotStep);
+					break;
+				case 90:// Z
+					currentObj.camera.rotate(-rotStep, rotStep);
+					break;
+				case 67:// C
+					currentObj.camera.rotate(-rotStep, -rotStep);
 					break;
 			}
-			currentObj.camera.translate(move);
-			move = [0, 0, 0];
+			
 			currentObj.computeFov();
 		}
 
@@ -252,12 +298,17 @@ function FVPresenter(in_view, in_gl){
 		
 	};
 	
-	this.draw = function(){
+	this.draw = function(now){
 		
-		currentObj.currentSeconds = performance.now();
-		currentObj.elapsedTime = currentObj.currentSeconds - currentObj.previousSeconds;
-		currentObj.previousSeconds = currentObj.currentSeconds;
-
+		
+//		currentObj.currentSeconds = performance.now();
+//		currentObj.elapsedTime = (currentObj.currentSeconds - currentObj.previousSeconds) * 0.001;
+//		currentObj.previousSeconds = currentObj.currentSeconds;
+//console.log("now "+now+ " currentObj.then "+currentObj.then);
+		now *= 0.01;
+		currentObj.elapsedTime = now - currentObj.then;
+		currentObj.then = now;
+		
 		currentObj.aspectRatio = currentObj.view.canvas.width / currentObj.view.canvas.height;
 
 		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
@@ -269,9 +320,8 @@ function FVPresenter(in_view, in_gl){
 			currentObj.modelRepo.objModels[i].draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 			
 		}
-		
+
 	};
-	
 	
 	
 	this.init();

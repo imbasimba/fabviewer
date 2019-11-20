@@ -83,8 +83,10 @@ function FVApp(){
 	this.tick = function () {
 		
 		currentObj.fabVReqID = requestAnimFrame(currentObj.tick);
+//		currentObj.fabVReqID = requestAnimFrame(currentObj.presenter.draw());
 		
 		currentObj.drawScene();
+		
 		
 	}
 

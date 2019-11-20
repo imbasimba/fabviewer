@@ -15,11 +15,11 @@ function XYZSystem(in_gl){
 	this.initBuffer = function(){
 		
 	
-		var versors = [
-			[1.5, 0.0, 0.0],
-			[0.0, 1.5, 0.0],
-			[0.0, 0.0, 1.5],
-			];
+//		var versors = [
+//			[1.5, 0.0, 0.0],
+//			[0.0, 1.5, 0.0],
+//			[0.0, 0.0, 1.5]
+//			];
 		
 		currentObj.refSysPositionX[0] = 0.0;
 		currentObj.refSysPositionX[1] = 0.0;
@@ -67,7 +67,7 @@ function XYZSystem(in_gl){
 		in_gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
 		in_gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 		in_gl.drawArrays(in_gl.LINE_STRIP, 0, 2);
-		
+
 		// rendering Y axes
 		in_gl.uniform1f(shaderProgram.sphericalGridEnabledUniform, 3.0);
 		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.refSysPositionYBuffer);
@@ -75,7 +75,7 @@ function XYZSystem(in_gl){
 		in_gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
 		in_gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 		in_gl.drawArrays(in_gl.LINE_STRIP, 0, 2);
-		
+
 		// rendering Z axes
 		in_gl.uniform1f(shaderProgram.sphericalGridEnabledUniform, 4.0);
 		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.refSysPositionZBuffer);

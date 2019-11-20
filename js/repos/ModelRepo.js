@@ -24,9 +24,23 @@ function ModelRepo(in_gl, in_canvas){
 //				degToRad(-90.0), 
 //				0.0, "HiPS");
 		
+//		currentObj.objModels[0] = new HiPS(1, in_gl, in_canvas, [0.0, 0.0, 0.0], 
+//				0.0, 
+//				0.0, "HiPS");
+		
+//		/* 
+//		 * to end up with (up, fwd, rgt) = (z, -x, y) we need these rotation in order:
+//		 * 1. 90 deg on the x axis => (up, fwd, rgt) = (z, y, x)
+//		 * 2. 90 deg on the z axis => (up, fwd, rgt) = (z, -x, y)
+//		 * Rotation matrices must be applied in opposite order 
+//		 */
+//		// rotation around z axis (point 2.)
+//		mat4.rotate(currentObj.R, Math.PI / 2, [0,0,1]);
+//		// rotation around x axis (point 1.)
+//		mat4.rotate(currentObj.R, Math.PI / 2, [1,0,0]);
 		currentObj.objModels[0] = new HiPS(1, in_gl, in_canvas, [0.0, 0.0, 0.0], 
-				0.0, 
-				0.0, "HiPS");
+				Math.PI / 2, 
+				Math.PI / 2, "HiPS");
 		
 		// Now rotating 
 		
@@ -34,8 +48,8 @@ function ModelRepo(in_gl, in_canvas){
 		var raHMS = "16 28 24.504";
 		var decDMS = "-26 39 06.06";
 		
-		console.log("raHMS "+raHMS);
-		console.log("decDMS "+decDMS);
+//		console.log("raHMS "+raHMS);
+//		console.log("decDMS "+decDMS);
 		
 		raHMS = raHMS.split(" ");
 		decDMS = decDMS .split(" ");
@@ -51,46 +65,16 @@ function ModelRepo(in_gl, in_canvas){
 			s:Number(decDMS[2])
 			});
 		
-		
-		console.log("it should be RA: 247.1000 DEC: -26.6517");
-		console.log("got RA "+raDeg+" DEC "+decDeg);
-		
-//		var complRa = 1.0 * (raDeg);
-//		var complDec = 1.0 * (90 - decDeg);
-		
-		// it does correct dec rotation
-//		var complRa = 1.0 * (- raDeg);
-//		var phi =  raDeg;
-//		var theta = 90.0 - decDeg;
-//		var complDec = -1.0 * 90;
-		
-//		var complRa = 1.0 * (-raDeg);
-//		var complDec = 0.0;
-//		currentObj.objModels[0].rotate(degToRad(theta), degToRad(phi));
-//		console.log("BUH!");
-//		console.log(currentObj.objModels[0].R);
-		
-		// ref (ra,dec) (0,0) <-> (phi,theta) (90,90)
-		// rot phi 247 = 112
-		// rot theta 116 = 26
-		
-		//phi: 202 theta: 116
-//		currentObj.objModels[0].rotate(degToRad(-116.0), degToRad(-247.0));
-//		currentObj.objModels[0].rotate(0.0, 0.0);
-		
-		 
-		
-		
-		var sphericalPhiThetaDeg = astroDegToSpherical(raDeg, decDeg);		
-		console.log("sphericalPhiThetaDeg" + JSON.stringify(sphericalPhiThetaDeg));
-		sphericalPhiThetaRad = {
-				phi: degToRad(sphericalPhiThetaDeg.phi+90),
-				theta: degToRad(sphericalPhiThetaDeg.theta)
-		};
-		console.log("sphericalPhiThetaRad" + JSON.stringify(sphericalPhiThetaRad));
-		currentObj.objModels[0].rotateFromZero(-sphericalPhiThetaRad.theta, sphericalPhiThetaRad.phi);
+//		var sphericalPhiThetaDeg = astroDegToSpherical(raDeg, decDeg);		
+//		console.log("sphericalPhiThetaDeg" + JSON.stringify(sphericalPhiThetaDeg));
+//		sphericalPhiThetaRad = {
+//				phi: degToRad(sphericalPhiThetaDeg.phi+90),
+//				theta: degToRad(sphericalPhiThetaDeg.theta)
+//		};
+//		console.log("sphericalPhiThetaRad" + JSON.stringify(sphericalPhiThetaRad));
+//		currentObj.objModels[0].rotateFromZero(-sphericalPhiThetaRad.theta, sphericalPhiThetaRad.phi);
 		//currentObj.objModels[0].rotate(-degToRad(0), degToRad(0+90));
-		currentObj.objModels[0].rotateFromZero(-degToRad(68), degToRad(85+90));
+//		currentObj.objModels[0].rotateFromZero(-degToRad(68), degToRad(85+90));
 		
 		
 	};

@@ -6,15 +6,27 @@ function cartesianToSpherical(xyz){
 	var dotXYZ = vec3.dot(xyz, xyz);
 
 	var r = Math.sqrt(dotXYZ);
+
+	
+	console.log("################");
+	console.log("xyz "+xyz);
+	console.log("r "+r);
+	console.log("dotXYZ "+dotXYZ);
+	
 	
 	var theta = Math.acos(xyz[2]/r);
+	console.log("theta "+theta);
 	theta = radToDeg(theta);
+	
 	// NB: in atan(y/x) is written with params switched atan2(x, y)
-	var phi = Math.atan2(xyz[1],-xyz[0]);
+	var phi = Math.atan2(xyz[1],xyz[0]);
+	console.log("phi "+phi);
 	phi = radToDeg(phi);
 	if (phi < 0){
 		phi += 360;
 	}
+	console.log("phideg "+phi+" thetadeg"+ theta);
+	console.log("################");
 	
 	return {
 		phi: phi, 
