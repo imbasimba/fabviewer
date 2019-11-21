@@ -33,6 +33,9 @@ function FVPresenter(in_view, in_gl){
 		currentObj.mouseDown = false;
 		currentObj.lastMouseX = null;
 		currentObj.lastMouseY = null;
+		currentObj.inertiaX = 0.0
+		currentObj.inertiaY = 0.0
+
 		
 		currentObj.addEventListeners();
 		
@@ -187,14 +190,17 @@ function FVPresenter(in_view, in_gl){
 				var deltaX = (newX - currentObj.lastMouseX)*Math.PI/currentObj.view.canvas.width;
 		     	var deltaY = (newY - currentObj.lastMouseY)*Math.PI/currentObj.view.canvas.width;
 				
-		     	currentObj.THETA = deltaY;
-		     	currentObj.PHI = deltaX;
+		     	//currentObj.THETA = deltaY + 0.0 * currentObj.inertiaY;
+				//currentObj.PHI = deltaX + 0.0 * currentObj.inertiaX;
 
-				console.log("[FVPresenter::ROTATING] "+deltaY);
+				currentObj.inertiaX += 0.3 * deltaX
+				currentObj.inertiaY += 0.3 * deltaY
+				 
+				//console.log("[FVPresenter::ROTATING] "+deltaY);
 		     			     	
-				var currModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
-				console.log("[FVPresenter::ROTATING] "+currModel.name);
-				currentObj.camera.rotate(currentObj.PHI, currentObj.THETA);
+				//var currModel = currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx];
+				//console.log("[FVPresenter::ROTATING] "+currModel.name);
+				//currentObj.camera.rotate(currentObj.PHI, currentObj.THETA);
 			}
 
 			currentObj.lastMouseX = newX;
@@ -305,6 +311,12 @@ function FVPresenter(in_view, in_gl){
 		currentObj.then = now;
 		
 		currentObj.aspectRatio = currentObj.view.canvas.width / currentObj.view.canvas.height;
+		
+		currentObj.THETA = 0.3 * this.inertiaY;
+		currentObj.PHI = 0.3 * this.inertiaX;
+		currentObj.camera.rotate(currentObj.PHI, currentObj.THETA);
+		currentObj.inertiaX *= 0.97;
+		currentObj.inertiaY *= 0.97;
 
 		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
 		in_gl.clear(in_gl.COLOR_BUFFER_BIT | in_gl.DEPTH_BUFFER_BIT);
