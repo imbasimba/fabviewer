@@ -185,7 +185,7 @@ function FVPresenter(in_view, in_gl){
 				document.getElementsByTagName("body")[0].style.cursor = "grab";
 
 				var deltaX = (newX - currentObj.lastMouseX)*Math.PI/currentObj.view.canvas.width;
-		     	var deltaY = (newY - currentObj.lastMouseY)*Math.PI/currentObj.view.canvas.height;
+		     	var deltaY = (newY - currentObj.lastMouseY)*Math.PI/currentObj.view.canvas.width;
 				
 		     	currentObj.THETA = deltaY;
 		     	currentObj.PHI = deltaX;
