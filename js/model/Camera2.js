@@ -159,7 +159,7 @@ function Camera2(in_position){
 //		var identity = mat4.create();
 //		mat4.identity(identity);
 //		mat4.rotate(identity, currentObj.phi, [0, 1, 0], currentObj.R);
-		console.log("[Camera2::rotateY] END ---------- ");
+//		console.log("[Camera2::rotateY] END ---------- ");
 		
 //		mat4.inverse(currentObj.R, currentObj.vMatrix);
 		currentObj.refreshViewMatrix();
@@ -189,7 +189,7 @@ function Camera2(in_position){
 //		var identity = mat4.create();
 //		mat4.identity(identity);
 //		mat4.rotate(identity, currentObj.phi, [0, 1, 0], currentObj.R);
-		console.log("[Camera2::rotateY] END ---------- ");
+//		console.log("[Camera2::rotateY] END ---------- ");
 		
 //		mat4.inverse(currentObj.R, currentObj.vMatrix);
 		currentObj.refreshViewMatrix();
@@ -199,7 +199,7 @@ function Camera2(in_position){
 	this.rotateX = function(sign){
 		factorRad = sign * 0.01;
 		currentObj.theta += factorRad;
-		console.log("THETA "+currentObj.theta);
+//		console.log("THETA "+currentObj.theta);
 		var identity = mat4.create();
 		mat4.identity(identity);
 		mat4.rotate(currentObj.R, factorRad, [1, 0, 0], currentObj.R);
@@ -219,7 +219,7 @@ function Camera2(in_position){
 //		var identity = mat4.create();
 //		mat4.identity(identity);
 //		mat4.rotate(identity, currentObj.phi, [0, 1, 0], currentObj.R);
-		console.log("[Camera2::rotateY] END ---------- ");
+//		console.log("[Camera2::rotateY] END ---------- ");
 		
 //		mat4.inverse(currentObj.R, currentObj.vMatrix);
 		currentObj.refreshViewMatrix();
@@ -247,8 +247,8 @@ function Camera2(in_position){
 		//mat4.rotate(currentObj.R, rad1, [currentObj.R[2], currentObj.R[6], currentObj.R[10]]);
 		mat4.rotate(currentObj.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
 		//currentObj.R = this.rotateX(currentObj.R, rad1);
-	    console.log("totRotation "+ totRot);
-	    console.log("Camera rotation matrix "+ currentObj.R);
+//	    console.log("totRotation "+ totRot);
+//	    console.log("Camera rotation matrix "+ currentObj.R);
 	    currentObj.refreshViewMatrix();
 	    
 	};
@@ -269,9 +269,9 @@ function Camera2(in_position){
 //		mat4.translate(identity, currentObj.cam_pos, currentObj.T);
 		
 		
-		console.log("[Camera2::refreshViewMatrix] START   -------");
-		console.log("[Camera::refreshViewMatrix] currentObj.R "+currentObj.R);
-		console.log("[Camera::refreshViewMatrix] currentObj.T "+currentObj.T);
+//		console.log("[Camera2::refreshViewMatrix] START   -------");
+//		console.log("[Camera::refreshViewMatrix] currentObj.R "+currentObj.R);
+//		console.log("[Camera::refreshViewMatrix] currentObj.T "+currentObj.T);
 		
 		
 		var T_inverse = mat4.create();
@@ -287,13 +287,13 @@ function Camera2(in_position){
 //		mat4.multiplyVec4(R_inverse, [0, 0, -1, 0], currentObj.fwd);
 		
 		
-		console.log("[Camera::refreshViewMatrix] currentObj.R_inverse "+ R_inverse);
-		console.log("[Camera::refreshViewMatrix] currentObj.T_inverse "+ T_inverse);
+//		console.log("[Camera::refreshViewMatrix] currentObj.R_inverse "+ R_inverse);
+//		console.log("[Camera::refreshViewMatrix] currentObj.T_inverse "+ T_inverse);
 		
 		
 		mat4.multiply(T_inverse, R_inverse, currentObj.vMatrix);
 		
-		console.log("[Camera2::refreshViewMatrix] END   -------");
+//		console.log("[Camera2::refreshViewMatrix] END   -------");
 	};
 	
 

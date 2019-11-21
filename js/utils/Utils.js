@@ -47,7 +47,7 @@ function sphericalToAstroDeg(phiDeg, thetaDeg){
 	
 	var raDeg, decDeg;
 //	raDeg = 90 - phiDeg;
-	raDeg = phiDeg;
+	raDeg = Math.abs(phiDeg-360);
 	if (raDeg < 0){
 		raDeg += 360;
 	}
