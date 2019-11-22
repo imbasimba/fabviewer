@@ -236,7 +236,8 @@ function Camera2(in_position){
 //		
 //		currentObj.refreshViewMatrix();
 		
-		
+		var a = currentObj.R[6]
+		var b = currentObj.R[10]
 		
 		var totRot = Math.sqrt(phi*phi + theta*theta);
 
@@ -244,8 +245,13 @@ function Camera2(in_position){
 		dist2Center = Math.sqrt(vec3.dot(pos, pos));
 		usedRot = totRot * (dist2Center - 1) / 3.0
 
+		t = 1- Math.cos(usedRot);
+		s = Math.sin(usedRot);
+
+		z = (phi * s * b - phi * theta * t * a) / (s * a + theta * t * b )
+
 		//mat4.rotate(currentObj.R, rad1, [currentObj.R[2], currentObj.R[6], currentObj.R[10]]);
-		mat4.rotate(currentObj.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
+		mat4.rotate(currentObj.R, -(usedRot), [theta, phi, z]);
 		//currentObj.R = this.rotateX(currentObj.R, rad1);
 //	    console.log("totRotation "+ totRot);
 //	    console.log("Camera rotation matrix "+ currentObj.R);
@@ -289,8 +295,10 @@ function Camera2(in_position){
 		
 //		console.log("[Camera::refreshViewMatrix] currentObj.R_inverse "+ R_inverse);
 //		console.log("[Camera::refreshViewMatrix] currentObj.T_inverse "+ T_inverse);
-		
-		
+
+
+		mat4.multiply(currentObj.R, currentObj.T, currentObj.vMatrix);
+		console.log("[Camera::refreshViewMatrix] "+ currentObj.vMatrix);
 		mat4.multiply(T_inverse, R_inverse, currentObj.vMatrix);
 		
 //		console.log("[Camera2::refreshViewMatrix] END   -------");

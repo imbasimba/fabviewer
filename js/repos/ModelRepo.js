@@ -39,8 +39,8 @@ function ModelRepo(in_gl, in_canvas){
 //		// rotation around x axis (point 1.)
 //		mat4.rotate(currentObj.R, Math.PI / 2, [1,0,0]);
 		currentObj.objModels[0] = new HiPS(1, in_gl, in_canvas, [0.0, 0.0, 0.0], 
-				Math.PI / 2, 
-				Math.PI / 2, "HiPS");
+				0, 
+				0, "HiPS");
 		
 		// Now rotating 
 		
