@@ -50,6 +50,8 @@ function FVPresenter(in_view, in_gl){
 		currentObj.THETA = 0;
 		currentObj.PHI = 0;
 		
+//		currentObj.xyzRefSystem = new XYZSystem2(in_gl, x, y);
+		
 	};
 	
 	this.getNearestObjectOnRay = function(mouseX, mouseY){
@@ -315,8 +317,8 @@ function FVPresenter(in_view, in_gl){
 		currentObj.THETA = 0.3 * this.inertiaY;
 		currentObj.PHI = 0.3 * this.inertiaX;
 		currentObj.camera.rotate(currentObj.PHI, currentObj.THETA);
-		currentObj.inertiaX *= 0.97;
-		currentObj.inertiaY *= 0.97;
+		currentObj.inertiaX *= 0.95;
+		currentObj.inertiaY *= 0.95;
 
 		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
 		in_gl.clear(in_gl.COLOR_BUFFER_BIT | in_gl.DEPTH_BUFFER_BIT);
@@ -327,6 +329,8 @@ function FVPresenter(in_view, in_gl){
 			currentObj.modelRepo.objModels[i].draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 			
 		}
+		
+//		currentObj.camera.xyzRefSystem.draw(currentObj.camera.shaderProgram);
 
 	};
 	
