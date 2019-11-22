@@ -164,19 +164,19 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			}else{
 				// Default Healpix radius 1
 				vertexPosition[12*i] = facesVec3Array[0].x ;
-				vertexPosition[12*i+1] = -facesVec3Array[0].y ;
+				vertexPosition[12*i+1] = facesVec3Array[0].y ;
 				vertexPosition[12*i+2] = facesVec3Array[0].z;
 				
 				vertexPosition[12*i+3] = facesVec3Array[1].x;
-				vertexPosition[12*i+4] = -facesVec3Array[1].y;
+				vertexPosition[12*i+4] = facesVec3Array[1].y;
 				vertexPosition[12*i+5] = facesVec3Array[1].z;
 				
 				vertexPosition[12*i+6] = facesVec3Array[2].x;
-				vertexPosition[12*i+7] = -facesVec3Array[2].y;
+				vertexPosition[12*i+7] = facesVec3Array[2].y;
 				vertexPosition[12*i+8] = facesVec3Array[2].z;
 				
 				vertexPosition[12*i+9] = facesVec3Array[3].x;
-				vertexPosition[12*i+10] = -facesVec3Array[3].y;
+				vertexPosition[12*i+10] = facesVec3Array[3].y;
 				vertexPosition[12*i+11] = facesVec3Array[3].z;
 				
 			}

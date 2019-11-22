@@ -129,7 +129,7 @@ function FVPresenter(in_view, in_gl){
 											currentObj.pMatrix, 
 											currentObj.camera.getCameraMatrix(), 
 											in_gl.canvas);
-			console.log("[FVPresenter::handleMouseUp] rayWorld "+rayWorld);
+			
 			var intersectionPoint;
 			var intersectionModelPoint = [];
 			var intersectionPoint4d;
