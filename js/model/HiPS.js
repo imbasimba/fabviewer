@@ -548,6 +548,22 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			}
 		}else{
 			alert("dsdsa");
+			
+//			for (var i=0;i<pwgl.pixels.length;i++){
+//				for(var j=0; j<pwgl.selectedSkies.length && j<8;j++){
+//					sky = pwgl.selectedSkies[j];
+//					gl.activeTexture(gl.TEXTURE0+j);
+//		    		gl.bindTexture(gl.TEXTURE_2D, sky.textures.images[i]);
+//		    		gl.uniform1f(pwgl.uniformVertexTextureFactorLoc[j], sky.textures.opacity);
+//		        }
+//				for (var k=pwgl.selectedSkies.length;k<8;k++){
+//					gl.uniform1f(pwgl.uniformVertexTextureFactorLoc[k], -99);
+//		    	}
+//				gl.drawElements(gl.TRIANGLES, 6, 
+//	                    gl.UNSIGNED_SHORT, 12*i);
+//			}
+			
+			
 		}
 		
 				
