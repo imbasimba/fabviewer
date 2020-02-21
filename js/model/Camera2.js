@@ -31,8 +31,10 @@ function Camera2(in_position){
 		var T_inverse = mat4.create();
 		mat4.inverse(currentObj.T, T_inverse);
 		
-		
-		
+		// TODO add fov in the Camera constructor
+		currentObj.FoV = currentObj.previousFoV = 180.0;
+		 
+
 //		/* 
 //		 * to end up with (up, fwd, rgt) = (z, -x, y) we need these rotation in order:
 //		 * 1. 90 deg on the x axis => (up, fwd, rgt) = (z, y, x)
@@ -71,33 +73,26 @@ function Camera2(in_position){
 		 */
 		currentObj.phi = 0.0;
 		
-		console.log("[Camera2::init] START -----------");
-		console.log("[Camera2::init] currentObj.cam_pos "+currentObj.cam_pos);
-		console.log("[Camera2::init] currentObj.T ");
-		console.log(currentObj.T);
-		console.log("[Camera2::init] currentObj.R ");
-		console.log(currentObj.R);
-		console.log("[Camera2::init] currentObj.vMatrix ");
-		console.log(currentObj.vMatrix);
-		console.log("[Camera2::init] END -----------");
+//		console.log("[Camera2::init] START -----------");
+//		console.log("[Camera2::init] currentObj.cam_pos "+currentObj.cam_pos);
+//		console.log("[Camera2::init] currentObj.T ");
+//		console.log(currentObj.T);
+//		console.log("[Camera2::init] currentObj.R ");
+//		console.log(currentObj.R);
+//		console.log("[Camera2::init] currentObj.vMatrix ");
+//		console.log(currentObj.vMatrix);
+//		console.log("[Camera2::init] END -----------");
 	};
 
 	this.zoomIn = function(factor){
+		
+		currentObj.previuosFov
 		
 		factor = 0.01;
 //		console.log("FACTOR "+factor);
 		currentObj.move = vec3.create([0, 0, 0]);
 		currentObj.move[2] -= (currentObj.cam_speed * factor);
-		
-//		currentObj.cam_pos[0] += currentObj.fwd[0] * (-currentObj.move[2]);
-//		currentObj.cam_pos[1] += currentObj.fwd[1] * (-currentObj.move[2]);
-//		currentObj.cam_pos[2] += currentObj.fwd[2] * (-currentObj.move[2]);
-//		mat4.multiplyVec4(currentObj.R, [0, 0, -1, 0], currentObj.fwd);
-		
-//		currentObj.cam_pos[0] += currentObj.fwd[0] * (-currentObj.move[2]);
-//		currentObj.cam_pos[1] += currentObj.fwd[1] * (-currentObj.move[2]);
-//		currentObj.cam_pos[2] += currentObj.fwd[2] * (-currentObj.move[2]);
-		
+				
 		currentObj.cam_pos[2] += currentObj.move[2];
 		
 		
@@ -112,26 +107,16 @@ function Camera2(in_position){
 	this.zoomOut = function(factor){
 		
 		factor = 0.01;
-//		console.log("FACTOR "+factor);
+
 		currentObj.move = vec3.create([0, 0, 0]);
 		currentObj.move[2] += currentObj.cam_speed * factor;
-		
-//		mat4.multiplyVec4(currentObj.R, [0, 0, -1, 0], currentObj.fwd);
-		
-//		currentObj.cam_pos[0] += currentObj.fwd[0] * (-currentObj.move[2]);
-//		currentObj.cam_pos[1] += currentObj.fwd[1] * (-currentObj.move[2]);
-//		currentObj.cam_pos[2] += currentObj.fwd[2] * (-currentObj.move[2]);
 		
 		currentObj.cam_pos[2] += currentObj.move[2];
 		
 		var identity = mat4.create();
 		mat4.identity(identity);
 		mat4.translate(identity, currentObj.cam_pos, currentObj.T);
-		
-//		currentObj.cam_pos[0] += currentObj.fwd[0] * (-currentObj.move[2]);
-//		currentObj.cam_pos[1] += currentObj.fwd[1] * (-currentObj.move[2]);
-//		currentObj.cam_pos[2] += currentObj.fwd[2] * (-currentObj.move[2]);
-		
+				
 		currentObj.refreshViewMatrix();
 		
 	};
@@ -144,24 +129,9 @@ function Camera2(in_position){
 		mat4.identity(identity);
 		mat4.rotate(currentObj.R, factorRad, [0, 0, 1], currentObj.R);
 		
-	    
-//		var cameraOrbitRadius = Math.sqrt(vec3.dot(currentObj.cam_pos, currentObj.cam_pos));
-//		console.log("[Camera2::rotateY] START ---------- ");
-//		console.log("[Camera2::rotateY] currentObj.cam_pos "+currentObj.cam_pos);
-//		console.log("[Camera2::rotateY] cameraOrbitRadius "+cameraOrbitRadius);
-//		currentObj.cam_pos[0] = cameraOrbitRadius * Math.cos(currentObj.phi) * Math.cos(currentObj.theta);
-//		currentObj.cam_pos[1] = cameraOrbitRadius * Math.sin(currentObj.theta);
-//		currentObj.cam_pos[2] = cameraOrbitRadius * Math.sin(currentObj.phi) * Math.cos(currentObj.theta);
+
+//		console.log("[Camera2::rotateY] END ---------- ");
 		
-//		var eye = vec3.create([new_x, new_y, new_z]);
-//		mat4.lookAt(currentObj.cam_pos, [0, 0, 0], [0, 1, 0], currentObj.R);
-		
-//		var identity = mat4.create();
-//		mat4.identity(identity);
-//		mat4.rotate(identity, currentObj.phi, [0, 1, 0], currentObj.R);
-		console.log("[Camera2::rotateY] END ---------- ");
-		
-//		mat4.inverse(currentObj.R, currentObj.vMatrix);
 		currentObj.refreshViewMatrix();
 		
 	};
@@ -173,25 +143,9 @@ function Camera2(in_position){
 		var identity = mat4.create();
 		mat4.identity(identity);
 		mat4.rotate(currentObj.R, factorRad, [0, 1, 0], currentObj.R);
+
+//		console.log("[Camera2::rotateY] END ---------- ");
 		
-	    
-//		var cameraOrbitRadius = Math.sqrt(vec3.dot(currentObj.cam_pos, currentObj.cam_pos));
-//		console.log("[Camera2::rotateY] START ---------- ");
-//		console.log("[Camera2::rotateY] currentObj.cam_pos "+currentObj.cam_pos);
-//		console.log("[Camera2::rotateY] cameraOrbitRadius "+cameraOrbitRadius);
-//		currentObj.cam_pos[0] = cameraOrbitRadius * Math.cos(currentObj.phi) * Math.cos(currentObj.theta);
-//		currentObj.cam_pos[1] = cameraOrbitRadius * Math.sin(currentObj.theta);
-//		currentObj.cam_pos[2] = cameraOrbitRadius * Math.sin(currentObj.phi) * Math.cos(currentObj.theta);
-		
-//		var eye = vec3.create([new_x, new_y, new_z]);
-//		mat4.lookAt(currentObj.cam_pos, [0, 0, 0], [0, 1, 0], currentObj.R);
-		
-//		var identity = mat4.create();
-//		mat4.identity(identity);
-//		mat4.rotate(identity, currentObj.phi, [0, 1, 0], currentObj.R);
-		console.log("[Camera2::rotateY] END ---------- ");
-		
-//		mat4.inverse(currentObj.R, currentObj.vMatrix);
 		currentObj.refreshViewMatrix();
 		
 	};
@@ -199,27 +153,13 @@ function Camera2(in_position){
 	this.rotateX = function(sign){
 		factorRad = sign * 0.01;
 		currentObj.theta += factorRad;
-		console.log("THETA "+currentObj.theta);
+//		console.log("THETA "+currentObj.theta);
 		var identity = mat4.create();
 		mat4.identity(identity);
 		mat4.rotate(currentObj.R, factorRad, [1, 0, 0], currentObj.R);
 		
 	    
-//		var cameraOrbitRadius = Math.sqrt(vec3.dot(currentObj.cam_pos, currentObj.cam_pos));
-//		console.log("[Camera2::rotateY] START ---------- ");
-//		console.log("[Camera2::rotateY] currentObj.cam_pos "+currentObj.cam_pos);
-//		console.log("[Camera2::rotateY] cameraOrbitRadius "+cameraOrbitRadius);
-//		currentObj.cam_pos[0] = cameraOrbitRadius * Math.cos(currentObj.phi) * Math.cos(currentObj.theta);
-//		currentObj.cam_pos[1] = cameraOrbitRadius * Math.sin(currentObj.theta);
-//		currentObj.cam_pos[2] = cameraOrbitRadius * Math.sin(currentObj.phi) * Math.cos(currentObj.theta);
-		
-//		var eye = vec3.create([new_x, new_y, new_z]);
-//		mat4.lookAt(currentObj.cam_pos, [0, 0, 0], [0, 1, 0], currentObj.R);
-		
-//		var identity = mat4.create();
-//		mat4.identity(identity);
-//		mat4.rotate(identity, currentObj.phi, [0, 1, 0], currentObj.R);
-		console.log("[Camera2::rotateY] END ---------- ");
+//		console.log("[Camera2::rotateY] END ---------- ");
 		
 //		mat4.inverse(currentObj.R, currentObj.vMatrix);
 		currentObj.refreshViewMatrix();
@@ -229,49 +169,26 @@ function Camera2(in_position){
 	this.rotate = function(phi, theta){
 	
 		
-//		var identity = mat4.create();
-//		mat4.identity(identity);
-//		mat4.rotate(currentObj.R, theta, [-1, 0, 0], currentObj.R);
-//		mat4.rotate(currentObj.R, phi, [0, 1, 0], currentObj.R);
-//		
-//		currentObj.refreshViewMatrix();
-		
-		
-		
 		var totRot = Math.sqrt(phi*phi + theta*theta);
 
 		pos = this.getCameraPosition();
 		dist2Center = Math.sqrt(vec3.dot(pos, pos));
 		usedRot = totRot * (dist2Center - 1) / 3.0
 
-		//mat4.rotate(currentObj.R, rad1, [currentObj.R[2], currentObj.R[6], currentObj.R[10]]);
 		mat4.rotate(currentObj.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
-		//currentObj.R = this.rotateX(currentObj.R, rad1);
-	    console.log("totRotation "+ totRot);
-	    console.log("Camera rotation matrix "+ currentObj.R);
+		
+//		console.log("totRotation "+ totRot);
+//	    console.log("Camera rotation matrix "+ currentObj.R);
 	    currentObj.refreshViewMatrix();
 	    
 	};
 	
 	this.refreshViewMatrix = function(){
+
 		
-		
-		
-		
-//		
-//		currentObj.cam_pos[0] += currentObj.fwd[0] * (-currentObj.move[2]);
-//		currentObj.cam_pos[1] += currentObj.fwd[1] * (-currentObj.move[2]);
-//		currentObj.cam_pos[2] += currentObj.fwd[2] * (-currentObj.move[2]);
-//		
-//		
-//		var identity = mat4.create();
-//		mat4.identity(identity);
-//		mat4.translate(identity, currentObj.cam_pos, currentObj.T);
-		
-		
-		console.log("[Camera2::refreshViewMatrix] START   -------");
-		console.log("[Camera::refreshViewMatrix] currentObj.R "+currentObj.R);
-		console.log("[Camera::refreshViewMatrix] currentObj.T "+currentObj.T);
+//		console.log("[Camera2::refreshViewMatrix] START   -------");
+//		console.log("[Camera::refreshViewMatrix] currentObj.R "+currentObj.R);
+//		console.log("[Camera::refreshViewMatrix] currentObj.T "+currentObj.T);
 		
 		
 		var T_inverse = mat4.create();
@@ -283,19 +200,22 @@ function Camera2(in_position){
 		
 		mat4.inverse(currentObj.R, R_inverse);
 		
-//		mat4.multiplyVec4(currentObj.R, [0, 0, -1, 0], currentObj.fwd);
-//		mat4.multiplyVec4(R_inverse, [0, 0, -1, 0], currentObj.fwd);
-		
-		
-		console.log("[Camera::refreshViewMatrix] currentObj.R_inverse "+ R_inverse);
-		console.log("[Camera::refreshViewMatrix] currentObj.T_inverse "+ T_inverse);
+//		console.log("[Camera::refreshViewMatrix] currentObj.R_inverse "+ R_inverse);
+//		console.log("[Camera::refreshViewMatrix] currentObj.T_inverse "+ T_inverse);
 		
 		
 		mat4.multiply(T_inverse, R_inverse, currentObj.vMatrix);
 		
-		console.log("[Camera2::refreshViewMatrix] END   -------");
+//		console.log("[Camera2::refreshViewMatrix] END   -------");
 	};
 	
+	
+	this.refreshFoV = function(currentFoV){
+		
+		currentObj.previousFoV = currentObj.FoV;
+		currentObj.FoV = currentFoV;
+		
+	};
 
 	this.getCameraMatrix = function (){
 		

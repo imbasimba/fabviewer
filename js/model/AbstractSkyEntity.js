@@ -10,17 +10,15 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	
 	this.init = function(){
 		
-		currentObj.refreshGeometryOnFoVChanged = false;
-		
 		currentObj.fovObj = new FoV(in_gl, in_canvas, currentObj);
 		
-		currentObj.minFoV = 180;
-		
-		currentObj.prevMinFoV = 180;
+		currentObj.refreshMe = false;
 		
 		currentObj.fovX_deg = 180;
 		
 		currentObj.fovY_deg = 180;
+		
+		currentObj.prevFoV = currentObj.fovX_deg;
 		
 		currentObj.name = in_name;
 		
@@ -28,7 +26,6 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 		
 		currentObj.radius = in_radius;
 		
-		currentObj.textures = [];
 		
 		// GL related
 		currentObj.vertexTextureCoordBuffer = in_gl.createBuffer();
@@ -36,8 +33,6 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 		currentObj.vertexPositionBuffer = in_gl.createBuffer();
 		
 		currentObj.vertexIndexBuffer = in_gl.createBuffer();
-		
-//		currentObj.vertexNormalBuffer  = in_gl.createBuffer();
 		
 		currentObj.shaderProgram = in_gl.createProgram();
 		
@@ -66,19 +61,9 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	};
 	
 	this.rotate = function(rad1, rad2){
-		
-		//mat4.identity(currentObj.R);
-//		console.log("rotation matrix "+currentObj.R);
-		
-
-
-		//currentObj.R = this.rotateX(currentObj.R, rad1);
-//	    console.log("rotation matrix "+currentObj.R);
 
 	    mat4.rotate(currentObj.R, rad2, [0, 0, 1]);
 		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
-	    //currentObj.R = this.rotateY(currentObj.R, rad2);
-//	    console.log("rotation matrix "+currentObj.R);
 	    
 	    currentObj.refreshModelMatrix();
 
@@ -87,16 +72,10 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 	this.rotateFromZero = function(rad1, rad2){
 		
 		mat4.identity(currentObj.R);
-		console.log("rotation matrix "+currentObj.R);
-		
 
 		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
-		//currentObj.R = this.rotateX(currentObj.R, rad1);
-	    console.log("rotation matrix "+currentObj.R);
 
 	    mat4.rotate(currentObj.R, rad2, [0, 0, 1]);
-	    //currentObj.R = this.rotateY(currentObj.R, rad2);
-	    console.log("rotation matrix "+currentObj.R);
 	    
 	    currentObj.refreshModelMatrix();
 
@@ -107,20 +86,24 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 		var R_inverse = mat4.create();
 		mat4.identity(R_inverse);
 		mat4.inverse(currentObj.R, R_inverse);
-		
 		mat4.multiply(currentObj.T, R_inverse, currentObj.modelMatrix);
+		
 	};
 	
 	this.getModelMatrixInverse = function(){
+		
 		mat4.identity(currentObj.inverseModelMatrix);
 		mat4.inverse(currentObj.modelMatrix, currentObj.inverseModelMatrix);
 		return currentObj.inverseModelMatrix;
+		
 	};
 	
 	this.setMatricesUniform = function(projectionMatrix, cameraMatrix){
+		
 		in_gl.uniformMatrix4fv(currentObj.shaderProgram.mMatrixUniform, false, currentObj.modelMatrix);
 		in_gl.uniformMatrix4fv(currentObj.shaderProgram.pMatrixUniform, false, projectionMatrix);
 		in_gl.uniformMatrix4fv(currentObj.shaderProgram.vMatrixUniform, false, cameraMatrix);
+		
 	};
 	
 	this.initShaders = function(){
@@ -144,13 +127,20 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 		currentObj.setMatricesUniform(projectionMatrix, cameraMatrix);
 	};
 	
-	this.getFoV = function (in_pMatrix, in_camera, in_raypicker){
-		var fovXY = currentObj.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
-		currentObj.setGeometryNeedsToBeRefreshed();
-//		currentObj.prevMinFoV = currentObj.getMinFoV();
-		return fovXY;
+	this.refreshFoV = function (in_pMatrix, in_camera, in_raypicker){
+		
+		var fovObj = currentObj.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
+		return fovObj;
 		
 	};
+	
+	
+	this.refreshModel = function (in_fov, in_pan, in_camera){
+		// Abstract
+		console.log("[AbstractSkyEntity::refreshModel]");
+	};
+	
+	
 	
 	this.getMinFoV = function(){
 		return currentObj.fovObj.minFoV;

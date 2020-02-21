@@ -39,11 +39,11 @@ function FVView(in_canvas){
 		currentObj.widthToHeight = 4 / 3;
 	};
 	
-	this.updateFoV = function(in_fovXY){
+	this.updateFoV = function(in_fovObj){
 		if (DEBUG){
 			console.log("[FVView::updateFoV]");
 		}
-		currentObj.fovvalue_dom.innerHTML = in_fovXY[0].toFixed(4) + '&deg;x'+ in_fovXY[1].toFixed(4) + '&deg;';
+		currentObj.fovvalue_dom.innerHTML = in_fovObj.fovX_deg.toFixed(4) + '&deg;x'+ in_fovObj.fovY_deg.toFixed(4) + '&deg;';
 //		currentObj.previousFoV = (in_fovXY[0] <= in_fovXY[1]) ? in_fovXY[0] : in_fovXY[1];
 		
 	};

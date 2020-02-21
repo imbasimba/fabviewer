@@ -2,7 +2,7 @@ function XYZSystem(in_gl){
 	
 	
 	var currentObj = this;
-	console.log(currentObj);
+//	console.log(currentObj);
 
 	this.localInit = function(){
 		

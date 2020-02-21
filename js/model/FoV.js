@@ -22,7 +22,7 @@ function FoV(in_gl, in_canvas, in_model, in_raypicker){
 			var rayWorld = currentObj.raypicker.getRayFromMouse(canvasX, canvasY, in_pMatrix, in_camera.getCameraMatrix(), in_canvas);
 			
 			var intersectionDistance = currentObj.raypicker.raySphere(in_camera.getCameraPosition(), rayWorld, in_model);
-			console.log("[FoVUtils::computeAngle] intersectionDistance "+intersectionDistance + "against object "+in_model.name);
+			
 			if (intersectionDistance > 0){
 				var intersectionPoint = vec3.create();
 				vec3.scale(rayWorld, intersectionDistance, intersectionPoint);
@@ -33,7 +33,18 @@ function FoV(in_gl, in_canvas, in_model, in_raypicker){
 				var intersectionPoint_center_vector = vec3.create();
 				vec3.subtract(intersectionPoint, center, intersectionPoint_center_vector);
 				
+				
+				// error found!!!!! when the camera is rotated, the following vector should be rotated as well
+				// because the z-axis of the world doesn't coincide with the z-axis of the camera anymore 
 				var b = vec3.create( [in_model.center[0], in_model.center[1], in_model.center[2] + in_model.radius] );
+				
+				var vMatrixInverse = mat4.create();
+				mat4.identity(vMatrixInverse);
+				mat4.inverse(in_camera.getCameraMatrix(), vMatrixInverse);
+				
+				mat4.multiplyVec3(vMatrixInverse, b, b);
+				
+				
 				
 				var b_center_vector = vec3.create();
 				vec3.subtract(b, center, b_center_vector);
@@ -67,7 +78,7 @@ function FoV(in_gl, in_canvas, in_model, in_raypicker){
 
 		currentObj.minFoV = currentObj.getMinFoV();
 		
-		return [currentObj.fovX_deg, currentObj.fovY_deg];
+		return currentObj;
 
 	};
 	

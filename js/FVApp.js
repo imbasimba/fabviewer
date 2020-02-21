@@ -50,7 +50,7 @@ function FVApp(){
 		}
 		
 		function handleContextLost(event){
-			console.log("[handleContextLost]");
+//			console.log("[handleContextLost]");
 			event.preventDefault();
 			cancelRequestAnimFrame(currentObj.fabVReqID);
 			
@@ -83,11 +83,9 @@ function FVApp(){
 	this.tick = function () {
 		
 		currentObj.fabVReqID = requestAnimFrame(currentObj.tick);
-//		currentObj.fabVReqID = requestAnimFrame(currentObj.presenter.draw());
 		
 		currentObj.drawScene();
-		
-		
+
 	}
 
 	

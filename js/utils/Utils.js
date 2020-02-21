@@ -117,3 +117,11 @@ function hms2RaDeg(raHMS){
 	return deg;
 }
 
+function worldToModel(xy, radius){
+	var x = xy[0];
+	var y = xy[1];
+	var z = Math.sqrt(radius*radius - xy[0]*xy[0] - xy[1]*xy[1]);
+	
+	return [x, y, z];
+}
+
