@@ -40,7 +40,53 @@ function FVView(in_canvas){
 //		currentObj.updateFoV([currentObj.fovX_deg, currentObj.fovY_deg]);
 				
 		currentObj.widthToHeight = 4 / 3;
+		
+		// Make the DIV element draggable:
+		currentObj.dragControl(document.getElementById("controlpanel"));
+		
 	};
+	
+	
+	this.dragControl = function (elmnt) {
+		  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+		  if (elmnt) {
+		    // if present, the header is where you move the DIV from:
+			  elmnt.onmousedown = dragMouseDown;
+		  } else {
+		    // otherwise, move the DIV from anywhere inside the DIV:
+		    elmnt.onmousedown = dragMouseDown;
+		  }
+
+		  function dragMouseDown(e) {
+		    e = e || window.event;
+		    e.preventDefault();
+		    // get the mouse cursor position at startup:
+		    pos3 = e.clientX;
+		    pos4 = e.clientY;
+		    document.onmouseup = closeDragElement;
+		    // call a function whenever the cursor moves:
+		    document.onmousemove = elementDrag;
+		  }
+
+		  function elementDrag(e) {
+		    e = e || window.event;
+		    e.preventDefault();
+		    // calculate the new cursor position:
+		    pos1 = pos3 - e.clientX;
+		    pos2 = pos4 - e.clientY;
+		    pos3 = e.clientX;
+		    pos4 = e.clientY;
+		    // set the element's new position:
+		    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+		    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+		  }
+
+		  function closeDragElement() {
+		    // stop moving when mouse button is released:
+		    document.onmouseup = null;
+		    document.onmousemove = null;
+		  }
+		};
 	
 	this.updateFps = function(in_fps, in_avg){
 		
@@ -79,6 +125,9 @@ function FVView(in_canvas){
 	};
 	
 	
+	this.webglFactor = 1;
+	this.controlFactor = 0.30;
+	
 	this.resize = function(in_gl){
 		if (DEBUG){
 			console.log("[FVView::resize]");
@@ -90,22 +139,22 @@ function FVView(in_canvas){
 
 	    if (newWidthToHeight > currentObj.widthToHeight) {
 	        newWidth = newHeight * currentObj.widthToHeight;
-	        currentObj.container.style.height = (newHeight * 0.66) + 'px';
-	        currentObj.container.style.width = (newWidth  * 0.66) + 'px';
+	        currentObj.container.style.height = (newHeight * this.webglFactor) + 'px';
+	        currentObj.container.style.width = (newWidth  * this.webglFactor) + 'px';
 	    } else {
 	        newHeight = newWidth / currentObj.widthToHeight;
-	        currentObj.container.style.width = (newWidth  * 0.66) + 'px';
-	        currentObj.container.style.height = (newHeight * 0.66) + 'px';
+	        currentObj.container.style.width = (newWidth  * this.webglFactor) + 'px';
+	        currentObj.container.style.height = (newHeight * this.webglFactor) + 'px';
 	    }
 
-	    currentObj.canvas.width = (newWidth  * 0.66) - 10;
-	    currentObj.canvas.height = (newHeight * 0.66) - 10;
+	    currentObj.canvas.width = (newWidth  * this.webglFactor) - 10;
+	    currentObj.canvas.height = (newHeight * this.webglFactor) - 10;
 	    in_gl.viewportWidth = currentObj.canvas.width;
 	    in_gl.viewportHeight = currentObj.canvas.height; 
 
-	    currentObj.controlpanel.style.top = '0px';
-	    currentObj.controlpanel.style.height = currentObj.canvas.height + 'px';
-	    currentObj.controlpanel.style.width = (window.innerWidth  * 0.30) + 'px';
+//	    currentObj.controlpanel.style.top = '0px';
+//	    currentObj.controlpanel.style.height = currentObj.canvas.height + 'px';
+//	    currentObj.controlpanel.style.width = (window.innerWidth  * this.controlFactor) + 'px';
 		
 	    if (DEBUG){
 			console.log("[FVView::resize][canvas] " + currentObj.canvas.width + " " + currentObj.canvas.height);
