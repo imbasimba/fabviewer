@@ -24,6 +24,7 @@
 <script type="text/javascript" src="js/model/HiPS.js"></script>
 <script type="text/javascript" src="js/model/SphericalGrid.js"></script>
 <script type="text/javascript" src="js/model/XYZSystem.js"></script>
+<script type="text/javascript" src="js/model/XYZSystem3.js"></script>
 <script type="text/javascript" src="js/model/Moon.js"></script>
 
 <script type="text/javascript" src="js/utils/FoVUtils.js"></script>
@@ -82,6 +83,40 @@
 		}
 		
 		
+  	} 
+</script>
+
+
+<script id="xyz-shader-vs" type="x-shader/x-vertex">
+	attribute vec3 aVertexPosition;
+	attribute float aAxisIndex;
+	
+	uniform mat4 uMMatrix;
+	uniform mat4 uVMatrix;
+	uniform mat4 uPMatrix;
+	
+	varying float vAxisIndex;
+
+	void main() {
+		gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+		vAxisIndex = aAxisIndex;
+	}
+</script>
+
+<script id="xyz-shader-fs" type="x-shader/x-fragment">
+  	precision mediump float;
+
+	uniform float uAxisIndex;
+
+  	void main() {
+		vec3 finalColor;
+		if(uAxisIndex == 1.0){
+			gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		}else if(uAxisIndex == 2.0){
+			gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+		}else if(uAxisIndex == 3.0){
+			gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+		}
   	} 
 </script>
 
@@ -171,6 +206,12 @@ function run(){
 			<span>RA(hms)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Dec(dms)</span>
 			<br>
 			<span id="RA_hms"></span>&nbsp; &nbsp;<span id="Dec_dms"></span>
+		</div>
+		<hr>
+		<div id="fps">
+			FPS:<div id="fpsvalue"></div>
+			<br>
+			Avg:<div id="avgfpsvalue"></div>
 		</div>
 		<hr>
 	</div>

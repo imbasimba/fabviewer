@@ -37,6 +37,7 @@ function FVApp(){
 		currentObj.presenter = new FVPresenter(currentObj.view, currentObj.gl);
 		
 		currentObj.fabVReqID = '';
+		
 	};
 	
 	this.initListeners = function(){

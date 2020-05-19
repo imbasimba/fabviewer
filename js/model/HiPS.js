@@ -45,7 +45,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.textures = [];
 		currentObj.textures.images = [];
 		
-		console.log("[HiPS::localInit] currentObj.textures.images "+currentObj.textures.images)
+//		console.log("[HiPS::localInit] currentObj.textures.images "+currentObj.textures.images)
 		
 	};
 	
@@ -122,7 +122,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	this.initBuffer = function () {
 		
 		
-		console.log("[HiPS::initBuffer]");
+//		console.log("[HiPS::initBuffer]");
 		var nPixels = currentObj.pixels.length;
 		var vertexPosition = new Float32Array(12*nPixels);
 
@@ -342,8 +342,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    
 	    function handleLoadedTexture (gl_texture, shaderSkyIndex){
 			
-	    	console.log("handleLoadedTexture");
-	    	console.log(gl_texture);
+//	    	console.log("handleLoadedTexture");
+//	    	console.log(gl_texture);
 	        in_gl.activeTexture(in_gl.TEXTURE0+shaderSkyIndex);
 	        
 			in_gl.pixelStorei(in_gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -390,54 +390,62 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			in_canvas, 
 			in_rayPickingObj){
 		
-		// Model point having only Z as radius
-		var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
 		
-		mat4.multiplyVec4(in_camerObj.getCameraMatrix(), modelZPoint, modelZPoint);
 		
-		var maxX = in_canvas.width;
-		var maxY = in_canvas.height;
+		
+		if (currentObj.getMinFoV() >= currentObj.allskyFovLimit) {
+			this.computePixels();
+		}else{
+			// Model point having only Z as radius
+			var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
+			
+			mat4.multiplyVec4(in_camerObj.getCameraMatrix(), modelZPoint, modelZPoint);
+			
+			var maxX = in_canvas.width;
+			var maxY = in_canvas.height;
 
-		currentObj.pixels.splice(0, currentObj.pixels.length);
-		var xy = [];
-		var neighbours = [];
-		for (var i =0; i <= maxX; i+=maxX/8){
-			for (var j =0; j <= maxY; j+=maxY/8){
-				
-				xy = [i,j];
+			currentObj.pixels.splice(0, currentObj.pixels.length);
+			var xy = [];
+			var neighbours = [];
+			for (var i =0; i <= maxX; i+=maxX/8){
+				for (var j =0; j <= maxY; j+=maxY/8){
+					
+					xy = [i,j];
 
-				intersectionWithModel = in_rayPickingObj.getIntersectionPointWithSingleModel(
-						xy[0], 
-						xy[1], 
-						in_pMatrix, 
-						in_camerObj, 
-						in_canvas, 
-						currentObj
-						);
-				intersectionPoint = intersectionWithModel.intersectionPoint;
+					intersectionWithModel = in_rayPickingObj.getIntersectionPointWithSingleModel(
+							xy[0], 
+							xy[1], 
+							in_pMatrix, 
+							in_camerObj, 
+							in_canvas, 
+							currentObj
+							);
+					intersectionPoint = intersectionWithModel.intersectionPoint;
 
-				if (intersectionPoint != undefined){
-					currP = new Pointing(new Vec3(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]));
-				    
-					currPixNo = currentObj.healpix.ang2pix(currP);
-										
-					neighbours = currentObj.healpix.neighbours(currPixNo);
-//					console.log("[HiPS::updatevisiblePixels] neighbours : "+neighbours);
-					if (currentObj.pixels.indexOf(currPixNo) == -1){
-						currentObj.pixels.push(currPixNo);
-					}
-//					console.log("[HiPS::updatevisiblePixels] pixels length : "+currentObj.pixels.length);
-					for (var k=0; k<neighbours.length; k++){
-						if (currentObj.pixels.indexOf(neighbours[k]) == -1){
-							currentObj.pixels.push(neighbours[k]);
+					if (intersectionPoint != undefined){
+						currP = new Pointing(new Vec3(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]));
+					    
+						currPixNo = currentObj.healpix.ang2pix(currP);
+											
+						neighbours = currentObj.healpix.neighbours(currPixNo);
+//						console.log("[HiPS::updatevisiblePixels] neighbours : "+neighbours);
+						if (currentObj.pixels.indexOf(currPixNo) == -1){
+							currentObj.pixels.push(currPixNo);
 						}
+//						console.log("[HiPS::updatevisiblePixels] pixels length : "+currentObj.pixels.length);
+						for (var k=0; k<neighbours.length; k++){
+							if (currentObj.pixels.indexOf(neighbours[k]) == -1){
+								currentObj.pixels.push(neighbours[k]);
+							}
+						}
+//						console.log("[HiPS::updatevisiblePixels] pixels length with neighbours : "+currentObj.pixels.length);
 					}
-//					console.log("[HiPS::updatevisiblePixels] pixels length with neighbours : "+currentObj.pixels.length);
+					
+					
 				}
-				
-				
-			}
+			}	
 		}
+		
 	
 		
 	};
@@ -467,7 +475,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		var nside, cnorder;
 		
-		if (!in_pan){ // only zoom in/out
+//		if (!in_pan){ // only zoom in/out
 			
 			if ( in_fov >= 32){
 				cnorder = 3;
@@ -491,9 +499,12 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				cnorder = 12;
 			}
 			
-			if (currentObj.norder != cnorder || 
-					(in_fov < currentObj.allskyFovLimit &&
-					currentObj.prevFoV >= currentObj.allskyFovLimit)){
+			
+			var needsRefresh = (currentObj.norder != cnorder) || 
+					(in_fov < currentObj.allskyFovLimit && currentObj.prevFoV >= currentObj.allskyFovLimit) || 
+					(in_fov > currentObj.allskyFovLimit && currentObj.prevFoV <= currentObj.allskyFovLimit);
+			
+			if ( needsRefresh ){
 				
 				currentObj.prevNorder = currentObj.norder;
 				currentObj.texturesNeedRefresh = true;
@@ -519,13 +530,21 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			
 			currentObj.prevFoV = in_fov;
 			
-		}
+//		}else{
+//			currentObj.updateVisiblePixels(
+//					in_camerObj, in_pMatrix, 
+//					in_canvas, 
+//					in_rayPickingObj
+//					);
+//			currentObj.initBuffer();
+//			currentObj.initTexture();
+//		}
 		
 		
 		
 	};
 	
-	
+	below = false;
 	
 	this.draw = function(pMatrix, vMatrix){
 
@@ -563,6 +582,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		in_gl.enableVertexAttribArray(currentObj.shaderProgram.textureCoordAttribute);
 
 		
+		
 		// 4. draw
 		if (currentObj.getMinFoV() >= currentObj.allskyFovLimit){ // AllSky
 			in_gl.activeTexture(in_gl.TEXTURE0);
@@ -570,11 +590,21 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			in_gl.uniform1f(currentObj.shaderProgram.uniformVertexTextureFactor, currentObj.opacity);
 			
 			
+			if (below){
+				console.log("Switched to AllSky on FoV "+currentObj.getMinFoV());
+				below = false;
+			}
+			
 		    for (var i=0;i<currentObj.pixels.length;i++){
 		    	in_gl.drawElements(in_gl.TRIANGLES, 6, in_gl.UNSIGNED_SHORT, 12*i);
 	        }
 		    
 		}else{
+			
+			if (!below){
+				console.log("Switched to single textures on FoV "+currentObj.getMinFoV());
+				below = true;
+			}
 			
 			for (var i=0;i<currentObj.pixels.length;i++){
 					
@@ -585,7 +615,6 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				in_gl.drawElements(in_gl.TRIANGLES, 6, 
 						in_gl.UNSIGNED_SHORT, 12*i);
 			}
-			
 			
 		}
 		if (currentObj.sphericalGrid) {
@@ -724,10 +753,6 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				
 			}
 		
-		
-		
-        
-		
 	};
 
 	this.drawEquatorialGrid = function(){
@@ -739,9 +764,9 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	this.computePixels();
 	this.initShaders();
 	this.initBuffer();
-	console.log(currentObj.textures.images);
+//	console.log(currentObj.textures.images);
 	this.initTexture();
-	console.log(currentObj.textures.images);
+//	console.log(currentObj.textures.images);
 
 	
 

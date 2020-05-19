@@ -86,9 +86,8 @@ function Camera2(in_position){
 
 	this.zoomIn = function(factor){
 		
-		currentObj.previuosFov
-		
-		factor = 0.01;
+		console.log("[Camera2::zoomIn] factor "+factor);
+//		factor = 0.01;
 //		console.log("FACTOR "+factor);
 		currentObj.move = vec3.create([0, 0, 0]);
 		currentObj.move[2] -= (currentObj.cam_speed * factor);
@@ -106,7 +105,7 @@ function Camera2(in_position){
 
 	this.zoomOut = function(factor){
 		
-		factor = 0.01;
+//		factor = 0.01;
 
 		currentObj.move = vec3.create([0, 0, 0]);
 		currentObj.move[2] += currentObj.cam_speed * factor;
@@ -151,7 +150,11 @@ function Camera2(in_position){
 	};
 	
 	this.rotateX = function(sign){
+//		factorRad = sign * 0.01;
+		
+		
 		factorRad = sign * 0.01;
+		
 		currentObj.theta += factorRad;
 //		console.log("THETA "+currentObj.theta);
 		var identity = mat4.create();
@@ -169,11 +172,12 @@ function Camera2(in_position){
 	this.rotate = function(phi, theta){
 	
 		
+		
 		var totRot = Math.sqrt(phi*phi + theta*theta);
 
 		pos = this.getCameraPosition();
 		dist2Center = Math.sqrt(vec3.dot(pos, pos));
-		usedRot = totRot * (dist2Center - 1) / 3.0
+		usedRot = totRot * (dist2Center - 1) / 3.0;
 
 		mat4.rotate(currentObj.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
 		

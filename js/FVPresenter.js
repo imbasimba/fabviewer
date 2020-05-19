@@ -22,6 +22,9 @@ function FVPresenter(in_view, in_gl){
 
 		currentObj.modelRepo = new ModelRepo(in_gl, currentObj.view.canvas);
 		
+		
+		 
+		
 		currentObj.aspectRatio;
 		currentObj.fovDeg = 45;
 		currentObj.nearPlane = 0.1;
@@ -53,7 +56,12 @@ function FVPresenter(in_view, in_gl){
 				in_gl.canvas,
 				currentObj.modelRepo);
 		currentObj.view.setPickedObjectName(currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx].name);
+		
+		this.lastDrawTime = (new Date()).getTime() * 0.001;
 
+		// TODO organize shader programs in a STACK?
+//		currentObj.xyzRefSystemObj = new XYZSystem3(in_gl, currentObj.camera.getCameraPosition());
+		
 	};
 
 
@@ -120,17 +128,40 @@ function FVPresenter(in_view, in_gl){
 				var deltaX = (newX - currentObj.lastMouseX)*Math.PI/currentObj.view.canvas.width;
 		     	var deltaY = (newY - currentObj.lastMouseY)*Math.PI/currentObj.view.canvas.width;
 				
-				currentObj.inertiaX += 0.3 * deltaX
-				currentObj.inertiaY += 0.3 * deltaY
-
+		     	currentObj.inertiaX += 0.1 * deltaX;
+				currentObj.inertiaY += 0.1 * deltaY;
+				
 			}
+			
+			
+			
 
 			currentObj.lastMouseX = newX;
 			currentObj.lastMouseY = newY;
 			event.preventDefault();
 		}
 		
+		
+		currentObj.zoomIn = false;
+		currentObj.zoomOut = false;
+		currentObj.Xrot = 0;
+		currentObj.Yrot = 0;
+		currentObj.XYrot = [0, 0];
+		currentObj.keyPressed = false;
+		
+		
+		function handleKeyUp(event) {
+			currentObj.keyPressed = false;
+			currentObj.zoomIn = false;
+			currentObj.zoomOut = false;
+			currentObj.Xrot = 0;
+			currentObj.Yrot = 0;
+			currentObj.XYrot = [0, 0];
+			currentObj.keyPressed = false;
+		}
+		
 		function handleKeyPress(event) {
+			
 			var code = event.keyCode;
 
 			var move = vec3.create([0, 0, 0]);
@@ -138,61 +169,54 @@ function FVPresenter(in_view, in_gl){
 			var pan = false;
 			switch (code) {
 				case 38:// arrowUp
-					currentObj.camera.zoomIn(currentObj.elapsedTime);
+					currentObj.zoomIn = true;
 					break;
 				case 40:// arrowDown
-					currentObj.camera.zoomOut(currentObj.elapsedTime);
+					currentObj.zoomOut = true;
 					break;
 				case 87:// W
-					currentObj.camera.rotateX(1);
-					pan = true;
+					currentObj.Xrot = 1;
 					break;
 				case 88:// X
-					currentObj.camera.rotateX(-1);
-					pan = true;
+					currentObj.Xrot = -1;
 					break;
 				case 68:// A
-					// TODO check and update nearest object
-					currentObj.camera.rotateY(-1);
-					pan = true;
+					currentObj.Yrot = -1;
 					break;
 				case 65:// D
-					// TODO check and update nearest object
-					currentObj.camera.rotateY(1);
-					pan = true;
+					currentObj.Yrot = 1;
 					break;
 				case 81:// Q
-					currentObj.camera.rotate(rotStep, rotStep);
-					pan = true;
+					currentObj.XYrot = [-rotStep, -rotStep];
 					break;
 				case 69:// E
-					currentObj.camera.rotate(rotStep, -rotStep);
-					pan = true;
+					currentObj.XYrot = [rotStep, -rotStep];
 					break;
 				case 90:// Z
-					currentObj.camera.rotate(-rotStep, rotStep);
-					pan = true;
+					currentObj.XYrot = [-rotStep, rotStep];
 					break;
 				case 67:// C
-					currentObj.camera.rotate(-rotStep, -rotStep);
-					pan = true;
+					currentObj.XYrot = [rotStep, rotStep];
 					break;
 			}
-
-			var neareastModel = currentObj.raypicker.getNearestObjectOnRay(
-					currentObj.view.canvas.width / 2, 
-					currentObj.view.canvas.height / 2,
-					currentObj.pMatrix,
-					currentObj.camera,
-					in_gl.canvas,
-					currentObj.modelRepo);
-						
-			var fovObj = currentObj.refreshFov(neareastModel.idx);
-			currentObj.view.updateFoV(fovObj);
-			currentObj.refreshModel(neareastModel.idx, fovObj.getMinFoV(), pan);
+			currentObj.keyPressed = true;
+//			var neareastModel = currentObj.raypicker.getNearestObjectOnRay(
+//					currentObj.view.canvas.width / 2, 
+//					currentObj.view.canvas.height / 2,
+//					currentObj.pMatrix,
+//					currentObj.camera,
+//					in_gl.canvas,
+//					currentObj.modelRepo);
+//						
+//			var fovObj = currentObj.refreshFov(neareastModel.idx);
+//			currentObj.view.updateFoV(fovObj);
+//			currentObj.refreshModel(neareastModel.idx, fovObj.getMinFoV(), pan);
 		}
+		
+
 
 		window.addEventListener('keydown', handleKeyPress);
+		window.addEventListener('keyup', handleKeyUp);
 		
 		currentObj.view.canvas.onmousedown = handleMouseDown;
 		currentObj.view.canvas.onmouseup = handleMouseUp;
@@ -235,28 +259,84 @@ function FVPresenter(in_view, in_gl){
 		
 	};
 	
+	this.refreshViewAndModel = function(pan) {
+		
+		var neareastModel = currentObj.raypicker.getNearestObjectOnRay(
+				currentObj.view.canvas.width / 2, 
+				currentObj.view.canvas.height / 2,
+				currentObj.pMatrix,
+				currentObj.camera,
+				in_gl.canvas,
+				currentObj.modelRepo);
+					
+		var fovObj = currentObj.refreshFov(neareastModel.idx);
+		currentObj.view.updateFoV(fovObj);
+		currentObj.refreshModel(neareastModel.idx, fovObj.getMinFoV(), pan);
+	};
 	
+	this.frameTimes = [];
+	this.frameCursor = 0;
+	this.numFrames = 0;   
+	this.maxFrames = 20;
+	this.totalFPS = 0;
+	this.fps = 0;
 	
 	this.draw = function(now){
 
-		now *= 0.01;
-		currentObj.elapsedTime = now - currentObj.then;
-		currentObj.then = now;
+		var now = (new Date()).getTime() * 0.001;
+		currentObj.elapsedTime = now - currentObj.lastDrawTime;
+		currentObj.lastDrawTime = now;
+		
+		this.fps = 1 / currentObj.elapsedTime;
+
+		// add the current fps and remove the oldest fps
+		this.totalFPS += this.fps - (this.frameTimes[this.frameCursor] || 0);
+		// record the newest fps
+		this.frameTimes[this.frameCursor++] = this.fps;
+		// needed so the first N frames, before we have maxFrames, is correct.
+		this.numFrames = Math.max(this.numFrames, this.frameCursor);
+		// wrap the cursor
+		this.frameCursor %= this.maxFrames;
+		this.averageFPS = this.totalFPS / this.numFrames;
+		currentObj.view.updateFps(this.fps, this.averageFPS);
+
 		
 		currentObj.aspectRatio = currentObj.view.canvas.width / currentObj.view.canvas.height;
 		
 		var THETA, PHI;
 		if (currentObj.mouseDown) {
-			THETA = 0.3 * this.inertiaY;
-			PHI = 0.3 * this.inertiaX;
+			THETA = 0.3 * currentObj.inertiaY;
+			PHI = 0.3 * currentObj.inertiaX;
 			currentObj.inertiaX *= 0.95;
 			currentObj.inertiaY *= 0.95;	
 			currentObj.camera.rotate(PHI, THETA);
+//			refreshViewAndModel(false);
 		}else{
-			this.inertiaY = 0;
-			this.inertiaX = 0;
+			currentObj.inertiaY = 0;
+			currentObj.inertiaX = 0;
 		}
 		
+
+		if(currentObj.keyPressed){
+			if(currentObj.zoomIn){
+				currentObj.camera.zoomIn(currentObj.elapsedTime * 0.1);
+				currentObj.refreshViewAndModel(false);
+			}else if(currentObj.zoomOut){
+				currentObj.camera.zoomOut(currentObj.elapsedTime * 0.1);
+				currentObj.refreshViewAndModel(false);
+			}
+			
+			if (currentObj.Yrot != 0){
+				currentObj.camera.rotateY(currentObj.Yrot);
+				currentObj.refreshViewAndModel(true);
+			}else if (currentObj.Xrot != 0){
+				currentObj.camera.rotateX(currentObj.Xrot);
+				currentObj.refreshViewAndModel(true);
+			}else if(currentObj.XYrot[0] != 0 && currentObj.XYrot[1] != 0){
+				currentObj.camera.rotate(currentObj.XYrot[0], currentObj.XYrot[1]);
+				currentObj.refreshViewAndModel(true);
+			}
+		}
 
 		
 		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
@@ -269,7 +349,10 @@ function FVPresenter(in_view, in_gl){
 			
 		}
 
+//		currentObj.xyzRefSystemObj.draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 	};
+	
+	
 	
 	
 	this.init();
