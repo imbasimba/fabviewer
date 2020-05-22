@@ -17,12 +17,13 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.updateOnFoV = true;
 		
 		currentObj.pixels = [];
+		currentObj.pixelsCache = [];
 		
 		currentObj.opacity = 1.00 * 100.0/100.0;
 		
 		currentObj.norder = 3;
 		currentObj.prevNorder = currentObj.norder;
-		currentObj.texturesNeedRefresh = false;
+		currentObj.texturesNeedRefresh = false; // true when changing HiPS or changing nside
 		
 		var nside = Math.pow(2, currentObj.norder);
 		currentObj.healpix = new Healpix(nside);
@@ -31,8 +32,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.URL = "http://skies.esac.esa.int/DSSColor/";
 		currentObj.maxOrder = 9;
 		
-		currentObj.sphericalGrid = true;
-		currentObj.xyzRefCoord = true;
+		currentObj.sphericalGrid = false;
+		currentObj.xyzRefCoord = false;
 		currentObj.equatorialGrid = false;
 		
 		// below this value we switch from AllSky to HEALPix geometry/texture
@@ -300,55 +301,103 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		    		    
 		}else{
 			
-			if (currentObj.texturesNeedRefresh){
-
-				currentObj.texturesNeedRefresh = false;
-				for (var d=0; d < currentObj.textures.images.length; d++){
-					in_gl.deleteTexture(currentObj.textures.images[d]);
-				}
-
-				currentObj.textures.images.splice(0, currentObj.textures.images.length);
-
-			}
-			
 			if (currentObj.textures.images === undefined){
 				currentObj.textures.images = [];
 			}
+			if (currentObj.textures.cache === undefined){
+				currentObj.textures.cache = [];
+			}
+			
+			if (currentObj.texturesNeedRefresh){
+				console.log("[HiPS::initTexture] refreshing texture below AllSkyLimit");
+				
+				for (var d=0; d < currentObj.textures.images.length; d++){
+					in_gl.deleteTexture(currentObj.textures.images[d]);
+				}
+				
+				currentObj.textures.images.splice(0, currentObj.textures.images.length);
+				currentObj.textures.cache.splice(0, currentObj.textures.cache.length);
+				currentObj.texturesNeedRefresh = false;
+				
+			}
+			
+			
 			
 			for (var n=0; n < currentObj.pixels.length;n++){
 				
+				var texCacheIdx = currentObj.pixelsCache.indexOf(currentObj.pixels[n]);
+				if (texCacheIdx !== -1 &&  currentObj.textures.cache[texCacheIdx] !== undefined){
 				
-				// TODO integrate a gl_texture cache
-				currentObj.textures.images[n] = in_gl.createTexture();
-								
-				currentObj.textures.images[n].image = new Image();
-				currentObj.textures.images[n].image.n = n;
-				var dirNumber = Math.floor(currentObj.pixels[n] / 10000) * 10000;
+					console.log("[HiPS::initTexture] from cache "+currentObj.textures.cache[texCacheIdx]);
+					console.log("[HiPS::initTexture] cache idx "+texCacheIdx);
+					
+					currentObj.textures.images[n] = in_gl.createTexture();
+					currentObj.textures.images[n] = currentObj.textures.cache[texCacheIdx];
+					
+				}else{
 
-				currentObj.textures.images[n].image.onload = function () {
-			        
-					handleLoadedTexture(currentObj.textures.images[this.n], 0);
+					currentObj.textures.images[n] = in_gl.createTexture();
+									
+					currentObj.textures.images[n].image = new Image();
+					currentObj.textures.images[n].image.n = n;
+					var dirNumber = Math.floor(currentObj.pixels[n] / 10000) * 10000;
+
+					currentObj.textures.images[n].image.onload = function () {
+				        
+						handleLoadedTexture(currentObj.textures.images[this.n], 0, this.n);
+				    
+				    };
+				    
+				    currentObj.textures.images[n].image.setAttribute('crossorigin', 'anonymous');
+				    currentObj.textures.images[n].image.setAttribute('crossOrigin', 'anonymous');
+				    currentObj.textures.images[n].image.crossOrigin = "anonymous";
+				    currentObj.textures.images[n].image.src = currentObj.URL+"/Norder"+currentObj.norder+"/Dir"+dirNumber+"/Npix"+currentObj.pixels[n]+".jpg";
+				}
+				
+				
+//				// TODO integrate a gl_texture cache
+//				currentObj.textures.images[n] = in_gl.createTexture();
+//								
+//				currentObj.textures.images[n].image = new Image();
+//				currentObj.textures.images[n].image.n = n;
+//				var dirNumber = Math.floor(currentObj.pixels[n] / 10000) * 10000;
+////				console.log("[HiPS::initTexture] n "+n);
+////				console.log("[HiPS::initTexture] pixel number  (BEFORE) "+currentObj.pixels[n]);
+//				
+//				currentObj.textures.images[n].image.onload = function () {
+//			        
+//					handleLoadedTexture(currentObj.textures.images[this.n], 0, this.n);
+//			    
+//			    };
+//			    
+//			    currentObj.textures.images[n].image.setAttribute('crossorigin', 'anonymous');
+//			    currentObj.textures.images[n].image.setAttribute('crossOrigin', 'anonymous');
+//			    currentObj.textures.images[n].image.crossOrigin = "anonymous";
+//			    currentObj.textures.images[n].image.src = currentObj.URL+"/Norder"+currentObj.norder+"/Dir"+dirNumber+"/Npix"+currentObj.pixels[n]+".jpg";
+//			    console.log("n="+n+" image.src="+currentObj.textures.images[n].image.src);
 			    
-			    };
-			    
-			    currentObj.textures.images[n].image.setAttribute('crossorigin', 'anonymous');
-			    currentObj.textures.images[n].image.setAttribute('crossOrigin', 'anonymous');
-			    currentObj.textures.images[n].image.crossOrigin = "anonymous";
-			    currentObj.textures.images[n].image.src = currentObj.URL+"/Norder"+currentObj.norder+"/Dir"+dirNumber+"/Npix"+currentObj.pixels[n]+".jpg";
-			
 			}
+			currentObj.textures.cache = currentObj.textures.images.slice();
+			
 		}
 		
 	    
-	    function handleLoadedTexture (gl_texture, shaderSkyIndex){
+	    function handleLoadedTexture (gl_texture, shaderSkyIndex, idx){
 			
 //	    	console.log("handleLoadedTexture");
 //	    	console.log(gl_texture);
 	        in_gl.activeTexture(in_gl.TEXTURE0+shaderSkyIndex);
 	        
 			in_gl.pixelStorei(in_gl.UNPACK_FLIP_Y_WEBGL, true);
-			in_gl.bindTexture(in_gl.TEXTURE_2D, gl_texture);			
-			in_gl.texImage2D(in_gl.TEXTURE_2D, 0, in_gl.RGBA, in_gl.RGBA, in_gl.UNSIGNED_BYTE, gl_texture.image);
+			in_gl.bindTexture(in_gl.TEXTURE_2D, gl_texture);
+			try{
+				in_gl.texImage2D(in_gl.TEXTURE_2D, 0, in_gl.RGBA, in_gl.RGBA, in_gl.UNSIGNED_BYTE, gl_texture.image);	
+			}catch(error){
+				console.error(error);
+				console.error("idx: "+idx+" currentObj.pixels[idx] "+currentObj.pixels[idx]);
+				console.error(currentObj.pixels);
+			}
+			
 			
 			if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){
 				// it's not a power of 2. Turn off mip and set wrapping to clamp to edge
@@ -394,8 +443,13 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		
 		if (currentObj.getMinFoV() >= currentObj.allskyFovLimit) {
+			console.log("[HiPS::updateVisiblePixels] ocomputing all pixels for AllSky");
 			this.computePixels();
 		}else{
+			
+			currentObj.pixelsCache = currentObj.pixels.slice();
+			currentObj.pixels.splice(0, currentObj.pixels.length);
+			
 			// Model point having only Z as radius
 			var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
 			
@@ -404,9 +458,12 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			var maxX = in_canvas.width;
 			var maxY = in_canvas.height;
 
-			currentObj.pixels.splice(0, currentObj.pixels.length);
+//			currentObj.pixels.splice(0, currentObj.pixels.length);
 			var xy = [];
 			var neighbours = [];
+			
+			// TODO probably it would be better to use query_disc_inclusive from HEALPix 
+			// against a polygon. Check my FHIPSWebGL2 project (BufferManager.js -> updateVisiblePixels)
 			for (var i =0; i <= maxX; i+=maxX/8){
 				for (var j =0; j <= maxY; j+=maxY/8){
 					
@@ -424,26 +481,29 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 
 					if (intersectionPoint != undefined){
 						currP = new Pointing(new Vec3(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]));
-					    
+
 						currPixNo = currentObj.healpix.ang2pix(currP);
-											
-						neighbours = currentObj.healpix.neighbours(currPixNo);
-//						console.log("[HiPS::updatevisiblePixels] neighbours : "+neighbours);
-						if (currentObj.pixels.indexOf(currPixNo) == -1){
-							currentObj.pixels.push(currPixNo);
-						}
-//						console.log("[HiPS::updatevisiblePixels] pixels length : "+currentObj.pixels.length);
-						for (var k=0; k<neighbours.length; k++){
-							if (currentObj.pixels.indexOf(neighbours[k]) == -1){
-								currentObj.pixels.push(neighbours[k]);
+						if (currPixNo >= 0){
+							neighbours = currentObj.healpix.neighbours(currPixNo);
+							if (currentObj.pixels.indexOf(currPixNo) == -1){
+								currentObj.pixels.push(currPixNo);
 							}
+							for (var k=0; k<neighbours.length; k++){
+								if (currentObj.pixels.indexOf(neighbours[k]) == -1){
+									if(neighbours[k] >= 0){
+										currentObj.pixels.push(neighbours[k]);	
+									}
+								}
+							}	
 						}
-//						console.log("[HiPS::updatevisiblePixels] pixels length with neighbours : "+currentObj.pixels.length);
+						
 					}
 					
 					
 				}
 			}	
+//			console.log("[HiPS::updateVisiblePixels] new pixels length "+currentObj.pixels.length);
+//			console.log("[HiPS::updateVisiblePixels] new pixels ids "+currentObj.pixels.sort());
 		}
 		
 	
@@ -473,10 +533,29 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		console.log("[HiPS::refreshModel]");
 		
-		var nside, cnorder;
 		
-//		if (!in_pan){ // only zoom in/out
+		if (in_pan && in_fov < currentObj.allskyFovLimit){
+//			nside = Math.pow(2, cnorder);
+//			currentObj.healpix = new Healpix(nside);
+//			currentObj.maxNPix = currentObj.healpix.getNPix();
+//			currentObj.norder = cnorder;
 			
+			currentObj.texturesNeedRefresh = false;
+			currentObj.updateVisiblePixels(
+					in_camerObj, in_pMatrix, 
+					in_canvas, 
+					in_rayPickingObj
+					);
+			currentObj.initBuffer();
+			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			// THIS ONE SHOULD GO INTO DRAW!!!!!!!
+			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			currentObj.initTexture();
+		}else{
+			var nside, cnorder;
+			
+//			if (!in_pan){ // only zoom in/out
+				
 			if ( in_fov >= 32){
 				cnorder = 3;
 			}else if (in_fov < 32 && in_fov >= 16){
@@ -505,6 +584,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 					(in_fov > currentObj.allskyFovLimit && currentObj.prevFoV <= currentObj.allskyFovLimit);
 			
 			if ( needsRefresh ){
+				console.log("[HiPS::refreshModel] needsRefresh "+needsRefresh);
 				
 				currentObj.prevNorder = currentObj.norder;
 				currentObj.texturesNeedRefresh = true;
@@ -526,9 +606,16 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 						);
 				currentObj.initBuffer();
 				currentObj.initTexture();
-			}
-			
-			currentObj.prevFoV = in_fov;
+			}	
+		}
+		
+		
+		
+		
+		
+		
+		
+		currentObj.prevFoV = in_fov;
 			
 //		}else{
 //			currentObj.updateVisiblePixels(

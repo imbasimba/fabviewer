@@ -86,7 +86,7 @@ function Camera2(in_position){
 
 	this.zoomIn = function(factor){
 		
-		console.log("[Camera2::zoomIn] factor "+factor);
+//		console.log("[Camera2::zoomIn] factor "+factor);
 //		factor = 0.01;
 //		console.log("FACTOR "+factor);
 		currentObj.move = vec3.create([0, 0, 0]);

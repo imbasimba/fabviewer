@@ -175,16 +175,16 @@ function FVPresenter(in_view, in_gl){
 					currentObj.zoomOut = true;
 					break;
 				case 87:// W
-					currentObj.Xrot = 1;
-					break;
-				case 88:// X
 					currentObj.Xrot = -1;
 					break;
+				case 88:// X
+					currentObj.Xrot = 1;
+					break;
 				case 68:// A
-					currentObj.Yrot = -1;
+					currentObj.Yrot = 1;
 					break;
 				case 65:// D
-					currentObj.Yrot = 1;
+					currentObj.Yrot = -1;
 					break;
 				case 81:// Q
 					currentObj.XYrot = [-rotStep, -rotStep];
@@ -244,7 +244,7 @@ function FVPresenter(in_view, in_gl){
 		if (DEBUG){
 			console.log("[FVPresenter::refreshModel]");
 		}
-		console.log("[FVPresenter::refreshModel]");
+
 
 		var selectedModel = currentObj.modelRepo.objModels[neareastModelIdx];
 		// compute FoV against the nearest object
