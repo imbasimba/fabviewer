@@ -275,7 +275,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    
 	};
 	
-	this.initTexture = function () {
+	this.initTexture = function (now) {
 	    
 		if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){ // AllSky
 			
@@ -284,6 +284,11 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			if (currentObj.textures.images === undefined){
 				currentObj.textures.images = [];
 			}
+			if (currentObj.textures.cache === undefined){
+				currentObj.textures.cache = [];
+			}
+			currentObj.textures.cache.splice(0, currentObj.textures.cache.length);
+			
 			currentObj.textures.images[0] = in_gl.createTexture();
 			
 			currentObj.textures.images[0].image = new Image();
@@ -309,7 +314,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			}
 			
 			if (currentObj.texturesNeedRefresh){
-				console.log("[HiPS::initTexture] refreshing texture below AllSkyLimit");
+				console.log("[HiPS::initTexture]["+now+"] refreshing texture below AllSkyLimit");
+				
 				
 				for (var d=0; d < currentObj.textures.images.length; d++){
 					in_gl.deleteTexture(currentObj.textures.images[d]);
@@ -326,14 +332,15 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			for (var n=0; n < currentObj.pixels.length;n++){
 				
 				var texCacheIdx = currentObj.pixelsCache.indexOf(currentObj.pixels[n]);
-				if (texCacheIdx !== -1 &&  currentObj.textures.cache[texCacheIdx] !== undefined){
+				if (texCacheIdx !== -1 && currentObj.textures.cache.length > 0){
 				
-					console.log("[HiPS::initTexture] from cache "+currentObj.textures.cache[texCacheIdx]);
-					console.log("[HiPS::initTexture] cache idx "+texCacheIdx);
-					
-					currentObj.textures.images[n] = in_gl.createTexture();
-					currentObj.textures.images[n] = currentObj.textures.cache[texCacheIdx];
-					
+					if (currentObj.textures.cache[texCacheIdx] == undefined){
+						console.log("[HiPS::initTexture] missed in texcache but present in pixelcache"+texCacheIdx);
+					}else{
+						currentObj.textures.images[n] = in_gl.createTexture();
+						currentObj.textures.images[n] = currentObj.textures.cache[texCacheIdx];	
+					}
+
 				}else{
 
 					currentObj.textures.images[n] = in_gl.createTexture();
@@ -343,7 +350,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 					var dirNumber = Math.floor(currentObj.pixels[n] / 10000) * 10000;
 
 					currentObj.textures.images[n].image.onload = function () {
-				        
+				        // last param this.n is passed just for debug
 						handleLoadedTexture(currentObj.textures.images[this.n], 0, this.n);
 				    
 				    };
@@ -377,6 +384,10 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 //			    console.log("n="+n+" image.src="+currentObj.textures.images[n].image.src);
 			    
 			}
+//			console.log("[HiPS::initTexture]["+now+"] images:");
+//			console.log(currentObj.textures.images);
+//			console.log("[HiPS::initTexture]["+now+"] cache:");
+//			console.log(currentObj.textures.cache);
 			currentObj.textures.cache = currentObj.textures.images.slice();
 			
 		}
@@ -437,23 +448,23 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	this.updateVisiblePixels = function(
 			in_camerObj, in_pMatrix, 
 			in_canvas, 
-			in_rayPickingObj){
+			in_rayPickingObj, now){
 		
 		
 		
 		
 		if (currentObj.getMinFoV() >= currentObj.allskyFovLimit) {
-			console.log("[HiPS::updateVisiblePixels] ocomputing all pixels for AllSky");
+			console.log("[HiPS::updateVisiblePixels] computing all pixels for AllSky");
 			this.computePixels();
 		}else{
 			
 			currentObj.pixelsCache = currentObj.pixels.slice();
 			currentObj.pixels.splice(0, currentObj.pixels.length);
 			
-			// Model point having only Z as radius
-			var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
-			
-			mat4.multiplyVec4(in_camerObj.getCameraMatrix(), modelZPoint, modelZPoint);
+//			// Model point having only Z as radius
+//			var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
+//			
+//			mat4.multiplyVec4(in_camerObj.getCameraMatrix(), modelZPoint, modelZPoint);
 			
 			var maxX = in_canvas.width;
 			var maxY = in_canvas.height;
@@ -464,8 +475,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			
 			// TODO probably it would be better to use query_disc_inclusive from HEALPix 
 			// against a polygon. Check my FHIPSWebGL2 project (BufferManager.js -> updateVisiblePixels)
-			for (var i =0; i <= maxX; i+=maxX/8){
-				for (var j =0; j <= maxY; j+=maxY/8){
+			for (var i =0; i <= maxX; i+=maxX/10){
+				for (var j =0; j <= maxY; j+=maxY/10){
 					
 					xy = [i,j];
 
@@ -502,9 +513,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 					
 				}
 			}	
-//			console.log("[HiPS::updateVisiblePixels] new pixels length "+currentObj.pixels.length);
-//			console.log("[HiPS::updateVisiblePixels] new pixels ids "+currentObj.pixels.sort());
 		}
+		
 		
 	
 		
@@ -531,7 +541,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			in_rayPickingObj
 			){
 		
-		console.log("[HiPS::refreshModel]");
+		var now = (new Date()).getTime();
+//		console.log("[HiPS::refreshModel]"+now);
 		
 		
 		if (in_pan && in_fov < currentObj.allskyFovLimit){
@@ -544,13 +555,14 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			currentObj.updateVisiblePixels(
 					in_camerObj, in_pMatrix, 
 					in_canvas, 
-					in_rayPickingObj
+					in_rayPickingObj,
+					now
 					);
 			currentObj.initBuffer();
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			// THIS ONE SHOULD GO INTO DRAW!!!!!!!
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			currentObj.initTexture();
+			currentObj.initTexture(now);
 		}else{
 			var nside, cnorder;
 			
@@ -587,7 +599,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				console.log("[HiPS::refreshModel] needsRefresh "+needsRefresh);
 				
 				currentObj.prevNorder = currentObj.norder;
-				currentObj.texturesNeedRefresh = true;
+				
 				nside = Math.pow(2, cnorder);
 				currentObj.healpix = new Healpix(nside);
 				currentObj.maxNPix = currentObj.healpix.getNPix();
@@ -598,14 +610,15 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				// compute visible pixels
 				// update buffers
 				// load textures
-
+				currentObj.texturesNeedRefresh = true;
 				currentObj.updateVisiblePixels(
 						in_camerObj, in_pMatrix, 
 						in_canvas, 
-						in_rayPickingObj
+						in_rayPickingObj,
+						now
 						);
 				currentObj.initBuffer();
-				currentObj.initTexture();
+				currentObj.initTexture(now);
 			}	
 		}
 		
