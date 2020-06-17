@@ -137,7 +137,7 @@ function FVView(in_canvas){
 		currentObj.coords_rahms_dom.innerHTML = raHMS.h +" "+raHMS.m +" "+raHMS.s.toFixed(2);
 		var sign = '+';
 		if (decDMS.d < 0){
-			sign = '-';
+			sign = '';
 		}
 		currentObj.coords_decdms_dom.innerHTML = sign+decDMS.d+" "+decDMS.m+" "+decDMS.s.toFixed(2);
 	};
