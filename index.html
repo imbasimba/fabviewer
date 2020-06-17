@@ -13,6 +13,7 @@
 <script src="lib/Healpix/Hploc.js"></script>
 <script src="lib/Healpix/Fxyf.js"></script>
 <script src="lib/Healpix/Healpix.js"></script>
+<script src="lib/jquery-3.5.1.js"></script>
 
 <script type="text/javascript" src="lib/glMatrix-0.js"></script>
 <!--<script type="text/javascript" src="lib/gl-matrix.js"></script>-->
@@ -26,6 +27,8 @@
 <script type="text/javascript" src="js/model/XYZSystem.js"></script>
 <script type="text/javascript" src="js/model/XYZSystem3.js"></script>
 <script type="text/javascript" src="js/model/Moon.js"></script>
+<script type="text/javascript" src="js/model/CatalogueDescriptor.js"></script>
+
 
 <script type="text/javascript" src="js/utils/FoVUtils.js"></script>
 <script type="text/javascript" src="js/utils/RayPickingUtils.js"></script>
@@ -33,9 +36,35 @@
 
 <script type="text/javascript" src="js/repos/ModelRepo.js"></script>
 
+<script type="text/javascript" src="js/presenter/CataloguePresenter.js"></script>
+<script type="text/javascript" src="js/presenter/CatalogueListPresenter.js"></script>
+
+<script type="text/javascript" src="js/view/CatalogueView.js"></script>
+<script type="text/javascript" src="js/view/CatalogueListView.js"></script>
+
 <script type="text/javascript" src="js/FVView.js"></script>
 <script type="text/javascript" src="js/FVPresenter.js"></script>
 <script type="text/javascript" src="js/FVApp.js"></script>
+
+<script id="cat-shader-vs" type="x-shader/x-vertex">
+
+	attribute vec4 aCatPosition;
+ 
+	uniform mat4 uMVMatrix;
+	uniform mat4 uPMatrix;
+
+	void main() {
+		gl_Position = uPMatrix * uMVMatrix * aCatPosition;
+		gl_PointSize = 3.0;
+	}
+</script>
+<script id="cat-shader-fs" type="x-shader/x-fragment">
+  	precision mediump float;
+  
+  	void main() {
+		gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+  	} 
+</script>
 
 
 <script id="hips-shader-vs" type="x-shader/x-vertex">
@@ -213,6 +242,7 @@ function run(){
 			<br>
 			Avg:<div id="avgfpsvalue"></div>
 		</div>
+		
 		<hr>
 	</div>
 	

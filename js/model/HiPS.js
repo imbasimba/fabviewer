@@ -384,10 +384,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 //			    console.log("n="+n+" image.src="+currentObj.textures.images[n].image.src);
 			    
 			}
-//			console.log("[HiPS::initTexture]["+now+"] images:");
-//			console.log(currentObj.textures.images);
-//			console.log("[HiPS::initTexture]["+now+"] cache:");
-//			console.log(currentObj.textures.cache);
+
 			currentObj.textures.cache = currentObj.textures.images.slice();
 			
 		}
@@ -395,8 +392,6 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    
 	    function handleLoadedTexture (gl_texture, shaderSkyIndex, idx){
 			
-//	    	console.log("handleLoadedTexture");
-//	    	console.log(gl_texture);
 	        in_gl.activeTexture(in_gl.TEXTURE0+shaderSkyIndex);
 	        
 			in_gl.pixelStorei(in_gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -507,17 +502,10 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 								}
 							}	
 						}
-						
 					}
-					
-					
 				}
 			}	
 		}
-		
-		
-	
-		
 	};
 	
 	
@@ -542,14 +530,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			){
 		
 		var now = (new Date()).getTime();
-//		console.log("[HiPS::refreshModel]"+now);
-		
-		
+
 		if (in_pan && in_fov < currentObj.allskyFovLimit){
-//			nside = Math.pow(2, cnorder);
-//			currentObj.healpix = new Healpix(nside);
-//			currentObj.maxNPix = currentObj.healpix.getNPix();
-//			currentObj.norder = cnorder;
 			
 			currentObj.texturesNeedRefresh = false;
 			currentObj.updateVisiblePixels(
@@ -560,13 +542,12 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 					);
 			currentObj.initBuffer();
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			// THIS ONE SHOULD GO INTO DRAW!!!!!!!
+			// THIS ONE SHOULD GO INTO DRAW (probabky hehe)!!!!!!!
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			currentObj.initTexture(now);
 		}else{
 			var nside, cnorder;
 			
-//			if (!in_pan){ // only zoom in/out
 				
 			if ( in_fov >= 32){
 				cnorder = 3;
@@ -621,27 +602,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				currentObj.initTexture(now);
 			}	
 		}
-		
-		
-		
-		
-		
-		
-		
 		currentObj.prevFoV = in_fov;
-			
-//		}else{
-//			currentObj.updateVisiblePixels(
-//					in_camerObj, in_pMatrix, 
-//					in_canvas, 
-//					in_rayPickingObj
-//					);
-//			currentObj.initBuffer();
-//			currentObj.initTexture();
-//		}
-		
-		
-		
 	};
 	
 	below = false;

@@ -43,8 +43,30 @@ function FVView(in_canvas){
 		
 		// Make the DIV element draggable:
 		currentObj.dragControl(document.getElementById("controlpanel"));
+
+//		currentObj.cataloguesDiv = document.getElementById('catalogues');
+		
+		
+
+	};
+	
+	
+	this.appendChild = function(html){
+		$("#controlpanel").append(html);
 		
 	};
+	
+	
+	this.fillCataloguesDiv = function (cataloguesDescriptor){
+		console.log("[FVView::fillCataloguesDiv ]");
+
+		for (let [key, catalogue] of Object.entries(cataloguesDescriptor.descriptors) ) {
+
+			currentObj.cataloguesDiv.innerHTML += "<input type='checkbox' onclick='"+test+"' id='cat_"+catalogue.guiShortName+"' name='cat_"+catalogue.guiShortName+"' value='cat_"+catalogue.guiShortName+"'><label for='cat_"+catalogue.guiShortName+"'> "+catalogue.guiShortName+"</label><br>";
+		}
+
+	};
+	
 	
 	
 	this.dragControl = function (elmnt) {

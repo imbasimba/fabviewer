@@ -14,16 +14,30 @@ function FVPresenter(in_view, in_gl){
 			console.log("[FVPresenter::init]");
 		}
 		currentObj.view = in_view;
+		
+//		var catalogueListView = new CatalogueListView();
+//		var catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
+//		currentObj.view.appendChild(catalogueListView.getHtml());
+//		
+//		currentObj.view.addCatalogueCheckedHandler(function(){
+//            // check if the new checkbox got checked or deselected
+//			// if it has been deselected -> remove the overlay
+//			// if it has been selected -> load data and overlay (-> via ModelRepo)
+//        });
+		
 
 		currentObj.then = 0;
 		currentObj.camera = new Camera2([0.0, 0.0, 3.0]);
 
 		currentObj.raypicker = new RayPickingUtils();
 
-		currentObj.modelRepo = new ModelRepo(in_gl, currentObj.view.canvas);
 		
+		var catalogueListView = new CatalogueListView();
+		var catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
+		console.log(catalogueListView.getHtml());
+		currentObj.view.appendChild(catalogueListView.getHtml());
 		
-		 
+		currentObj.modelRepo = new ModelRepo(in_gl, currentObj.view.canvas, catalogueListPresenter.addCatalogues); 
 		
 		currentObj.aspectRatio;
 		currentObj.fovDeg = 45;
@@ -63,6 +77,8 @@ function FVPresenter(in_view, in_gl){
 //		currentObj.xyzRefSystemObj = new XYZSystem3(in_gl, currentObj.camera.getCameraPosition());
 		
 	};
+	
+	
 
 
 	this.addEventListeners = function(){
@@ -280,6 +296,8 @@ function FVPresenter(in_view, in_gl){
 	this.maxFrames = 20;
 	this.totalFPS = 0;
 	this.fps = 0;
+	
+	this.enableCatalogues = true;
 	
 	this.draw = function(now){
 

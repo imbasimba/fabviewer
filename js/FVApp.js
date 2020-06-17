@@ -22,8 +22,8 @@ function FVApp(){
 			currentObj.gl = canvas.getContext("experimental-webgl");
 			currentObj.gl.viewportWidth = canvas.width;
 			currentObj.gl.viewportHeight = canvas.height;
-//			currentObj.gl.clearColor(0.3, 0.65, 0.9, 1.0);
-			currentObj.gl.clearColor(0.77,0.79,0.84, 1.0);
+			currentObj.gl.clearColor(0.412, 0.412, 0.412, 1.0);
+			
 			currentObj.gl.enable(currentObj.gl.DEPTH_TEST);
 			
 		} catch (e) {
