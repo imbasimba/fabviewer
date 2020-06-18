@@ -57,7 +57,7 @@ function RayPickingUtils(){
 	 */
 	this.raySphere = function (rayOrigWorld, rayDirectionWorld, model){
 		
-		
+		console.log(rayOrigWorld);
 		var intersectionDistance = -1;
 		var distToMoldel = vec3.create();
 		vec3.subtract(rayOrigWorld, model.center, distToMoldel);
@@ -201,6 +201,7 @@ function RayPickingUtils(){
 	this.getNearestObjectOnRay = function(in_mouseX, in_mouseY,  
 			in_pMatrix, in_cameraObj, in_gl_canvas, in_modelRepoObj){
 		
+		
 		document.getElementsByTagName("body")[0].style.cursor = "auto";
 
 //		// TODO move in into FVPresenter before call this method
@@ -226,8 +227,10 @@ function RayPickingUtils(){
 		
 		for (var i = 0; i < in_modelRepoObj.objModels.length; i++){
 			
-			currModel = in_modelRepoObj.objModels[i];
+			console.log(in_cameraObj);
 			
+			currModel = in_modelRepoObj.objModels[i];
+				
 			intersectionDistance = RayPickingUtilsObj.raySphere(
 					in_cameraObj.getCameraPosition(), rayWorld, currModel);
 

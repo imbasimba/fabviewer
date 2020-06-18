@@ -231,7 +231,6 @@ function Camera2(in_position){
 		var vMatrix_inverse = mat4.create();
 		mat4.identity(vMatrix_inverse);
 		mat4.inverse(currentObj.vMatrix, vMatrix_inverse );
-		
 		return [vMatrix_inverse[12], vMatrix_inverse[13], vMatrix_inverse[14]];
 	};
 		

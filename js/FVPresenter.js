@@ -8,6 +8,8 @@ function FVPresenter(in_view, in_gl){
 		console.log("[FVPresenter::FVPresenter]");
 	}
 	var currentObj = this;
+	var systemPresenter;
+	var catalogueListPresenter;
 	
 	this.init = function (){
 		if (DEBUG){
@@ -31,11 +33,19 @@ function FVPresenter(in_view, in_gl){
 
 		currentObj.raypicker = new RayPickingUtils();
 
+		var systemView = new SystemView();
+		systemPresenter = new SystemPresenter(systemView);
+		currentObj.view.appendChild(systemView.getHtml());
 		
 		var catalogueListView = new CatalogueListView();
-		var catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
+		catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
 		console.log(catalogueListView.getHtml());
 		currentObj.view.appendChild(catalogueListView.getHtml());
+		
+		
+		
+		
+		currentObj.catalogueRepo = new CatalogueRepo("https://sky.esa.int/esasky-tap/catalogs", catalogueListPresenter.addCatalogues);
 		
 		currentObj.modelRepo = new ModelRepo(in_gl, currentObj.view.canvas, catalogueListPresenter.addCatalogues); 
 		
@@ -277,6 +287,8 @@ function FVPresenter(in_view, in_gl){
 	
 	this.refreshViewAndModel = function(pan) {
 		
+		console.log(currentObj.modelRepo);
+		
 		var neareastModel = currentObj.raypicker.getNearestObjectOnRay(
 				currentObj.view.canvas.width / 2, 
 				currentObj.view.canvas.height / 2,
@@ -285,40 +297,21 @@ function FVPresenter(in_view, in_gl){
 				in_gl.canvas,
 				currentObj.modelRepo);
 					
+		
+		console.log(neareastModel);
 		var fovObj = currentObj.refreshFov(neareastModel.idx);
 		currentObj.view.updateFoV(fovObj);
 		currentObj.refreshModel(neareastModel.idx, fovObj.getMinFoV(), pan);
 	};
 	
-	this.frameTimes = [];
-	this.frameCursor = 0;
-	this.numFrames = 0;   
-	this.maxFrames = 20;
-	this.totalFPS = 0;
-	this.fps = 0;
 	
 	this.enableCatalogues = true;
 	
+	
 	this.draw = function(now){
 
-		var now = (new Date()).getTime() * 0.001;
-		currentObj.elapsedTime = now - currentObj.lastDrawTime;
-		currentObj.lastDrawTime = now;
-		
-		this.fps = 1 / currentObj.elapsedTime;
-
-		// add the current fps and remove the oldest fps
-		this.totalFPS += this.fps - (this.frameTimes[this.frameCursor] || 0);
-		// record the newest fps
-		this.frameTimes[this.frameCursor++] = this.fps;
-		// needed so the first N frames, before we have maxFrames, is correct.
-		this.numFrames = Math.max(this.numFrames, this.frameCursor);
-		// wrap the cursor
-		this.frameCursor %= this.maxFrames;
-		this.averageFPS = this.totalFPS / this.numFrames;
-		currentObj.view.updateFps(this.fps, this.averageFPS);
-
-		
+		systemPresenter.refreshModel();
+		var elapsedTime = systemPresenter.getElapsedTime();
 		currentObj.aspectRatio = currentObj.view.canvas.width / currentObj.view.canvas.height;
 		
 		var THETA, PHI;
@@ -337,10 +330,10 @@ function FVPresenter(in_view, in_gl){
 
 		if(currentObj.keyPressed){
 			if(currentObj.zoomIn){
-				currentObj.camera.zoomIn(currentObj.elapsedTime * 0.1);
+				currentObj.camera.zoomIn(elapsedTime * 0.1);
 				currentObj.refreshViewAndModel(false);
 			}else if(currentObj.zoomOut){
-				currentObj.camera.zoomOut(currentObj.elapsedTime * 0.1);
+				currentObj.camera.zoomOut(elapsedTime * 0.1);
 				currentObj.refreshViewAndModel(false);
 			}
 			

@@ -31,8 +31,8 @@ function FVView(in_canvas){
 		currentObj.coords_rahms_dom = document.getElementById('RA_hms');
 		currentObj.coords_decdms_dom = document.getElementById('Dec_dms');
 		
-		currentObj.fpsvalue_dom = document.getElementById('fpsvalue');
-		currentObj.avgfpsvalue_dom = document.getElementById('avgfpsvalue');
+//		currentObj.fpsvalue_dom = document.getElementById('fpsvalue');
+//		currentObj.avgfpsvalue_dom = document.getElementById('avgfpsvalue');
 		
 		currentObj.fovX_deg = 180.0;
 		currentObj.fovY_deg = 180.0;
@@ -110,12 +110,12 @@ function FVView(in_canvas){
 		  }
 		};
 	
-	this.updateFps = function(in_fps, in_avg){
-		
-		currentObj.fpsvalue_dom.innerHTML = in_fps.toFixed(1);
-		currentObj.avgfpsvalue_dom.innerHTML = in_avg.toFixed(1);
-		
-	};
+//	this.updateFps = function(in_fps, in_avg){
+//		
+//		currentObj.fpsvalue_dom.innerHTML = in_fps.toFixed(1);
+//		currentObj.avgfpsvalue_dom.innerHTML = in_avg.toFixed(1);
+//		
+//	};
 	
 	this.updateFoV = function(in_fovObj){
 		if (DEBUG){

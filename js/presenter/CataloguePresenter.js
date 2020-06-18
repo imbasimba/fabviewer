@@ -8,6 +8,7 @@ function CataloguePresenter(_view){
         view.addCheckedHandler(function(){
             // TODO call ModelRepo to retrieve metadata with the current FoV
         	console.log("// TODO call ModelRepo to retrieve metadata with the current FoV");
+        	
         });
     }
  

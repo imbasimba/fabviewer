@@ -7,7 +7,7 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 	
 	this.init = function (){
 		currentObj.objModels = [];
-		currentObj.catalogues = [];
+//		currentObj.catalogues = [];
 		
 //		currentObj.objModels[0] = new Moon(2, in_gl, in_canvas, [0.0, 0.0, -7.0], 0, 0, "Moon");
 				
@@ -39,38 +39,38 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 			s:Number(decDMS[2])
 			});
 		
-		currentObj.getJSON("https://sky.esa.int/esasky-tap/catalogs", currentObj.loadCatalogues);
+//		currentObj.getJSON("https://sky.esa.int/esasky-tap/catalogs", currentObj.loadCatalogues);
 		
 	};
 	
-	this.loadCatalogues = function(err, data) {
-		if (err !== null) {
-			alert('Something went wrong: ' + err);
-		} else {
-			console.log("Catalogue descriptors loaded");
-			console.log(data);
-			currentObj.catalogues = data;
-			in_catalogueCallback(data);
-		}
-		
-		
-	};
-
-	
-	this.getJSON = function(url, callback) {
-	    var xhr = new XMLHttpRequest();
-	    xhr.open('GET', url, true);
-	    xhr.responseType = 'json';
-	    xhr.onload = function() {
-	      var status = xhr.status;
-	      if (status === 200) {
-	        callback(null, xhr.response);
-	      } else {
-	        callback(status, xhr.response);
-	      }
-	    };
-	    xhr.send();
-	};
+//	this.loadCatalogues = function(err, data) {
+//		if (err !== null) {
+//			alert('Something went wrong: ' + err);
+//		} else {
+//			console.log("Catalogue descriptors loaded");
+//			console.log(data);
+//			currentObj.catalogues = data;
+//			in_catalogueCallback(data);
+//		}
+//		
+//		
+//	};
+//
+//	
+//	this.getJSON = function(url, callback) {
+//	    var xhr = new XMLHttpRequest();
+//	    xhr.open('GET', url, true);
+//	    xhr.responseType = 'json';
+//	    xhr.onload = function() {
+//	      var status = xhr.status;
+//	      if (status === 200) {
+//	        callback(null, xhr.response);
+//	      } else {
+//	        callback(status, xhr.response);
+//	      }
+//	    };
+//	    xhr.send();
+//	};
 	
 	this.init();
 }
