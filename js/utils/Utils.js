@@ -104,8 +104,6 @@ function decDegToDMS(decDeg){
 	var m = Math.trunc( (decDeg_abs - d) * 60);
 	
 	var s = (decDeg_abs - d - m/60) * 3600;
-	console.log("decDeg -> "+decDeg);
-	console.log("SECONDS -> "+s);
 	d = d * sign;
 	
 	return {
