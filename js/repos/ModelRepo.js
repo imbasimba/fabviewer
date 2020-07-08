@@ -21,23 +21,23 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 				Math.PI / 2, 
 				Math.PI / 2, "HiPS");
 				
-		var raHMS = "16 28 24.504";
-		var decDMS = "-26 39 06.06";
-		
-		
-		raHMS = raHMS.split(" ");
-		decDMS = decDMS .split(" ");
-		
-		var raDeg = hms2RaDeg({
-			h:Number(raHMS[0]), 
-			m:Number(raHMS[1]), 
-			s:Number(raHMS[2])
-			});
-		var decDeg = dms2DecDeg({
-			d:Number(decDMS[0]), 
-			m:Number(decDMS[1]), 
-			s:Number(decDMS[2])
-			});
+//		var raHMS = "16 28 24.504";
+//		var decDMS = "-26 39 06.06";
+//		
+//		
+//		raHMS = raHMS.split(" ");
+//		decDMS = decDMS .split(" ");
+//		
+//		var raDeg = hms2RaDeg({
+//			h:Number(raHMS[0]), 
+//			m:Number(raHMS[1]), 
+//			s:Number(raHMS[2])
+//			});
+//		var decDeg = dms2DecDeg({
+//			d:Number(decDMS[0]), 
+//			m:Number(decDMS[1]), 
+//			s:Number(decDMS[2])
+//			});
 		
 //		currentObj.getJSON("https://sky.esa.int/esasky-tap/catalogs", currentObj.loadCatalogues);
 		

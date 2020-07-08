@@ -33,7 +33,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		currentObj.maxOrder = 9;
 		
 		currentObj.sphericalGrid = false;
-		currentObj.xyzRefCoord = false;
+		currentObj.xyzRefCoord = true;
 		currentObj.equatorialGrid = false;
 		
 		// below this value we switch from AllSky to HEALPix geometry/texture

@@ -9,7 +9,7 @@ function SystemEntity(){
 	var avgfps;
 	
     function init(){
-    	console.log("SystemEntity.init()");
+//    	console.log("SystemEntity.init()");
     }
  
     var _public = {

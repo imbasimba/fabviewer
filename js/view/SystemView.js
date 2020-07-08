@@ -9,7 +9,7 @@ function SystemView() {
 	var i = 0;
 
 	function init() {
-		console.log("SystemView.init()");
+//		console.log("SystemView.init()");
 		html = $("<div id='fps'>"
 				+ "<table style='width: 100%; text-align: center;'>" 
 				+ "	<tr>"
@@ -19,7 +19,8 @@ function SystemView() {
 				+ "	<td><div id='fpsvalue'></div></td>"
 				+ "	<td><div id='avgfpsvalue'></div></td>" 
 				+ "</tr>"
-				+ "</table></div>");
+				+ "</table></div>" 
+				+ "<div id='getFovPoly' class='button' >getFovPoly</div>");
 	}
 
 	var _public = {
@@ -30,6 +31,10 @@ function SystemView() {
 		setModel : function(model) {
 			$("#fpsvalue").html(model.getFps());
 			$("#avgfpsvalue").html(model.getAvgFps());
+		},
+		addFovPolyHandler : function(handler) {
+			console.log("addFovPolyHandler ");
+			$("#getFovPoly").click(handler);
 		}
 	}
 

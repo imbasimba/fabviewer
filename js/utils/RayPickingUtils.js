@@ -57,7 +57,7 @@ function RayPickingUtils(){
 	 */
 	this.raySphere = function (rayOrigWorld, rayDirectionWorld, model){
 		
-		console.log(rayOrigWorld);
+//		console.log(rayOrigWorld);
 		var intersectionDistance = -1;
 		var distToMoldel = vec3.create();
 		vec3.subtract(rayOrigWorld, model.center, distToMoldel);
@@ -106,7 +106,7 @@ function RayPickingUtils(){
 			in_projectionMatrix, in_cameraObj, 
 			in_gl_canvas, in_modelObj){
 		
-		
+		// TODO it has been already computed in getIntersectionPointWithModel
 		var rayWorld = RayPickingUtilsObj.getRayFromMouse(in_mouseX, 
 				in_mouseY, 
 				in_projectionMatrix, 
@@ -227,7 +227,7 @@ function RayPickingUtils(){
 		
 		for (var i = 0; i < in_modelRepoObj.objModels.length; i++){
 			
-			console.log(in_cameraObj);
+//			console.log(in_cameraObj);
 			
 			currModel = in_modelRepoObj.objModels[i];
 				

@@ -4,7 +4,7 @@ function CatalogueListPresenter(_view){
     var model;
      
     function init(_view){
-    	console.log(_view);
+//    	console.log(_view);
     	view = _view;
          
     }

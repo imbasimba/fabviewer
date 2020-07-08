@@ -39,3 +39,16 @@
 /* 	height: 150px; */
 /* 	overflow: scroll; */
 /* } */
+
+.button {
+  border: none;
+  color: white;
+  padding: 5px 12px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  background-color: #008CBA;
+}

@@ -33,16 +33,16 @@ function FVPresenter(in_view, in_gl){
 
 		currentObj.raypicker = new RayPickingUtils();
 
-		var systemView = new SystemView();
-		systemPresenter = new SystemPresenter(systemView);
-		currentObj.view.appendChild(systemView.getHtml());
+//		var systemView = new SystemView();
+//		systemPresenter = new SystemPresenter(systemView);
+//		currentObj.view.appendChild(systemView.getHtml());
+//		
+//		var catalogueListView = new CatalogueListView();
+//		catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
+//		console.log(catalogueListView.getHtml());
+//		currentObj.view.appendChild(catalogueListView.getHtml());
 		
-		var catalogueListView = new CatalogueListView();
-		catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
-		console.log(catalogueListView.getHtml());
-		currentObj.view.appendChild(catalogueListView.getHtml());
-		
-		
+		currentObj.initPresenter();
 		
 		
 		currentObj.catalogueRepo = new CatalogueRepo("https://sky.esa.int/esasky-tap/catalogs", catalogueListPresenter.addCatalogues);
@@ -88,6 +88,70 @@ function FVPresenter(in_view, in_gl){
 		
 	};
 	
+	this.initPresenter = function(){
+		var systemView = new SystemView();
+		systemPresenter = new SystemPresenter(systemView);
+		currentObj.view.appendChild(systemView.getHtml());
+		systemPresenter.addFovPolyHandler(currentObj.getFovPoly);
+		
+		var catalogueListView = new CatalogueListView();
+		catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
+		currentObj.view.appendChild(catalogueListView.getHtml());
+	};
+	
+	this.getFovPoly = function(){
+		
+		console.log("this.getFovPoly");
+
+		var test = FoVUtils.getFoVPolygon3(
+				currentObj.pMatrix,
+				currentObj.camera.getCameraMatrix(),
+				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]).getModelMatrix()
+				);
+		
+		console.log(test);
+		
+		if (test.P_left != null && test.P_right != null){
+			var phiThetaDeg_left = cartesianToSpherical(test.P_left);
+			var raDecDeg_left = sphericalToAstroDeg(phiThetaDeg_left.phi, phiThetaDeg_left.theta);
+			console.log(raDecDeg_left);
+			
+			var phiThetaDeg_right = cartesianToSpherical(test.P_right);
+			var raDecDeg_right = sphericalToAstroDeg(phiThetaDeg_right.phi, phiThetaDeg_right.theta);
+			console.log(raDecDeg_right);	
+		}
+		
+		
+		
+//		var test = FoVUtils.getFoVPolygon(
+//		currentObj.view.canvas.width, 
+//		currentObj.view.canvas.height,
+//		currentObj.pMatrix,
+//		currentObj.camera,
+//		currentObj.modelRepo.objModels[currentObj.neareastModel.idx],
+//		in_gl.canvas,
+//		currentObj.raypicker);
+//		
+//		console.log(test);
+//		var point;
+//		var phiThetaDeg;
+//		var raDecDeg;
+//		var aladinString = "overlay.addFootprints([A.polygon([";
+//		for (var i = 0; i < test.length; i++){
+//			point = test[i];
+//			phiThetaDeg = cartesianToSpherical(point);
+//			raDecDeg = sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
+//			console.log(raDecDeg);
+//			aladinString += "["+raDecDeg.ra+","+raDecDeg.dec+"]";
+//			if (i < test.length - 1){
+//				aladinString += ", ";
+//			}
+//		}
+//		aladinString += "])";
+//console.log(aladinString);		
+		
+	};
+	
 	
 
 
@@ -123,6 +187,9 @@ function FVPresenter(in_view, in_gl){
 					currentObj.modelRepo
 					);
 //			console.log("[FVPresenter::handleMouseUp] intersectionWithModel.intersectionPoint "+intersectionWithModel.intersectionPoint);
+			if (intersectionWithModel.intersectionPoint.intersectionPoint === undefined){
+				return;
+			}
 			if (intersectionWithModel.intersectionPoint.intersectionPoint.length > 0){
 				
 				var phiThetaDeg = cartesianToSpherical(intersectionWithModel.intersectionPoint.intersectionPoint);
@@ -285,11 +352,12 @@ function FVPresenter(in_view, in_gl){
 		
 	};
 	
+	this.neareastModel;
 	this.refreshViewAndModel = function(pan) {
 		
-		console.log(currentObj.modelRepo);
+//		console.log(currentObj.modelRepo);
 		
-		var neareastModel = currentObj.raypicker.getNearestObjectOnRay(
+		currentObj.neareastModel = currentObj.raypicker.getNearestObjectOnRay(
 				currentObj.view.canvas.width / 2, 
 				currentObj.view.canvas.height / 2,
 				currentObj.pMatrix,
@@ -298,10 +366,10 @@ function FVPresenter(in_view, in_gl){
 				currentObj.modelRepo);
 					
 		
-		console.log(neareastModel);
-		var fovObj = currentObj.refreshFov(neareastModel.idx);
+		
+		var fovObj = currentObj.refreshFov(currentObj.neareastModel.idx);
 		currentObj.view.updateFoV(fovObj);
-		currentObj.refreshModel(neareastModel.idx, fovObj.getMinFoV(), pan);
+		currentObj.refreshModel(currentObj.neareastModel.idx, fovObj.getMinFoV(), pan);
 	};
 	
 	

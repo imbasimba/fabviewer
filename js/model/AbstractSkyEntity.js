@@ -98,6 +98,13 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
 		
 	};
 	
+	
+	this.getModelMatrix = function(){
+
+		return currentObj.modelMatrix;
+		
+	};
+	
 	this.setMatricesUniform = function(projectionMatrix, cameraMatrix){
 		
 		in_gl.uniformMatrix4fv(currentObj.shaderProgram.mMatrixUniform, false, currentObj.modelMatrix);

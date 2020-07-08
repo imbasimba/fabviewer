@@ -22,8 +22,13 @@ function SystemPresenter(_view){
     
     
     function init(_view){
-    	console.log("SystemPresenter.init()");
+//    	console.log("SystemPresenter.init()");
         view = _view;
+//        view.addFovPolyHandler(function(){
+//            // TODO call FovUtils.getFovPoly()
+//        	console.log("TODO call FovUtils.getFovPoly()");
+//        	
+//        });
         frameTimes = [];
         frameCursor = 0;
         numFrames = 0;   
@@ -33,6 +38,8 @@ function SystemPresenter(_view){
         var now = (new Date()).getTime() * 0.001;
         lastDrawTime = now;
         model = new SystemEntity();
+        
+        
     }
     
     function setModel(){
@@ -76,6 +83,16 @@ function SystemPresenter(_view){
         },
         getElapsedTime: function(){
         	return elapsedTime;
+        },
+        getFovPoly: function(){
+        	
+        },
+        addFovPolyHandler: function(handler){
+        	view.addFovPolyHandler(function(){
+                // TODO call FovUtils.getFovPoly()
+            	handler();
+            	
+            });
         }
         
     }

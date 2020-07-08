@@ -28,8 +28,8 @@ function CatalogueRepo(_descriptorURL, _addCataloguesCallback){
 		if (err !== null) {
 			alert('Something went wrong: ' + err);
 		} else {
-			console.log("Catalogue descriptors loaded");
-			console.log(data);
+//			console.log("Catalogue descriptors loaded");
+//			console.log(data);
 			catalogues = data;
 			_addCataloguesCallback(data);
 		}

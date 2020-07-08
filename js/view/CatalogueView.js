@@ -14,9 +14,10 @@ function CatalogueView(in_name){
         setModel: function(model){
         	
         	html.find("input").attr('id', model.getName());
+        	
             html.find("label").attr('for', model.getName());
             html.find("label").html(model.getName());
-//            console.log(html);
+
         },
         addCheckedHandler: function(handler){
             html.find("input").click(handler);
