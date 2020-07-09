@@ -103,52 +103,30 @@ function FVPresenter(in_view, in_gl){
 		
 		console.log("this.getFovPoly");
 
-		var test = FoVUtils.getFoVPolygon3(
+		FoVUtils.getFoVPolygon(
 				currentObj.pMatrix,
 				currentObj.camera.getCameraMatrix(),
 				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]).getModelMatrix()
 				);
-		
-		console.log(test);
-		
-		if (test.P_left != null && test.P_right != null){
-			var phiThetaDeg_left = cartesianToSpherical(test.P_left);
-			var raDecDeg_left = sphericalToAstroDeg(phiThetaDeg_left.phi, phiThetaDeg_left.theta);
-			console.log(raDecDeg_left);
-			
-			var phiThetaDeg_right = cartesianToSpherical(test.P_right);
-			var raDecDeg_right = sphericalToAstroDeg(phiThetaDeg_right.phi, phiThetaDeg_right.theta);
-			console.log(raDecDeg_right);	
-		}
-		
-		
-		
-//		var test = FoVUtils.getFoVPolygon(
-//		currentObj.view.canvas.width, 
-//		currentObj.view.canvas.height,
-//		currentObj.pMatrix,
-//		currentObj.camera,
-//		currentObj.modelRepo.objModels[currentObj.neareastModel.idx],
-//		in_gl.canvas,
-//		currentObj.raypicker);
+//		var test = FoVUtils.getFoVPolygon4(
+//				currentObj.pMatrix,
+//				currentObj.camera.getCameraMatrix(),
+//				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]).getModelMatrix()
+//				);
 //		
 //		console.log(test);
-//		var point;
-//		var phiThetaDeg;
-//		var raDecDeg;
-//		var aladinString = "overlay.addFootprints([A.polygon([";
-//		for (var i = 0; i < test.length; i++){
-//			point = test[i];
-//			phiThetaDeg = cartesianToSpherical(point);
-//			raDecDeg = sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
-//			console.log(raDecDeg);
-//			aladinString += "["+raDecDeg.ra+","+raDecDeg.dec+"]";
-//			if (i < test.length - 1){
-//				aladinString += ", ";
-//			}
+//		
+//		if (test.P_1 != null && test.P_2 != null){
+//			var phiThetaDeg_left = cartesianToSpherical(test.P_1);
+//			var raDecDeg_left = sphericalToAstroDeg(phiThetaDeg_left.phi, phiThetaDeg_left.theta);
+//			console.log(raDecDeg_left);
+//			
+//			var phiThetaDeg_right = cartesianToSpherical(test.P_2);
+//			var raDecDeg_right = sphericalToAstroDeg(phiThetaDeg_right.phi, phiThetaDeg_right.theta);
+//			console.log(raDecDeg_right);	
 //		}
-//		aladinString += "])";
-//console.log(aladinString);		
+		
+			
 		
 	};
 	
