@@ -103,8 +103,8 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_vMatrix, in_mMatrix){
 	C = M[11] - M[9];
 	D = M[15] - M[13];
 	var normDen = Math.sqrt(A*A + B*B + C*C + D*D);
-//	var topPlaneNormal = [M[3] - M[1], M[7] - M[5], M[11] - M[9], M[15] - M[13]];
-	var topPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
+	var topPlaneNormal = [M[3] - M[1], M[7] - M[5], M[11] - M[9], M[15] - M[13]];
+//	var topPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
 	
 	
 	// bottom plane normal
@@ -117,8 +117,8 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_vMatrix, in_mMatrix){
 	C = M[11] + M[9];
 	D = M[15] + M[13];
 	normDen = Math.sqrt(A*A + B*B + C*C + D*D);
-//	var bottomPlaneNormal = [M[3] + M[1], M[7] + M[5], M[11] + M[9], M[15] + M[13]];
-	var bottomPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
+	var bottomPlaneNormal = [M[3] + M[1], M[7] + M[5], M[11] + M[9], M[15] + M[13]];
+//	var bottomPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
 	
 	// right plane normal
 	// A = m41 - m11
@@ -130,8 +130,8 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_vMatrix, in_mMatrix){
 	C = M[11] - M[8];
 	D = M[15] - M[12];
 	normDen = Math.sqrt(A*A + B*B + C*C + D*D);
-//	var rightPlaneNormal = [M[3] - M[0], M[7] - M[4], M[11] - M[8], M[15] - M[12]];
-	var rightPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
+	var rightPlaneNormal = [M[3] - M[0], M[7] - M[4], M[11] - M[8], M[15] - M[12]];
+//	var rightPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
 	
 	
 	// left plane normal
@@ -144,8 +144,8 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_vMatrix, in_mMatrix){
 	C = M[11] + M[8];
 	D = M[15] + M[12];
 	normDen = Math.sqrt(A*A + B*B + C*C + D*D);
-//	var leftPlaneNormal = [M[3] + M[0], M[7] + M[4], M[11] + M[8], M[15] + M[12]];
-	var leftPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
+	var leftPlaneNormal = [M[3] + M[0], M[7] + M[4], M[11] + M[8], M[15] + M[12]];
+//	var leftPlaneNormal = [A/normDen, B/normDen, C/normDen, D/normDen];
 	
 	
 	var points;
