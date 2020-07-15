@@ -13,6 +13,8 @@ function RayPickingUtils(){
 		
 	};
 	
+	
+
 	this.getRayFromMouse =  function(in_mouseX, in_mouseY, in_projectionMatrix, in_cameraMatrix, in_gl_canvas ) {
 		
 		var rect = in_gl_canvas.getBoundingClientRect();
@@ -101,6 +103,17 @@ function RayPickingUtils(){
 	};
 	
 	
+	
+	
+	
+	// TODO pass only matrices
+	/**
+	 * 
+	 * if intersection:
+	 * 	returns vec3 as intersectionPoint,
+	 * else
+	 * 	 returns undefned as intersectionPoint,
+	 */
 	this.getIntersectionPointWithSingleModel = function(
 			in_mouseX, in_mouseY, 
 			in_projectionMatrix, in_cameraObj, 
@@ -116,10 +129,10 @@ function RayPickingUtils(){
 		var intersectionDistance = RayPickingUtilsObj.raySphere(
 				in_cameraObj.getCameraPosition(), rayWorld, in_modelObj);
 		
-		var intersectionPoint = undefined;
-		var intersectionModelPoint = [];
+		var intersectionPoint = intersectionModelPoint = [];
+//		var intersectionModelPoint = [];
 		var intersectionPoint4d;
-		var pickedObject;
+		var pickedObject; //TODO check if this is needed
 		
 		if (intersectionDistance >= 0){
 			
@@ -127,7 +140,7 @@ function RayPickingUtils(){
 			vec3.scale(rayWorld, intersectionDistance, intersectionPoint);
 			vec3.add(in_cameraObj.getCameraPosition(), intersectionPoint, intersectionPoint);
 			
-			intersectionModelPoint = [];
+//			intersectionModelPoint = [];
 			
 			intersectionPoint4d = [intersectionPoint[0], intersectionPoint[1], intersectionPoint[2], 1.0];
 			mat4.multiplyVec4(in_modelObj.getModelMatrixInverse(), intersectionPoint4d, intersectionModelPoint);

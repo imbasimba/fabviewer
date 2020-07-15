@@ -485,7 +485,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 							);
 					intersectionPoint = intersectionWithModel.intersectionPoint;
 
-					if (intersectionPoint != undefined){
+					if (intersectionPoint.length > 0){
 						currP = new Pointing(new Vec3(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]));
 
 						currPixNo = currentObj.healpix.ang2pix(currP);

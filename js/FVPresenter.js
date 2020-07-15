@@ -103,29 +103,24 @@ function FVPresenter(in_view, in_gl){
 		
 		console.log("this.getFovPoly");
 
-		FoVUtils.getFoVPolygon(
-				currentObj.pMatrix,
-				currentObj.camera.getCameraMatrix(),
-				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]).getModelMatrix()
-				);
-//		var test = FoVUtils.getFoVPolygon4(
+		
+		
+		
+//		FoVUtils.getFoVPolygon(
 //				currentObj.pMatrix,
 //				currentObj.camera.getCameraMatrix(),
 //				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]).getModelMatrix()
 //				);
-//		
-//		console.log(test);
-//		
-//		if (test.P_1 != null && test.P_2 != null){
-//			var phiThetaDeg_left = cartesianToSpherical(test.P_1);
-//			var raDecDeg_left = sphericalToAstroDeg(phiThetaDeg_left.phi, phiThetaDeg_left.theta);
-//			console.log(raDecDeg_left);
-//			
-//			var phiThetaDeg_right = cartesianToSpherical(test.P_2);
-//			var raDecDeg_right = sphericalToAstroDeg(phiThetaDeg_right.phi, phiThetaDeg_right.theta);
-//			console.log(raDecDeg_right);	
-//		}
 		
+		var raDecDeg = FoVUtils.getFoVPolygon(
+				currentObj.pMatrix,
+				currentObj.camera,
+				in_gl.canvas,
+				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]),
+				currentObj.raypicker
+				);
+
+		console.log(raDecDeg);
 			
 		
 	};
