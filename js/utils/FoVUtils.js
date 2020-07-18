@@ -105,6 +105,7 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_cameraObj, in_gl_canvas, in_mod
 	
 	*/
 	
+//	var fovPoly = new FoVPoly();
 	
 	
 	var in_vMatrix = in_cameraObj.getCameraMatrix();
@@ -112,20 +113,35 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_cameraObj, in_gl_canvas, in_mod
 	var canvasWidth = in_gl_canvas.clientWidth;
 	var canvasHeight = in_gl_canvas.clientHeight;
 	
-	var points = [];
+	var points = new Array();
 	
-	
+//	var obj = {};
 	// Starting FIRST type of check
 	var intersectionWithModel = in_raypicker.getIntersectionPointWithSingleModel(
 			0, 0, 
 			in_pMatrix, in_cameraObj, 
 			in_gl_canvas, in_modelObj);
+	// the screen is fully covered by the sphere. (CASE C) 
 	if (intersectionWithModel.intersectionPoint.length > 0){
 		var cornersPoints = FoVUtils.getScreenCornersIntersection(in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj, in_raypicker);
-//		if (cornersPoints.length == 8){
-
-			points = cornersPoints;
-//		}
+		
+		points = cornersPoints;
+		
+		
+//		points.push(topPoints[0], middleTopRight[0], rightPoints[0], middleRightBottom[0], bottomPoints[0], middleBottomLeft[0], leftPoints[0], middleLeftTop[0]);
+		
+		
+//		fovPoly.getCorners.push(cornersPoints[0]);
+//		fovPoly.getCorners.push(cornersPoints[2]);
+//		fovPoly.getCorners.push(cornersPoints[4]);
+//		fovPoly.getCorners.push(cornersPoints[6]);
+//		
+//		fovPoly.getTop.push(cornersPoints[1]);
+//		fovPoly.getRight.push(cornersPoints[3]);
+//		fovPoly.getBottom.push(cornersPoints[5]);
+//		fovPoly.getLeft.push(cornersPoints[7]);
+		
+		
 	}else{
 		// Starting SECOND type of check
 		var M = mat4.create();
@@ -160,80 +176,223 @@ FoVUtils.getFoVPolygon = function(in_pMatrix, in_cameraObj, in_gl_canvas, in_mod
 		
 		
 		
+		/**
+		 * START TEST
+		 */
 		
-		// this is the case when the screen's corners do not intersect the sphere
-		// testing the intersection of the top screen middle point and the sphere 
-		var intersectionWithModel = in_raypicker.getIntersectionPointWithSingleModel(
+		var intersectionTopMiddle = in_raypicker.getIntersectionPointWithSingleModel(
 				canvasWidth/2, 0, 
 				in_pMatrix, in_cameraObj, 
 				in_gl_canvas, in_modelObj);
-		var singlePoint_tb = false;
-		if (intersectionWithModel.intersectionPoint.length > 0){
-			// TOP and BOTTOM frustum points
-			var topPoints = FoVUtils.getFrustumIntersectionWithSphere(M, topPlaneNormal, leftPlaneNormal, rightPlaneNormal);
-			var bottomPoints = FoVUtils.getFrustumIntersectionWithSphere(M, bottomPlaneNormal, rightPlaneNormal, leftPlaneNormal);
-		}else{
-			singlePoint_tb = true;
-			// TOP and BOTTOM normal projections
-			var topPoints = FoVUtils.getNearestSpherePoint(topPlaneNormal);
-			var bottomPoints = FoVUtils.getNearestSpherePoint(bottomPlaneNormal);
-		}
-		
-		
-		var intersectionWithModel = in_raypicker.getIntersectionPointWithSingleModel(
+		var intersectionRightMiddle = in_raypicker.getIntersectionPointWithSingleModel(
+				canvasWidth, canvasHeight/2, 
+				in_pMatrix, in_cameraObj, 
+				in_gl_canvas, in_modelObj);
+		var intersectionBottomMiddle = in_raypicker.getIntersectionPointWithSingleModel(
+				canvasWidth/2, canvasHeight, 
+				in_pMatrix, in_cameraObj, 
+				in_gl_canvas, in_modelObj);
+		var intersectionLeftMiddle = in_raypicker.getIntersectionPointWithSingleModel(
 				0, canvasHeight/2, 
 				in_pMatrix, in_cameraObj, 
 				in_gl_canvas, in_modelObj);
-		var singlePoint_lr = false;
-		if (intersectionWithModel.intersectionPoint.length > 0){
-			// LEFT and RIGHT frustum points
-			var leftPoints = FoVUtils.getFrustumIntersectionWithSphere(M, leftPlaneNormal, bottomPlaneNormal, topPlaneNormal);
-			var rightPoints = FoVUtils.getFrustumIntersectionWithSphere(M, rightPlaneNormal, topPlaneNormal, bottomPlaneNormal);
-		}else{
-			singlePoint_lr = true;
-			// LEFT and RIGHT normal projections
+		
+		// zoomed out. half emisphere fully visible (CASE A) 
+		// TODO N.B. this is the less precise algo. To make more precise, instead of computing the middle point between 2 points, 
+		// it would be better to divide such segment into 3 or 4 and compute more intersection points with the sphere.
+		if (intersectionTopMiddle.intersectionPoint.length == 0 && intersectionRightMiddle.intersectionPoint.length == 0){
+			
+			var topPoints = FoVUtils.getNearestSpherePoint(topPlaneNormal);
+			var bottomPoints = FoVUtils.getNearestSpherePoint(bottomPlaneNormal);
 			var leftPoints = FoVUtils.getNearestSpherePoint(leftPlaneNormal);
 			var rightPoints = FoVUtils.getNearestSpherePoint(rightPlaneNormal);
+			// computing intermidiate points
+			var middleLeftTop = FoVUtils.computeMiddlePoint(leftPoints[0], topPoints[0]);
+			var middleTopRight = FoVUtils.computeMiddlePoint(topPoints[0], rightPoints[0]);
+			var middleRightBottom = FoVUtils.computeMiddlePoint(rightPoints[0], bottomPoints[0]);
+			var middleBottomLeft = FoVUtils.computeMiddlePoint(bottomPoints[0], leftPoints[0]);
+			
+			console.log("TOP    ("+topPoints[0].getRADeg()+", "+topPoints[0].getDecDeg()+")");
+			console.log("BOTTOM ("+bottomPoints[0].getRADeg()+", "+bottomPoints[0].getDecDeg()+")");
+			console.log("LEFT   ("+leftPoints[0].getRADeg()+", "+leftPoints[0].getDecDeg()+")");
+			console.log("RIGHT  ("+rightPoints[0].getRADeg()+", "+rightPoints[0].getDecDeg()+")");
+			
+			console.log("MID LT ("+middleLeftTop[0].getRADeg()+", "+middleLeftTop[0].getDecDeg()+")");
+			console.log("MID TR ("+middleTopRight[0].getRADeg()+", "+middleTopRight[0].getDecDeg()+")");
+			console.log("MID RB ("+middleRightBottom[0].getRADeg()+", "+middleRightBottom[0].getDecDeg()+")");
+			console.log("MID BL ("+middleBottomLeft[0].getRADeg()+", "+middleBottomLeft[0].getDecDeg()+")");
+			
+			// 8 points in total
+			points.push(topPoints[0], middleTopRight[0], rightPoints[0], middleRightBottom[0], bottomPoints[0], middleBottomLeft[0], leftPoints[0], middleLeftTop[0]);
+			
+		} else if(intersectionTopMiddle.intersectionPoint.length == 0){
+			// No intersection between top/bottom frustum planes and the sphere (CASE E)
+			var topPoints = FoVUtils.getNearestSpherePoint(topPlaneNormal);
+			var bottomPoints = FoVUtils.getNearestSpherePoint(bottomPlaneNormal);
+			var leftPoints = FoVUtils.getFrustumIntersectionWithSphere(M, leftPlaneNormal, bottomPlaneNormal, topPlaneNormal);
+			var rightPoints = FoVUtils.getFrustumIntersectionWithSphere(M, rightPlaneNormal, topPlaneNormal, bottomPlaneNormal);
+			// computing intermidiate points
+			var middleLeftTop = FoVUtils.computeMiddlePoint(leftPoints[1], topPoints[0]);
+			var middleTopRight = FoVUtils.computeMiddlePoint(topPoints[0], rightPoints[0]);
+			var middleRightBottom = FoVUtils.computeMiddlePoint(rightPoints[1], bottomPoints[0]);
+			var middleBottomLeft = FoVUtils.computeMiddlePoint(bottomPoints[0], leftPoints[0]);
+			// 10 points in total
+			points.push(topPoints[0], middleTopRight[0], rightPoints[0], rightPoints[1], middleRightBottom[0], bottomPoints[0], middleBottomLeft[0], leftPoints[0], leftPoints[1], middleLeftTop[0]);
+		
+		} else if(intersectionRightMiddle.intersectionPoint.length == 0){
+			// No intersection between right/left frustum planes and the sphere (CASE D)
+			var topPoints = FoVUtils.getFrustumIntersectionWithSphere(M, topPlaneNormal, leftPlaneNormal, rightPlaneNormal);
+			var bottomPoints = FoVUtils.getFrustumIntersectionWithSphere(M, bottomPlaneNormal, rightPlaneNormal, leftPlaneNormal);
+			var leftPoints = FoVUtils.getNearestSpherePoint(leftPlaneNormal);
+			var rightPoints = FoVUtils.getNearestSpherePoint(rightPlaneNormal);
+			// computing intermidiate points
+			var middleLeftTop = FoVUtils.computeMiddlePoint(leftPoints[0], topPoints[0]);
+			var middleTopRight = FoVUtils.computeMiddlePoint(topPoints[1], rightPoints[0]);
+			var middleRightBottom = FoVUtils.computeMiddlePoint(rightPoints[0], bottomPoints[0]);
+			var middleBottomLeft = FoVUtils.computeMiddlePoint(bottomPoints[1], leftPoints[0]);
+			// 10 points in total
+			points.push(topPoints[0], topPoints[1], middleTopRight[0], rightPoints[0], middleRightBottom[0], bottomPoints[0], bottomPoints[1], middleBottomLeft[0], leftPoints[0], middleLeftTop[0]);
+			
+		} else {
+			// all frustum planes intersect with the sphere, but the the screen is not fully covered. (CASE B)
+			var topPoints = FoVUtils.getFrustumIntersectionWithSphere(M, topPlaneNormal, leftPlaneNormal, rightPlaneNormal);
+			var bottomPoints = FoVUtils.getFrustumIntersectionWithSphere(M, bottomPlaneNormal, rightPlaneNormal, leftPlaneNormal);
+			var leftPoints = FoVUtils.getFrustumIntersectionWithSphere(M, leftPlaneNormal, bottomPlaneNormal, topPlaneNormal);
+			var rightPoints = FoVUtils.getFrustumIntersectionWithSphere(M, rightPlaneNormal, topPlaneNormal, bottomPlaneNormal);
+			// 8 points in total
+			points.push(topPoints[0], topPoints[1], rightPoints[0], rightPoints[1], bottomPoints[0], bottomPoints[1], leftPoints[0], leftPoints[1]);
+			
 		}
 		
-		for (var i = 0; i < topPoints.length; i++){
-			points.push(topPoints[i]);	
-		}
-		for (var i = 0; i < rightPoints.length; i++){
-			points.push(rightPoints[i]);	
-		}
-		for (var i = 0; i < bottomPoints.length; i++){
-			points.push(bottomPoints[i]);	
-		}
-		for (var i = 0; i < leftPoints.length; i++){
-			points.push(leftPoints[i]);	
+		
+//		console.log(points);
+		
+		for (var i = 0; i < points.length; i++){
+			console.log("("+points[i].getRADeg()+", "+points[i].getDecDeg()+")");
 		}
 		
+		/**
+		 * END TEST
+		 */
 		
-		if (singlePoint_lr || singlePoint_tb){
-			// TODO compute intermidiate arc points
-		}
-		
+//		// this is the case when the screen's corners do not intersect the sphere
+//		// testing the intersection of the top screen middle point and the sphere 
+//		var intersectionWithModel = in_raypicker.getIntersectionPointWithSingleModel(
+//				canvasWidth/2, 0, 
+//				in_pMatrix, in_cameraObj, 
+//				in_gl_canvas, in_modelObj);
+//		var singlePoint_tb = false;
+//		if (intersectionWithModel.intersectionPoint.length > 0){
+//			// TOP and BOTTOM frustum points
+//			var topPoints = FoVUtils.getFrustumIntersectionWithSphere(M, topPlaneNormal, leftPlaneNormal, rightPlaneNormal);
+//			
+//			fovPoly.getTop.push(topPoints[0]);
+//			fovPoly.getTop.push(topPoints[1]);
+//			
+//			var bottomPoints = FoVUtils.getFrustumIntersectionWithSphere(M, bottomPlaneNormal, rightPlaneNormal, leftPlaneNormal);
+//
+//			fovPoly.getBottom.push(bottomPoints[0]);
+//			fovPoly.getBottom.push(bottomPoints[1]);
+//
+//			
+//		}else{
+//			singlePoint_tb = true;
+//			// TOP and BOTTOM normal projections
+//			var topPoints = FoVUtils.getNearestSpherePoint(topPlaneNormal);
+//			fovPoly.getTop.push(topPoints[0]);
+//			
+//			var bottomPoints = FoVUtils.getNearestSpherePoint(bottomPlaneNormal);
+//			fovPoly.getBottom.push(bottomPoints[0]);
+//		}
+//		
+//		
+//		var intersectionWithModel = in_raypicker.getIntersectionPointWithSingleModel(
+//				0, canvasHeight/2, 
+//				in_pMatrix, in_cameraObj, 
+//				in_gl_canvas, in_modelObj);
+//		var singlePoint_lr = false;
+//		if (intersectionWithModel.intersectionPoint.length > 0){
+//			// LEFT and RIGHT frustum points
+//			var leftPoints = FoVUtils.getFrustumIntersectionWithSphere(M, leftPlaneNormal, bottomPlaneNormal, topPlaneNormal);
+//			
+//			fovPoly.getLeft.push(leftPoints[0]);
+//			fovPoly.getLeft.push(leftPoints[1]);
+//			
+//			var rightPoints = FoVUtils.getFrustumIntersectionWithSphere(M, rightPlaneNormal, topPlaneNormal, bottomPlaneNormal);
+//			
+//			fovPoly.getRight.push(rightPoints[0]);
+//			fovPoly.getRight.push(rightPoints[1]);
+//			
+//		}else{
+//			singlePoint_lr = true;
+//			// LEFT and RIGHT normal projections
+//			var leftPoints = FoVUtils.getNearestSpherePoint(leftPlaneNormal);
+//			fovPoly.getLeft.push(leftPoints[0]);
+//			
+//			var rightPoints = FoVUtils.getNearestSpherePoint(rightPlaneNormal);
+//			fovPoly.getRight.push(rightPoints[0]);
+//			
+//		}
+//		
+//		
+//		
+//		// zoomed out. The sphere is fully visible
+//		if (topPoints == 1 == leftPoints){
+//			
+//			var middleTopLeft = FoVUtils.computeMiddlePoint(fovPoly.getLeft[0], fovPoly.getTop[0]);
+//			var middleTopRight = FoVUtils.computeMiddlePoint(fovPoly.getTop[0], fovPoly.getRight[0]);
+//			var middleBottomRight = FoVUtils.computeMiddlePoint(fovPoly.getRight[0], fovPoly.getBottom[0]);
+//			var middleBottomLeft = FoVUtils.computeMiddlePoint(fovPoly.getBottom[0], fovPoly.getLeft[0]);
+//			fovPoly.addCorner(middleTopLeft[0]);
+//			fovPoly.addCorner(middleTopRight[0]);
+//			fovPoly.addCorner(middleBottomRight[0]);
+//			fovPoly.addCorner(middleBottomLeft[0]);
+//			
+//			
+//			
+//		}
+//		
+//		
+//		
+//		
+//		
+//		
+//		for (var i = 0; i < topPoints.length; i++){
+//			points.push(topPoints[i]);	
+//		}
+//		for (var i = 0; i < rightPoints.length; i++){
+//			points.push(rightPoints[i]);	
+//		}
+//		for (var i = 0; i < bottomPoints.length; i++){
+//			points.push(bottomPoints[i]);	
+//		}
+//		for (var i = 0; i < leftPoints.length; i++){
+//			points.push(leftPoints[i]);	
+//		}
+//		
+//		if (singlePoint_lr  && singlePoint_tb){
+//			FoVUtils.computeMiddlePoint(points[3], points[0]);
+//			FoVUtils.computeMiddlePoint(points[0], points[1]);
+//			FoVUtils.computeMiddlePoint(points[1], points[2]);
+//			FoVUtils.computeMiddlePoint(points[2], points[3]);
+//		}else if (singlePoint_lr ){
+//			FoVUtils.computeMiddlePoint(points[5], points[0]);
+//			FoVUtils.computeMiddlePoint(points[1], points[2]);
+//			FoVUtils.computeMiddlePoint(points[2], points[3]);
+//			FoVUtils.computeMiddlePoint(points[4], points[5]);
+//		}else if (singlePoint_tb ){
+//			FoVUtils.computeMiddlePoint(points[5], points[0]);
+//			FoVUtils.computeMiddlePoint(points[0], points[1]);
+//			FoVUtils.computeMiddlePoint(points[2], points[3]);
+//			FoVUtils.computeMiddlePoint(points[3], points[4]);
+//		}
+//		
 	}
-	
-	
-	
-	
-	
-	
-	// convert points from model coords to astro coords
-	var phiThetaDeg;
-	var raDecDeg = [];
-	
 	for (var i = 0; i < points.length; i++){
-		phiThetaDeg = cartesianToSpherical(points[i]);
-		raDecDeg.push(sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta));	
+		console.log("("+points[i].getRADeg()+", "+points[i].getDecDeg()+")");
 	}
 	
-	
-	
-	
-	return raDecDeg;
+	return points;
 	
 };
 
@@ -295,36 +454,70 @@ FoVUtils.getScreenCornersIntersection = function(in_pMatrix, in_cameraObj, in_gl
 			in_pMatrix, in_cameraObj, 
 			in_gl_canvas, in_modelObj);
 	if (topLeft.intersectionPoint.length > 0){
-		points.push(topLeft.intersectionPoint);	
+		points.push(new Point(topLeft.intersectionPoint));	
 	}
 	if (middleTop.intersectionPoint.length > 0){
-		points.push(middleTop.intersectionPoint);	
+		points.push(new Point(middleTop.intersectionPoint));	
 	}
 	if (topRight.intersectionPoint.length > 0){
-		points.push(topRight.intersectionPoint);	
+		points.push(new Point(topRight.intersectionPoint));	
 	}
 	if (middleRight.intersectionPoint.length > 0){
-		points.push(middleRight.intersectionPoint);	
+		points.push(new Point(middleRight.intersectionPoint));	
 	}
 	if (bottomRight.intersectionPoint.length > 0){
-		points.push(bottomRight.intersectionPoint);	
+		points.push(new Point(bottomRight.intersectionPoint));	
 	}
 	if (middleBottom.intersectionPoint.length > 0){
-		points.push(middleBottom.intersectionPoint);	
+		points.push(new Point(middleBottom.intersectionPoint));	
 	}
 	if (bottomLeft.intersectionPoint.length > 0){
-		points.push(bottomLeft.intersectionPoint);	
+		points.push(new Point(bottomLeft.intersectionPoint));
 	}
 	if (middleLeft.intersectionPoint !== undefined){
-		points.push(middleLeft.intersectionPoint);	
+		points.push(new Point(middleLeft.intersectionPoint));
 	}
-	
+
 	return points;
 };
 
 
 
-
+FoVUtils.computeMiddlePoint = function(point1, point2){
+	var points = [];
+	var x_s = y_s = z_s = 0;	// sphere center
+	var R = 1;	// sphere radius
+	var l, m, n;
+	var x_m, y_m, z_m;	// coordinates of the middle point of the segment point1-point2 
+	x_m = (point1.getX() + point2.getX()) / 2;
+	y_m = (point1.getY() + point2.getY()) / 2;
+	z_m = (point1.getZ() + point2.getZ()) / 2;
+	
+	l = x_m - x_s;
+	m = y_m - y_s;
+	n = z_m - z_s;
+	
+	var den = Math.sqrt(l*l + m*m + n*n);
+	var x_1 = x_s + (R * l) / den;
+	var y_1 = y_s + (R * m) / den;
+	var z_1 = z_s + (R * n) / den;
+	var dist_1_M = Math.sqrt( (x_1-x_m)*(x_1-x_m) + (y_1-y_m)*(y_1-y_m) + (z_1-z_m)*(z_1-z_m) );
+	
+	var x_2 = x_s - (R * l) / den;
+	var y_2 = y_s - (R * m) / den;
+	var z_2 = z_s - (R * n) / den;
+	var dist_2_M = Math.sqrt( (x_2-x_m)*(x_2-x_m) + (y_2-y_m)*(y_2-y_m) + (z_2-z_m)*(z_2-z_m) );
+	
+	
+	
+	if (dist_1_M < dist_2_M){
+		points.push(new Point([x_1, y_1, z_1]));
+	}else{
+		points.push(new Point([x_2, y_2, z_2]));
+	}
+	return points;
+	
+};
 
 
 /** 
@@ -360,7 +553,8 @@ FoVUtils.getNearestSpherePoint = function(plane){
 		P_intersection = P_1;
 	}
 	
-	points.push(P_intersection);
+	
+	points.push(new Point(P_intersection));
 	
 	return points;
 	
@@ -461,8 +655,8 @@ FoVUtils.getFrustumIntersectionWithSphere = function(M, plane4Sphere, plane4Circ
 		console.log("Top frustum plane not intersecting the sphere");
 		P_intersection_1 = P_intersection_2 = null;
 	}
-	points.push(P_intersection_1);
-	points.push(P_intersection_2);
+	points.push(new Point(P_intersection_1));
+	points.push(new Point(P_intersection_2));
 	return points;
 };
 
@@ -571,19 +765,19 @@ FoVUtils.getFrustumIntersectionWithSphere = function(M, plane4Sphere, plane4Circ
 FoVUtils.convert2Astro = function(test, string){
 
 
-console.log(string+" points");
-var phiThetaDeg_left = cartesianToSpherical(test.P_1);
-var raDecDeg_left = sphericalToAstroDeg(phiThetaDeg_left.phi, phiThetaDeg_left.theta);
-console.log(raDecDeg_left);
-
-var phiThetaDeg_right = cartesianToSpherical(test.P_2);
-var raDecDeg_right = sphericalToAstroDeg(phiThetaDeg_right.phi, phiThetaDeg_right.theta);
-console.log(raDecDeg_right);
-
-return {
-	"raDecDeg_1": raDecDeg_left,
-	"raDecDeg_2": raDecDeg_right
-}
+	console.log(string+" points");
+	var phiThetaDeg_left = cartesianToSpherical(test.P_1);
+	var raDecDeg_left = sphericalToAstroDeg(phiThetaDeg_left.phi, phiThetaDeg_left.theta);
+	console.log(raDecDeg_left);
+	
+	var phiThetaDeg_right = cartesianToSpherical(test.P_2);
+	var raDecDeg_right = sphericalToAstroDeg(phiThetaDeg_right.phi, phiThetaDeg_right.theta);
+	console.log(raDecDeg_right);
+	
+	return {
+		"raDecDeg_1": raDecDeg_left,
+		"raDecDeg_2": raDecDeg_right
+	}
 
 
 
@@ -592,6 +786,106 @@ return {
 
 
 
+
+
+//
+//function FoVPoly(){
+//	var corners;	// top-left, top-right, bottom-right, bottom-left
+//	var top;		// points in clockwise order
+//	var right;		// points in clockwise order
+//	var bottom;		// points in clockwise order
+//	var left;		// points in clockwise order
+//
+//
+//    function init(){
+//    	corners = [];
+//    	top = [];
+//    	right = [];
+//    	bottom = [];
+//    	left = [];
+//    }
+//
+//    var _public = {
+//
+//		// corners
+//		getCorners: function(){
+//            return corners;
+//        },
+//        getTopLeftCorner: function(){
+//            return corners[0];
+//        },
+//        getTopRightCorner: function(){
+//            return corner[1];
+//        },
+//        getBottomRightCorner: function(){
+//            return corners[2];
+//        },
+//        getBottomLeftCorner: function(){
+//            return corners[3];
+//        },
+//        // point: Point.js
+//        addCorner: function(point){
+//            corners.push(point);
+//        },
+//        // point: Point.js
+//        addTopLeftCorner: function(point){
+//            corners[0] = point;
+//        },
+//        // point: Point.js
+//        addTopRightCorner: function(point){
+//            corners[1] = point;
+//        },
+//        // point: Point.js
+//        addBottomRightCorner: function(point){
+//            corners[2] = point;
+//        },
+//        // point: Point.js
+//        addBottomLeftCorner: function(point){
+//            corners[3] = point;
+//        },
+//
+//        // top
+//        getTop: function(){
+//        	return top;
+//        },
+//        // point: Point.js
+//		addToTop: function(point){
+//			top.push(point);
+//		},
+//		
+//		// right
+//		getRight: function(){
+//        	return right;
+//        },
+//        // point: Point.js
+//		addToRight: function(point){
+//			right.push(point);
+//		},
+//		
+//		
+//		// bottom
+//		getBottom: function(){
+//        	return bottom;
+//        },
+//        // point: Point.js
+//		addToBottom: function(point){
+//			bottom.push(point);
+//		},
+//
+//		// left
+//		getLeft: function(){
+//        	return left;
+//        },
+//        // point: Point.js
+//		addToLeft: function(point){
+//			left.push(point);
+//		}
+//
+//    }
+// 
+//    init();
+//    return _public;	
+//}
 
 
 

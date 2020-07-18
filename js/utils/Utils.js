@@ -2,6 +2,11 @@
  * @author Fabrizio Giordano (Fab)
  */
 
+
+function Utils(){
+	
+}
+
 function cartesianToSpherical(xyz){
 	var dotXYZ = vec3.dot(xyz, xyz);
 
@@ -35,6 +40,29 @@ function cartesianToSpherical(xyz){
 	
 }
 
+
+Utils.cartesianToSpherical = function(xyz){
+	
+	var dotXYZ = vec3.dot(xyz, xyz);
+
+	var r = Math.sqrt(dotXYZ);	
+	
+	var theta = Math.acos(xyz[2]/r);
+	theta = radToDeg(theta);
+	
+	// NB: in atan(y/x) is written with params switched atan2(x, y)
+	var phi = Math.atan2(xyz[1],xyz[0]);
+	phi = radToDeg(phi);
+	if (phi < 0){
+		phi += 360;
+	}
+
+	return {
+		phi: phi, 
+		theta: theta
+	};
+};
+
 function degToRad(degrees) {
 	return degrees * Math.PI / 180;
 }
@@ -59,6 +87,24 @@ function sphericalToAstroDeg(phiDeg, thetaDeg){
 		dec: decDeg
 	};
 }
+
+
+Utils.sphericalToAstroDeg = function(phiDeg, thetaDeg){
+	var raDeg, decDeg;
+//	raDeg = 90 - phiDeg;
+	raDeg = phiDeg;
+	if (raDeg < 0){
+		raDeg += 360;
+	}
+	
+	decDeg = 90 - thetaDeg;
+	
+	return {
+		ra: raDeg,
+		dec: decDeg
+	};
+
+};
 
 function astroDegToSpherical(raDeg, decDeg){
 	
