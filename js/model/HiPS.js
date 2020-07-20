@@ -5,72 +5,82 @@
  * @param in_position - array of double e.g. [0.0, 0.0, -7]
  */
 
-function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils){
-	
-	AbstractSkyEntity.call(this, in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils);
-	var currentObj = this;
 
-	this.localInit = function(){
+
+class HiPS extends AbstractSkyEntity{
+	
+	constructor(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils){
 		
-		currentObj.radius = in_radius;
+		super(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils);
 		
-		currentObj.updateOnFoV = true;
+		this.radius = in_radius;
+		this.in_gl = in_gl;		
 		
-		currentObj.pixels = [];
-		currentObj.pixelsCache = [];
 		
-		currentObj.opacity = 1.00 * 100.0/100.0;
+		this.updateOnFoV = true;
 		
-		currentObj.norder = 3;
-		currentObj.prevNorder = currentObj.norder;
-		currentObj.texturesNeedRefresh = false; // true when changing HiPS or changing nside
+		this.pixels = [];
+		this.pixelsCache = [];
 		
-		var nside = Math.pow(2, currentObj.norder);
-		currentObj.healpix = new Healpix(nside);
-		currentObj.maxNPix = currentObj.healpix.getNPix();
+		this.opacity = 1.00 * 100.0/100.0;
 		
-		currentObj.URL = "http://skies.esac.esa.int/DSSColor/";
-		currentObj.maxOrder = 9;
+		this.norder = 3;
+		this.prevNorder = this.norder;
+		this.texturesNeedRefresh = false; // true when changing HiPS or changing nside
 		
-		currentObj.sphericalGrid = false;
-		currentObj.xyzRefCoord = true;
-		currentObj.equatorialGrid = false;
+		var nside = Math.pow(2, this.norder);
+		this.healpix = new Healpix(nside);
+		this.maxNPix = this.healpix.getNPix();
+		
+		this.URL = "http://skies.esac.esa.int/DSSColor/";
+		this.maxOrder = 9;
+		
+		this.sphericalGrid = false;
+		this.xyzRefCoord = true;
+		this.equatorialGrid = false;
 		
 		// below this value we switch from AllSky to HEALPix geometry/texture
-		currentObj.allskyFovLimit = 50.0;
+		this.allskyFovLimit = 50.0;
 		
-		currentObj.sphericalGrid = new SphericalGrid(1.004, in_gl);
+		this.sphericalGrid = new SphericalGrid(1.004, in_gl);
 		
-		currentObj.xyzRefSystem = new XYZSystem(in_gl);
+		this.xyzRefSystem = new XYZSystem(in_gl);
 		
-		currentObj.textures = [];
-		currentObj.textures.images = [];
+		this.textures = [];
+		this.textures.images = [];
 		
-//		console.log("[HiPS::localInit] currentObj.textures.images "+currentObj.textures.images)
+		this.below = false;
 		
-	};
+		
+		this.computePixels();
+		this.initShaders();
+		this.initBuffer();
+		this.initTexture();
+	}
 	
-	this.initShaders = function () {
+	initShaders () {
+		var _self = this;
 		var fragmentShader = getShader("hips-shader-fs");
 		var vertexShader = getShader("hips-shader-vs");
 
-		in_gl.attachShader(currentObj.shaderProgram, vertexShader);
-		in_gl.attachShader(currentObj.shaderProgram, fragmentShader);
-		in_gl.linkProgram(currentObj.shaderProgram);
+		this.in_gl.attachShader(this.shaderProgram, vertexShader);
+		this.in_gl.attachShader(this.shaderProgram, fragmentShader);
+		this.in_gl.linkProgram(this.shaderProgram);
 
-		if (!in_gl.getProgramParameter(currentObj.shaderProgram, in_gl.LINK_STATUS)) {
+		if (!this.in_gl.getProgramParameter(this.shaderProgram, this.in_gl.LINK_STATUS)) {
 			alert("Could not initialise shaders");
 		}
 
-		in_gl.useProgram(currentObj.shaderProgram);
+		this.in_gl.useProgram(this.shaderProgram);
 
-		currentObj.shaderProgram.vertexPositionAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aVertexPosition");
-		in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+		this.shaderProgram.vertexPositionAttribute = this.in_gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
+		this.in_gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 
-		currentObj.shaderProgram.textureCoordAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aTextureCoord");
-		in_gl.enableVertexAttribArray(currentObj.shaderProgram.textureCoordAttribute);
+		this.shaderProgram.textureCoordAttribute = this.in_gl.getAttribLocation(this.shaderProgram, "aTextureCoord");
+		this.in_gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
 
-		currentObj.setUniformLocation(); 
+		this.setUniformLocation(); 
+		
 		
 	    function getShader(id){
 	    	var shaderScript = document.getElementById(id);
@@ -89,42 +99,41 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 
 			var shader;
 			if (shaderScript.type == "x-shader/x-fragment") {
-				shader = in_gl.createShader(in_gl.FRAGMENT_SHADER);
+				shader = _self.in_gl.createShader(_self.in_gl.FRAGMENT_SHADER);
 			} else if (shaderScript.type == "x-shader/x-vertex") {
-				shader = in_gl.createShader(in_gl.VERTEX_SHADER);
+				shader = _self.in_gl.createShader(_self.in_gl.VERTEX_SHADER);
 			} else {
 				return null;
 			}
 
-			in_gl.shaderSource(shader, str);
-			in_gl.compileShader(shader);
+			_self.in_gl.shaderSource(shader, str);
+			_self.in_gl.compileShader(shader);
 
-			if (!in_gl.getShaderParameter(shader, in_gl.COMPILE_STATUS)) {
-				alert(in_gl.getShaderInfoLog(shader));
+			if (!_self.in_gl.getShaderParameter(shader, _self.in_gl.COMPILE_STATUS)) {
+				alert(_self.in_gl.getShaderInfoLog(shader));
 				return null;
 			}
 
 			return shader;
 	    }
 	    
-	};
+	}
 	
-	this.setUniformLocation = function(){
+	setUniformLocation (){
 
-		currentObj.shaderProgram.pMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uPMatrix");
-		currentObj.shaderProgram.mMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uMMatrix");
-		currentObj.shaderProgram.vMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uVMatrix");
-		currentObj.shaderProgram.samplerUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uSampler0");
-		currentObj.shaderProgram.uniformVertexTextureFactor = in_gl.getUniformLocation(currentObj.shaderProgram, "uFactor0");
-		in_gl.uniform1f(currentObj.shaderProgram.uniformVertexTextureFactor, 1.0);
+		this.shaderProgram.pMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+		this.shaderProgram.mMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uMMatrix");
+		this.shaderProgram.vMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uVMatrix");
+		this.shaderProgram.samplerUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uSampler0");
+		this.shaderProgram.uniformVertexTextureFactor = this.in_gl.getUniformLocation(this.shaderProgram, "uFactor0");
+		this.in_gl.uniform1f(this.shaderProgram.uniformVertexTextureFactor, 1.0);
 
-	};
+	}
 	
-	this.initBuffer = function () {
+	
+	initBuffer () {
 		
-		
-//		console.log("[HiPS::initBuffer]");
-		var nPixels = currentObj.pixels.length;
+		var nPixels = this.pixels.length;
 		var vertexPosition = new Float32Array(12*nPixels);
 
 		var facesVec3Array;
@@ -137,10 +146,10 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		for (var i=0; i < nPixels; i++){			
 			
 			facesVec3Array = new Array();
-			facesVec3Array = currentObj.healpix.getBoundaries(currentObj.pixels[i]);
+			facesVec3Array = this.healpix.getBoundaries(this.pixels[i]);
 			
 			
-			if (currentObj.radius != 1){
+			if (this.radius != 1){
 				// HiPS radius different from Healpix default radius 1. 
 				// Mapping HEALPix coordinates to the new sphere and radius
 				theta0 = Math.acos(facesVec3Array[0].z);
@@ -153,21 +162,21 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				phi2 = Math.atan2(facesVec3Array[2].y, facesVec3Array[2].x);
 				phi3 = Math.atan2(facesVec3Array[3].y, facesVec3Array[3].x);
 				
-				vertexPosition[12*i] = -currentObj.radius * Math.sin(theta0) * Math.cos(phi0);
-				vertexPosition[12*i+1] = currentObj.radius * Math.sin(theta0) * Math.sin(phi0);
-				vertexPosition[12*i+2] = currentObj.radius * Math.cos(theta0);
+				vertexPosition[12*i] = -this.radius * Math.sin(theta0) * Math.cos(phi0);
+				vertexPosition[12*i+1] = this.radius * Math.sin(theta0) * Math.sin(phi0);
+				vertexPosition[12*i+2] = this.radius * Math.cos(theta0);
 				
-				vertexPosition[12*i+3] = -currentObj.radius * Math.sin(theta1) * Math.cos(phi1);
-				vertexPosition[12*i+4] = currentObj.radius * Math.sin(theta1) * Math.sin(phi1);
-				vertexPosition[12*i+5] = currentObj.radius * Math.cos(theta1);
+				vertexPosition[12*i+3] = -this.radius * Math.sin(theta1) * Math.cos(phi1);
+				vertexPosition[12*i+4] = this.radius * Math.sin(theta1) * Math.sin(phi1);
+				vertexPosition[12*i+5] = this.radius * Math.cos(theta1);
 				
-				vertexPosition[12*i+6] = -currentObj.radius * Math.sin(theta2) * Math.cos(phi2);
-				vertexPosition[12*i+7] = currentObj.radius * Math.sin(theta2) * Math.sin(phi2);
-				vertexPosition[12*i+8] = currentObj.radius * Math.cos(theta2);
+				vertexPosition[12*i+6] = -this.radius * Math.sin(theta2) * Math.cos(phi2);
+				vertexPosition[12*i+7] = this.radius * Math.sin(theta2) * Math.sin(phi2);
+				vertexPosition[12*i+8] = this.radius * Math.cos(theta2);
 				
-				vertexPosition[12*i+9] = -currentObj.radius * Math.sin(theta3) * Math.cos(phi3);
-				vertexPosition[12*i+10] = currentObj.radius * Math.sin(theta3) * Math.sin(phi3);
-				vertexPosition[12*i+11] = currentObj.radius * Math.cos(theta3);
+				vertexPosition[12*i+9] = -this.radius * Math.sin(theta3) * Math.cos(phi3);
+				vertexPosition[12*i+10] = this.radius * Math.sin(theta3) * Math.sin(phi3);
+				vertexPosition[12*i+11] = this.radius * Math.cos(theta3);
 				
 			}else{
 				// Default Healpix radius 1
@@ -190,13 +199,8 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			}
 		}
 		
-//		console.log("[HiPS::initBuffer] currentObj.radius "+currentObj.radius ); 
-//		console.log("[HiPS::initBuffer] currentObj.pixels.length "+nPixels );
-//		console.log("[HiPS::initBuffer] currentObj.fovObj.getMinFoV() "+currentObj.fovObj.getMinFoV() );
-//		console.log("[HiPS::initBuffer] AllSky? "+ (currentObj.fovObj.getMinFoV()>= currentObj.allskyFovLimit) );
-		
 		var textureCoordinates = new Float32Array(8*nPixels);
-	    if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){ // AllSky
+	    if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
 	    	//0.037037037
 	    	var s_step=1/27;
 	    	//0.034482759
@@ -254,116 +258,118 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	    	
 	    }
 	    
-		currentObj.vertexPositionBuffer = in_gl.createBuffer();
-		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexPositionBuffer);
-		in_gl.bufferData(in_gl.ARRAY_BUFFER, vertexPosition, in_gl.STATIC_DRAW);
-		currentObj.vertexPositionBuffer.itemSize = 3;
-	    currentObj.vertexPositionBuffer.numItems = vertexPosition.length;
+	    this.vertexPositionBuffer = this.in_gl.createBuffer();
+		this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+		this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, vertexPosition, this.in_gl.STATIC_DRAW);
+		this.vertexPositionBuffer.itemSize = 3;
+		this.vertexPositionBuffer.numItems = vertexPosition.length;
 		
-		currentObj.vertexTextureCoordBuffer = in_gl.createBuffer();
-		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexTextureCoordBuffer); 
-		in_gl.bufferData(in_gl.ARRAY_BUFFER, textureCoordinates, in_gl.STATIC_DRAW);
-		currentObj.vertexTextureCoordBuffer.itemSize = 2;
-		currentObj.vertexTextureCoordBuffer.numItems = textureCoordinates.length;
+		this.vertexTextureCoordBuffer = this.in_gl.createBuffer();
+		this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.vertexTextureCoordBuffer); 
+		this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, textureCoordinates, this.in_gl.STATIC_DRAW);
+		this.vertexTextureCoordBuffer.itemSize = 2;
+		this.vertexTextureCoordBuffer.numItems = textureCoordinates.length;
 	    
 		
-	    currentObj.vertexIndexBuffer = in_gl.createBuffer();
-	    in_gl.bindBuffer(in_gl.ELEMENT_ARRAY_BUFFER, currentObj.vertexIndexBuffer);
-	    in_gl.bufferData(in_gl.ELEMENT_ARRAY_BUFFER, vertexIndices, in_gl.STATIC_DRAW);
-	    currentObj.vertexIndexBuffer.itemSize = 1;
-	    currentObj.vertexIndexBuffer.numItems = vertexIndices.length;
+		this.vertexIndexBuffer = this.in_gl.createBuffer();
+	    this.in_gl.bindBuffer(this.in_gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
+	    this.in_gl.bufferData(this.in_gl.ELEMENT_ARRAY_BUFFER, vertexIndices, this.in_gl.STATIC_DRAW);
+	    this.vertexIndexBuffer.itemSize = 1;
+	    this.vertexIndexBuffer.numItems = vertexIndices.length;
 	    
 	};
 	
-	this.initTexture = function (now) {
+	initTexture (now) {
 	    
-		if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){ // AllSky
+		
+		
+		if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
 			
-			currentObj.textures = in_gl.createTexture();
+			this.textures = this.in_gl.createTexture();
 			
-			if (currentObj.textures.images === undefined){
-				currentObj.textures.images = [];
+			if (this.textures.images === undefined){
+				this.textures.images = [];
 			}
-			if (currentObj.textures.cache === undefined){
-				currentObj.textures.cache = [];
+			if (this.textures.cache === undefined){
+				this.textures.cache = [];
 			}
-			currentObj.textures.cache.splice(0, currentObj.textures.cache.length);
+			this.textures.cache.splice(0, this.textures.cache.length);
 			
-			currentObj.textures.images[0] = in_gl.createTexture();
+			this.textures.images[0] = this.in_gl.createTexture();
 			
-			currentObj.textures.images[0].image = new Image();
-		    
-			currentObj.textures.images[0].image.onload = function () {
+			this.textures.images[0].image = new Image();
+		    var _self = this;
+			this.textures.images[0].image.onload = function () {
 		        
-		    	handleLoadedTexture(currentObj.textures.images[0], 0);
+		    	handleLoadedTexture(_self.textures.images[0], 0);
 		    
 		    };
 		    
-		    currentObj.textures.images[0].image.setAttribute('crossorigin', 'anonymous');
-		    currentObj.textures.images[0].image.setAttribute('crossOrigin', 'anonymous');
-		    currentObj.textures.images[0].image.crossOrigin = "anonymous";
-		    currentObj.textures.images[0].image.src = currentObj.URL+"/Norder3/Allsky.jpg";
+		    this.textures.images[0].image.setAttribute('crossorigin', 'anonymous');
+		    this.textures.images[0].image.setAttribute('crossOrigin', 'anonymous');
+		    this.textures.images[0].image.crossOrigin = "anonymous";
+		    this.textures.images[0].image.src = this.URL+"/Norder3/Allsky.jpg";
 		    		    
 		}else{
 			
-			if (currentObj.textures.images === undefined){
-				currentObj.textures.images = [];
+			if (this.textures.images === undefined){
+				this.textures.images = [];
 			}
-			if (currentObj.textures.cache === undefined){
-				currentObj.textures.cache = [];
+			if (this.textures.cache === undefined){
+				this.textures.cache = [];
 			}
 			
-			if (currentObj.texturesNeedRefresh){
+			if (this.texturesNeedRefresh){
 				console.log("[HiPS::initTexture]["+now+"] refreshing texture below AllSkyLimit");
 				
 				
-				for (var d=0; d < currentObj.textures.images.length; d++){
-					in_gl.deleteTexture(currentObj.textures.images[d]);
+				for (var d=0; d < this.textures.images.length; d++){
+					this.in_gl.deleteTexture(this.textures.images[d]);
 				}
 				
-				currentObj.textures.images.splice(0, currentObj.textures.images.length);
-				currentObj.textures.cache.splice(0, currentObj.textures.cache.length);
-				currentObj.texturesNeedRefresh = false;
+				this.textures.images.splice(0, this.textures.images.length);
+				this.textures.cache.splice(0, this.textures.cache.length);
+				this.texturesNeedRefresh = false;
 				
 			}
 			
 			
 			
-			for (var n=0; n < currentObj.pixels.length;n++){
+			for (var n=0; n < this.pixels.length;n++){
 				
-				var texCacheIdx = currentObj.pixelsCache.indexOf(currentObj.pixels[n]);
-				if (texCacheIdx !== -1 && currentObj.textures.cache.length > 0){
+				var texCacheIdx = this.pixelsCache.indexOf(this.pixels[n]);
+				if (texCacheIdx !== -1 && this.textures.cache.length > 0){
 				
-					if (currentObj.textures.cache[texCacheIdx] == undefined){
+					if (this.textures.cache[texCacheIdx] == undefined){
 						console.log("[HiPS::initTexture] missed in texcache but present in pixelcache"+texCacheIdx);
 					}else{
-						currentObj.textures.images[n] = in_gl.createTexture();
-						currentObj.textures.images[n] = currentObj.textures.cache[texCacheIdx];	
+						this.textures.images[n] = this.in_gl.createTexture();
+						this.textures.images[n] = this.textures.cache[texCacheIdx];	
 					}
 
 				}else{
 
-					currentObj.textures.images[n] = in_gl.createTexture();
+					this.textures.images[n] = this.in_gl.createTexture();
 									
-					currentObj.textures.images[n].image = new Image();
-					currentObj.textures.images[n].image.n = n;
-					var dirNumber = Math.floor(currentObj.pixels[n] / 10000) * 10000;
-
-					currentObj.textures.images[n].image.onload = function () {
+					this.textures.images[n].image = new Image();
+					this.textures.images[n].image.n = n;
+					var dirNumber = Math.floor(this.pixels[n] / 10000) * 10000;
+					var _self = this;
+					this.textures.images[n].image.onload = function () {
 				        // last param this.n is passed just for debug
-						handleLoadedTexture(currentObj.textures.images[this.n], 0, this.n);
+						handleLoadedTexture(_self.textures.images[this.n], 0, this.n);
 				    
 				    };
 				    
-				    currentObj.textures.images[n].image.setAttribute('crossorigin', 'anonymous');
-				    currentObj.textures.images[n].image.setAttribute('crossOrigin', 'anonymous');
-				    currentObj.textures.images[n].image.crossOrigin = "anonymous";
-				    currentObj.textures.images[n].image.src = currentObj.URL+"/Norder"+currentObj.norder+"/Dir"+dirNumber+"/Npix"+currentObj.pixels[n]+".jpg";
+				    this.textures.images[n].image.setAttribute('crossorigin', 'anonymous');
+				    this.textures.images[n].image.setAttribute('crossOrigin', 'anonymous');
+				    this.textures.images[n].image.crossOrigin = "anonymous";
+				    this.textures.images[n].image.src = this.URL+"/Norder"+this.norder+"/Dir"+dirNumber+"/Npix"+this.pixels[n]+".jpg";
 				}
 				
 				
 //				// TODO integrate a gl_texture cache
-//				currentObj.textures.images[n] = in_gl.createTexture();
+//				currentObj.textures.images[n] = this.in_gl.createTexture();
 //								
 //				currentObj.textures.images[n].image = new Image();
 //				currentObj.textures.images[n].image.n = n;
@@ -385,49 +391,48 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			    
 			}
 
-			currentObj.textures.cache = currentObj.textures.images.slice();
+			this.textures.cache = this.textures.images.slice();
 			
 		}
 		
 	    
 	    function handleLoadedTexture (gl_texture, shaderSkyIndex, idx){
 			
-	        in_gl.activeTexture(in_gl.TEXTURE0+shaderSkyIndex);
+	    	_self.in_gl.activeTexture(_self.in_gl.TEXTURE0+shaderSkyIndex);
 	        
-			in_gl.pixelStorei(in_gl.UNPACK_FLIP_Y_WEBGL, true);
-			in_gl.bindTexture(in_gl.TEXTURE_2D, gl_texture);
+	    	_self.in_gl.pixelStorei(_self.in_gl.UNPACK_FLIP_Y_WEBGL, true);
+	    	_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, gl_texture);
 			try{
-				in_gl.texImage2D(in_gl.TEXTURE_2D, 0, in_gl.RGBA, in_gl.RGBA, in_gl.UNSIGNED_BYTE, gl_texture.image);	
+				_self.in_gl.texImage2D(_self.in_gl.TEXTURE_2D, 0, _self.in_gl.RGBA, _self.in_gl.RGBA, _self.in_gl.UNSIGNED_BYTE, gl_texture.image);	
 			}catch(error){
 				console.error(error);
-				console.error("idx: "+idx+" currentObj.pixels[idx] "+currentObj.pixels[idx]);
-				console.error(currentObj.pixels);
+				console.error("idx: "+idx+" pixels[idx] "+_self.pixels[idx]);
+				console.error(_self.pixels);
 			}
 			
 			
-			if (currentObj.fovObj.getMinFoV() >= currentObj.allskyFovLimit){
+			if (_self.fovObj.getMinFoV() >= _self.allskyFovLimit){
 				// it's not a power of 2. Turn off mip and set wrapping to clamp to edge
-				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_WRAP_S, in_gl.CLAMP_TO_EDGE);
-				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_WRAP_T, in_gl.CLAMP_TO_EDGE);
-				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_MIN_FILTER, in_gl.LINEAR);
+				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_S, _self.in_gl.CLAMP_TO_EDGE);
+				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_T, _self.in_gl.CLAMP_TO_EDGE);
+				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MIN_FILTER, _self.in_gl.LINEAR);
 			    
 			}else{
-				in_gl.generateMipmap(in_gl.TEXTURE_2D);
-				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_MAG_FILTER, in_gl.NEAREST);
-				in_gl.texParameteri(in_gl.TEXTURE_2D, in_gl.TEXTURE_MIN_FILTER, in_gl.NEAREST);
+				_self.in_gl.generateMipmap(_self.in_gl.TEXTURE_2D);
+				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MAG_FILTER, _self.in_gl.NEAREST);
+				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MIN_FILTER, _self.in_gl.NEAREST);
 			}
 			
 			// TODO REVIEW uniformSamplerLoc[shaderSkyIndex] !!!
-			in_gl.uniform1i(currentObj.shaderProgram.samplerUniform, shaderSkyIndex);
+			_self.in_gl.uniform1i(_self.shaderProgram.samplerUniform, shaderSkyIndex);
 
-			if (!in_gl.isTexture(gl_texture)){
+			if (!_self.in_gl.isTexture(gl_texture)){
 		    	console.log("error in texture");
 		    }
-			in_gl.bindTexture(in_gl.TEXTURE_2D, null);
+			_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, null);
 	        
 		}
-	};
-	
+	}
 	
 	/* 
 	 * -it takes the (0,0,sphereRadius) vector
@@ -440,7 +445,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	 * -rotate model coords by camera rotation
 	 * -compute pixels numbers from rotated model coords and add them to currentObj.pixels
 	 */ 
-	this.updateVisiblePixels = function(
+	updateVisiblePixels (
 			in_camerObj, in_pMatrix, 
 			in_canvas, 
 			in_rayPickingObj, now){
@@ -448,13 +453,13 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		
 		
-		if (currentObj.getMinFoV() >= currentObj.allskyFovLimit) {
+		if (this.getMinFoV() >= this.allskyFovLimit) {
 			console.log("[HiPS::updateVisiblePixels] computing all pixels for AllSky");
 			this.computePixels();
 		}else{
 			
-			currentObj.pixelsCache = currentObj.pixels.slice();
-			currentObj.pixels.splice(0, currentObj.pixels.length);
+			this.pixelsCache = this.pixels.slice();
+			this.pixels.splice(0, this.pixels.length);
 			
 //			// Model point having only Z as radius
 //			var modelZPoint = [in_position[0], in_position[1], in_position[2] + currentObj.radius , 1.0];
@@ -467,11 +472,24 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 //			currentObj.pixels.splice(0, currentObj.pixels.length);
 			var xy = [];
 			var neighbours = [];
+			var intersectionWithModel = {
+					"intersectionPoint": null,
+					"pickedObject": null
+				};
+			var intersectionPoint = null;
+			var currP, currPixNo;
 			
 			// TODO probably it would be better to use query_disc_inclusive from HEALPix 
 			// against a polygon. Check my FHIPSWebGL2 project (BufferManager.js -> updateVisiblePixels)
-			for (var i =0; i <= maxX; i+=maxX/10){
-				for (var j =0; j <= maxY; j+=maxY/10){
+			var i = 0;
+			for (i =0; i <= maxX; i+=maxX/10){
+				var j = 0;
+				for (j =0; j <= maxY; j+=maxY/10){
+					
+					intersectionWithModel = {
+							"intersectionPoint": null,
+							"pickedObject": null
+						};
 					
 					xy = [i,j];
 
@@ -481,23 +499,24 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 							in_pMatrix, 
 							in_camerObj, 
 							in_canvas, 
-							currentObj
+							this
 							);
 					intersectionPoint = intersectionWithModel.intersectionPoint;
 
 					if (intersectionPoint.length > 0){
 						currP = new Pointing(new Vec3(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]));
 
-						currPixNo = currentObj.healpix.ang2pix(currP);
+						currPixNo = this.healpix.ang2pix(currP);
 						if (currPixNo >= 0){
-							neighbours = currentObj.healpix.neighbours(currPixNo);
-							if (currentObj.pixels.indexOf(currPixNo) == -1){
-								currentObj.pixels.push(currPixNo);
+							neighbours = this.healpix.neighbours(currPixNo);
+							if (this.pixels.indexOf(currPixNo) == -1){
+								this.pixels.push(currPixNo);
 							}
-							for (var k=0; k<neighbours.length; k++){
-								if (currentObj.pixels.indexOf(neighbours[k]) == -1){
+							var k = 0;
+							for (k=0; k<neighbours.length; k++){
+								if (this.pixels.indexOf(neighbours[k]) == -1){
 									if(neighbours[k] >= 0){
-										currentObj.pixels.push(neighbours[k]);	
+										this.pixels.push(neighbours[k]);	
 									}
 								}
 							}	
@@ -506,45 +525,40 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 				}
 			}	
 		}
-	};
+	}
 	
 	
 	// TODO pass the norder. If the norder is lower than 3 (FoV greather than 32 degrees), then use 768 pixels (norder=3),
 	// otherwise compute the pixels number 
-	this.computePixels = function(){
+	computePixels (){
 		
-		currentObj.pixels.splice(0, currentObj.pixels.length);
-		for (var i=0; i < currentObj.maxNPix;i++){
-			currentObj.pixels.push(i);
+		this.pixels.splice(0, this.pixels.length);
+		for (var i=0; i < this.maxNPix;i++){
+			this.pixels.push(i);
 		}
 		
-	};
+	}
 	
 	
 	
-	this.refreshModel = function(
-			in_fov, in_pan, 
-			in_camerObj, in_pMatrix, 
-			in_canvas, 
-			in_rayPickingObj
-			){
+	refreshModel (in_fov, in_pan, in_camerObj, in_pMatrix, in_canvas, in_rayPickingObj){
 		
 		var now = (new Date()).getTime();
 
-		if (in_pan && in_fov < currentObj.allskyFovLimit){
+		if (in_pan && in_fov < this.allskyFovLimit){
 			
-			currentObj.texturesNeedRefresh = false;
-			currentObj.updateVisiblePixels(
+			this.texturesNeedRefresh = false;
+			this.updateVisiblePixels(
 					in_camerObj, in_pMatrix, 
 					in_canvas, 
 					in_rayPickingObj,
 					now
 					);
-			currentObj.initBuffer();
+			this.initBuffer();
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			// THIS ONE SHOULD GO INTO DRAW (probabky hehe)!!!!!!!
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			currentObj.initTexture(now);
+			this.initTexture(now);
 		}else{
 			var nside, cnorder;
 			
@@ -572,129 +586,120 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			}
 			
 			
-			var needsRefresh = (currentObj.norder != cnorder) || 
-					(in_fov < currentObj.allskyFovLimit && currentObj.prevFoV >= currentObj.allskyFovLimit) || 
-					(in_fov > currentObj.allskyFovLimit && currentObj.prevFoV <= currentObj.allskyFovLimit);
+			var needsRefresh = (this.norder != cnorder) || 
+					(in_fov < this.allskyFovLimit && this.prevFoV >= this.allskyFovLimit) || 
+					(in_fov > this.allskyFovLimit && this.prevFoV <= this.allskyFovLimit);
 			
 			if ( needsRefresh ){
 				console.log("[HiPS::refreshModel] needsRefresh "+needsRefresh);
 				
-				currentObj.prevNorder = currentObj.norder;
+				this.prevNorder = this.norder;
 				
 				nside = Math.pow(2, cnorder);
-				currentObj.healpix = new Healpix(nside);
-				currentObj.maxNPix = currentObj.healpix.getNPix();
-				currentObj.norder = cnorder;
+				this.healpix = new Healpix(nside);
+				this.maxNPix = this.healpix.getNPix();
+				this.norder = cnorder;
 				// TODO refresh geometry
 				
 				// panning and zoom in/out
 				// compute visible pixels
 				// update buffers
 				// load textures
-				currentObj.texturesNeedRefresh = true;
-				currentObj.updateVisiblePixels(
-						in_camerObj, in_pMatrix, 
-						in_canvas, 
-						in_rayPickingObj,
-						now
-						);
-				currentObj.initBuffer();
-				currentObj.initTexture(now);
+				this.texturesNeedRefresh = true;
+				this.updateVisiblePixels(in_camerObj, in_pMatrix, in_canvas, in_rayPickingObj, now);
+				this.initBuffer();
+				this.initTexture(now);
 			}	
 		}
-		currentObj.prevFoV = in_fov;
-	};
+		this.prevFoV = in_fov;
+	}
 	
-	below = false;
 	
-	this.draw = function(pMatrix, vMatrix){
+	draw(pMatrix, vMatrix){
 
-		in_gl.useProgram(currentObj.shaderProgram);
+		this.in_gl.useProgram(this.shaderProgram);
 		
-		currentObj.shaderProgram.pMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uPMatrix");
-		currentObj.shaderProgram.mMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uMMatrix");
-		currentObj.shaderProgram.vMatrixUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uVMatrix");
-		currentObj.shaderProgram.samplerUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uSampler0");
-		currentObj.shaderProgram.uniformVertexTextureFactor = in_gl.getUniformLocation(currentObj.shaderProgram, "uFactor0");
-		currentObj.shaderProgram.sphericalGridEnabledUniform = in_gl.getUniformLocation(currentObj.shaderProgram, "uSphericalGrid");
+		this.shaderProgram.pMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+		this.shaderProgram.mMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uMMatrix");
+		this.shaderProgram.vMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uVMatrix");
+		this.shaderProgram.samplerUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uSampler0");
+		this.shaderProgram.uniformVertexTextureFactor = this.in_gl.getUniformLocation(this.shaderProgram, "uFactor0");
+		this.shaderProgram.sphericalGridEnabledUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uSphericalGrid");
 		
-		currentObj.shaderProgram.vertexPositionAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aVertexPosition");
-		currentObj.shaderProgram.textureCoordAttribute = in_gl.getAttribLocation(currentObj.shaderProgram, "aTextureCoord");
+		this.shaderProgram.vertexPositionAttribute = this.in_gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
+		this.shaderProgram.textureCoordAttribute = this.in_gl.getAttribLocation(this.shaderProgram, "aTextureCoord");
 
-		in_gl.uniform1f(currentObj.shaderProgram.uniformVertexTextureFactor, 1.0);		
-		in_gl.uniformMatrix4fv(currentObj.shaderProgram.mMatrixUniform, false, currentObj.modelMatrix);
-		in_gl.uniformMatrix4fv(currentObj.shaderProgram.pMatrixUniform, false, pMatrix);
-		in_gl.uniformMatrix4fv(currentObj.shaderProgram.vMatrixUniform, false, vMatrix);
+		this.in_gl.uniform1f(this.shaderProgram.uniformVertexTextureFactor, 1.0);		
+		this.in_gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.modelMatrix);
+		this.in_gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, pMatrix);
+		this.in_gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, vMatrix);
 		
-		currentObj.uniformVertexTextureFactorLoc = in_gl.getUniformLocation(currentObj.shaderProgram, "uFactor0");
+		this.uniformVertexTextureFactorLoc = this.in_gl.getUniformLocation(this.shaderProgram, "uFactor0");
 		
-		in_gl.uniform1f(currentObj.shaderProgram.sphericalGridEnabledUniform, 0.0);
+		this.in_gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, 0.0);
 
 				
-		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexPositionBuffer);
-		in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, currentObj.vertexPositionBuffer.itemSize, in_gl.FLOAT, false, 0, 0);
+		this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+		this.in_gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.vertexPositionBuffer.itemSize, this.in_gl.FLOAT, false, 0, 0);
 		
-		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.vertexTextureCoordBuffer);
-		in_gl.vertexAttribPointer(currentObj.shaderProgram.textureCoordAttribute, currentObj.vertexTextureCoordBuffer.itemSize, in_gl.FLOAT, false, 0, 0);
+		this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.vertexTextureCoordBuffer);
+		this.in_gl.vertexAttribPointer(this.shaderProgram.textureCoordAttribute, this.vertexTextureCoordBuffer.itemSize, this.in_gl.FLOAT, false, 0, 0);
 		
-		in_gl.bindBuffer(in_gl.ELEMENT_ARRAY_BUFFER, currentObj.vertexIndexBuffer);
+		this.in_gl.bindBuffer(this.in_gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
 		
-	    in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
-		in_gl.enableVertexAttribArray(currentObj.shaderProgram.textureCoordAttribute);
+	    this.in_gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
+		this.in_gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
 
 		
 		
 		// 4. draw
-		if (currentObj.getMinFoV() >= currentObj.allskyFovLimit){ // AllSky
-			in_gl.activeTexture(in_gl.TEXTURE0);
-			in_gl.bindTexture(in_gl.TEXTURE_2D, currentObj.textures.images[0]);
-			in_gl.uniform1f(currentObj.shaderProgram.uniformVertexTextureFactor, currentObj.opacity);
+		if (this.getMinFoV() >= this.allskyFovLimit){ // AllSky
+			this.in_gl.activeTexture(this.in_gl.TEXTURE0);
+			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0]);
+			this.in_gl.uniform1f(this.shaderProgram.uniformVertexTextureFactor, this.opacity);
 			
 			
-			if (below){
-				console.log("Switched to AllSky on FoV "+currentObj.getMinFoV());
-				below = false;
+			if (this.below){
+				console.log("Switched to AllSky on FoV "+this.getMinFoV());
+				this.below = false;
 			}
 			
-		    for (var i=0;i<currentObj.pixels.length;i++){
-		    	in_gl.drawElements(in_gl.TRIANGLES, 6, in_gl.UNSIGNED_SHORT, 12*i);
+		    for (var i=0;i<this.pixels.length;i++){
+		    	this.in_gl.drawElements(this.in_gl.TRIANGLES, 6, this.in_gl.UNSIGNED_SHORT, 12*i);
 	        }
 		    
 		}else{
 			
-			if (!below){
-				console.log("Switched to single textures on FoV "+currentObj.getMinFoV());
-				below = true;
+			if (!this.below){
+				console.log("Switched to single textures on FoV "+this.getMinFoV());
+				this.below = true;
 			}
 			
-			for (var i=0;i<currentObj.pixels.length;i++){
+			for (var i=0;i<this.pixels.length;i++){
 					
-				in_gl.activeTexture(in_gl.TEXTURE0);
-				in_gl.bindTexture(in_gl.TEXTURE_2D, currentObj.textures.images[i]);
-				in_gl.uniform1f(currentObj.uniformVertexTextureFactorLoc, currentObj.opacity);
+				this.in_gl.activeTexture(this.in_gl.TEXTURE0);
+				this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[i]);
+				this.in_gl.uniform1f(this.uniformVertexTextureFactorLoc, this.opacity);
 					
-				in_gl.drawElements(in_gl.TRIANGLES, 6, 
-						in_gl.UNSIGNED_SHORT, 12*i);
+				this.in_gl.drawElements(this.in_gl.TRIANGLES, 6, 
+						this.in_gl.UNSIGNED_SHORT, 12*i);
 			}
 			
 		}
-		if (currentObj.sphericalGrid) {
-	    	currentObj.sphericalGrid.draw(currentObj.shaderProgram);
+		if (this.sphericalGrid) {
+			this.sphericalGrid.draw(this.shaderProgram);
 	    }
-	    if (currentObj.equatorialGrid) {
-	    	currentObj.drawEquatorialGrid();
+	    if (this.equatorialGrid) {
+	    	this.drawEquatorialGrid();
 	    }
 	    
-	    if (currentObj.xyzRefCoord){
-			currentObj.xyzRefSystem.draw(currentObj.shaderProgram);	
+	    if (this.xyzRefCoord){
+	    	this.xyzRefSystem.draw(this.shaderProgram);	
 		}
-		
 
-		
-				
-	};
+	}
 	
-	this.drawSphericalGrid = function(){
+	drawSphericalGrid (){
 		
 		var x, y, z;
 		var r = 1.004;
@@ -702,7 +707,7 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 		
 		var thetaStep, phiStep;
 		
-		in_gl.uniform1f(currentObj.shaderProgram.sphericalGridEnabledUniform, 1.0);
+		this.in_gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, 1.0);
 		
 		thetaStep = 10;
 		phiStep = 10;
@@ -727,15 +732,15 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	
 			}
 
-			var phiVertexPositionBuffer = in_gl.createBuffer();
-			in_gl.bindBuffer(in_gl.ARRAY_BUFFER, phiVertexPositionBuffer);
-			in_gl.bufferData(in_gl.ARRAY_BUFFER, phiVertexPosition, in_gl.STATIC_DRAW);
+			var phiVertexPositionBuffer = this.in_gl.createBuffer();
+			this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, phiVertexPositionBuffer);
+			this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, phiVertexPosition, this.in_gl.STATIC_DRAW);
 
-			in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
+			this.in_gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 3, this.in_gl.FLOAT, false, 0, 0);
 
-			in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+			this.in_gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 
-			in_gl.drawArrays(in_gl.LINE_LOOP, 0, 360/phiStep);
+			this.in_gl.drawArrays(this.in_gl.LINE_LOOP, 0, 360/phiStep);
 		}
 		
 
@@ -764,15 +769,15 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 	
 			}
 			
-			var thetaVertexPositionBuffer = in_gl.createBuffer();
-			in_gl.bindBuffer(in_gl.ARRAY_BUFFER, thetaVertexPositionBuffer);
-			in_gl.bufferData(in_gl.ARRAY_BUFFER, thetaVertexPosition, in_gl.STATIC_DRAW);
+			var thetaVertexPositionBuffer = this.in_gl.createBuffer();
+			this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, thetaVertexPositionBuffer);
+			this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, thetaVertexPosition, this.in_gl.STATIC_DRAW);
 
-			in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
+			this.in_gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 3, this.in_gl.FLOAT, false, 0, 0);
 
-			in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+			this.in_gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 
-			in_gl.drawArrays(in_gl.LINE_LOOP, 0, 360/thetaStep);
+			this.in_gl.drawArrays(this.in_gl.LINE_LOOP, 0, 360/thetaStep);
 
 		}
 			
@@ -796,39 +801,28 @@ function HiPS(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_nam
 			 */
 			for (var k=0; k<3; k++){
 				
-				in_gl.uniform1f(currentObj.shaderProgram.sphericalGridEnabledUniform, k + 2.0);
+				this.in_gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, k + 2.0);
 				
 				refSysPosition[3] = versors[k][0];
 				refSysPosition[4] = versors[k][1];
 				refSysPosition[5] = versors[k][2];
 				
-				var refSysPositionBuffer = in_gl.createBuffer();
-				in_gl.bindBuffer(in_gl.ARRAY_BUFFER, refSysPositionBuffer);
-				in_gl.bufferData(in_gl.ARRAY_BUFFER, refSysPosition, in_gl.STATIC_DRAW);
+				var refSysPositionBuffer = this.in_gl.createBuffer();
+				this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, refSysPositionBuffer);
+				this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, refSysPosition, this.in_gl.STATIC_DRAW);
 
-				in_gl.vertexAttribPointer(currentObj.shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
+				this.in_gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 3, this.in_gl.FLOAT, false, 0, 0);
 
-				in_gl.enableVertexAttribArray(currentObj.shaderProgram.vertexPositionAttribute);
+				this.in_gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 
-				in_gl.drawArrays(in_gl.LINE_STRIP, 0, 2);
+				this.in_gl.drawArrays(this.in_gl.LINE_STRIP, 0, 2);
 				
 			}
 		
-	};
+	}
 
-	this.drawEquatorialGrid = function(){
+	drawEquatorialGrid (){
 		
-	};
+	}
 	
-
-	this.localInit();
-	this.computePixels();
-	this.initShaders();
-	this.initBuffer();
-//	console.log(currentObj.textures.images);
-	this.initTexture();
-//	console.log(currentObj.textures.images);
-
-	
-
 }

@@ -4,162 +4,149 @@
  * @param in_gl - GL context
  * @param in_position - array of double e.g. [0.0, 0.0, -7]
  */
-function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils){
+
+
+class AbstractSkyEntity{
 	
-	var currentObj = this;
-	
-	this.init = function(){
+	constructor(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils){
 		
-		currentObj.fovObj = new FoV(in_gl, in_canvas, currentObj);
-		
-		currentObj.refreshMe = false;
-		
-		currentObj.fovX_deg = 180;
-		
-		currentObj.fovY_deg = 180;
-		
-		currentObj.prevFoV = currentObj.fovX_deg;
-		
-		currentObj.name = in_name;
-		
-		currentObj.center = vec3.create(in_position);
-		
-		currentObj.radius = in_radius;
+		this.fovObj = new FoV(in_gl, in_canvas, this);
+		this.refreshMe = false;
+		this.fovX_deg = 180;
+		this.fovY_deg = 180;
+		this.prevFoV = this.fovX_deg;
+		this.name = in_name;
+		this.center = vec3.create(in_position);
+		this.radius = in_radius;
 		
 		
 		// GL related
-		currentObj.vertexTextureCoordBuffer = in_gl.createBuffer();
-		
-		currentObj.vertexPositionBuffer = in_gl.createBuffer();
-		
-		currentObj.vertexIndexBuffer = in_gl.createBuffer();
-		
-		currentObj.shaderProgram = in_gl.createProgram();
+		this.vertexTextureCoordBuffer = in_gl.createBuffer();
+		this.vertexPositionBuffer = in_gl.createBuffer();
+		this.vertexIndexBuffer = in_gl.createBuffer();
+		this.shaderProgram = in_gl.createProgram();
 		
 		// Matrices related
-		currentObj.T = mat4.create();
-		mat4.identity(currentObj.T);
+		this.T = mat4.create();
+		mat4.identity(this.T);
 		
-		currentObj.R = mat4.create();
-		mat4.identity(currentObj.R);
+		this.R = mat4.create();
+		mat4.identity(this.R);
 		
-		currentObj.modelMatrix = mat4.create();
-		mat4.identity(currentObj.modelMatrix);
+		this.modelMatrix = mat4.create();
+		mat4.identity(this.modelMatrix);
 		
-		currentObj.inverseModelMatrix = mat4.create();
-		mat4.identity(currentObj.inverseModelMatrix);
+		this.inverseModelMatrix = mat4.create();
+		mat4.identity(this.inverseModelMatrix);
 		
 		// Initial position
-		currentObj.translate(currentObj.center);
-		currentObj.rotate(in_xRad, in_yRad);
-		
-	};
+		this.translate(this.center);
+		this.rotate(in_xRad, in_yRad);
+	}
 	
-	this.translate = function(in_translation){
-		mat4.translate(currentObj.T, currentObj.center);
-		currentObj.refreshModelMatrix();
-	};
 	
-	this.rotate = function(rad1, rad2){
+	
+	
+	translate(in_translation){
+		mat4.translate(this.T, this.center);
+		this.refreshModelMatrix();
+	}
+	
+	rotate(rad1, rad2){
 
-	    mat4.rotate(currentObj.R, rad2, [0, 0, 1]);
-		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
+	    mat4.rotate(this.R, rad2, [0, 0, 1]);
+		mat4.rotate(this.R, rad1, [1, 0, 0]);
 	    
-	    currentObj.refreshModelMatrix();
+		this.refreshModelMatrix();
 
-	};
+	}
 
-	this.rotateFromZero = function(rad1, rad2){
+	rotateFromZero(rad1, rad2){
 		
-		mat4.identity(currentObj.R);
+		mat4.identity(this.R);
+		mat4.rotate(this.R, rad1, [1, 0, 0]);
+	    mat4.rotate(this.R, rad2, [0, 0, 1]);
+	    this.refreshModelMatrix();
 
-		mat4.rotate(currentObj.R, rad1, [1, 0, 0]);
-
-	    mat4.rotate(currentObj.R, rad2, [0, 0, 1]);
-	    
-	    currentObj.refreshModelMatrix();
-
-	};
+	}
 	
-	this.refreshModelMatrix = function(){
+	refreshModelMatrix(){
 		
 		var R_inverse = mat4.create();
 		mat4.identity(R_inverse);
-		mat4.inverse(currentObj.R, R_inverse);
-		mat4.multiply(currentObj.T, R_inverse, currentObj.modelMatrix);
+		mat4.inverse(this.R, R_inverse);
+		mat4.multiply(this.T, R_inverse, this.modelMatrix);
 		
-	};
+	}
 	
-	this.getModelMatrixInverse = function(){
+	getModelMatrixInverse(){
 		
-		mat4.identity(currentObj.inverseModelMatrix);
-		mat4.inverse(currentObj.modelMatrix, currentObj.inverseModelMatrix);
-		return currentObj.inverseModelMatrix;
+		mat4.identity(this.inverseModelMatrix);
+		mat4.inverse(this.modelMatrix, this.inverseModelMatrix);
+		return this.inverseModelMatrix;
 		
-	};
+	}
 	
 	
-	this.getModelMatrix = function(){
-
-		return currentObj.modelMatrix;
-		
-	};
+	getModelMatrix(){
+		return this.modelMatrix;
+	}
 	
-	this.setMatricesUniform = function(projectionMatrix, cameraMatrix){
+	setMatricesUniform (projectionMatrix, cameraMatrix){
 		
-		in_gl.uniformMatrix4fv(currentObj.shaderProgram.mMatrixUniform, false, currentObj.modelMatrix);
-		in_gl.uniformMatrix4fv(currentObj.shaderProgram.pMatrixUniform, false, projectionMatrix);
-		in_gl.uniformMatrix4fv(currentObj.shaderProgram.vMatrixUniform, false, cameraMatrix);
+		in_gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.modelMatrix);
+		in_gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, projectionMatrix);
+		in_gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, cameraMatrix);
 		
-	};
+	}
 	
-	this.initShaders = function(){
+	initShaders (){
 		// Abstract
-	};
+	}
 	
-	this.initBuffers = function(){
+	initBuffers(){
 		// Abstract
-	};
+	}
 	
-	this.initTextures = function(){
+	initTextures (){
 		// Abstract
-	};
+	}
 	
-	this.draw = function(){
+	draw (){
 		// Abstract
+	}
+	
+	drawAndSetMatrixUniform (projectionMatrix, cameraMatrix){
+		this.draw();
+		this.setMatricesUniform(projectionMatrix, cameraMatrix);
 	};
 	
-	this.drawAndSetMatrixUniform = function(projectionMatrix, cameraMatrix){
-		currentObj.draw();
-		currentObj.setMatricesUniform(projectionMatrix, cameraMatrix);
-	};
-	
-	this.refreshFoV = function (in_pMatrix, in_camera, in_raypicker){
+	refreshFoV(in_pMatrix, in_camera, in_raypicker){
 		
-		var fovObj = currentObj.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
+		var fovObj = this.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
 		return fovObj;
 		
-	};
+	}
 	
 	
-	this.refreshModel = function (in_fov, in_pan, in_camera){
+	refreshModel (in_fov, in_pan, in_camera){
 		// Abstract
 		console.log("[AbstractSkyEntity::refreshModel]");
-	};
+	}
 	
 	
 	
-	this.getMinFoV = function(){
-		return currentObj.fovObj.minFoV;
-	};
+	getMinFoV (){
+		return this.fovObj.minFoV;
+	}
 	
 	// Method overwritten by sons having hierarchical geometry (e.g. HiPS)
-	this.setGeometryNeedsToBeRefreshed = function (){
-		currentObj.refreshGeometryOnFoVChanged = false;
+	setGeometryNeedsToBeRefreshed (){
+		this.refreshGeometryOnFoVChanged = false;
 	};
 	
 	
-	this.rotateX = function(m, angle) {
+	rotateX (m, angle) {
         var c = Math.cos(angle);
         var s = Math.sin(angle);
         var mv1 = m[1], mv5 = m[5], mv9 = m[9];
@@ -176,7 +163,7 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
         
      }
 
-     this.rotateY = function(m, angle) {
+     rotateY (m, angle) {
         var c = Math.cos(angle);
         var s = Math.sin(angle);
         var mv0 = m[0], mv4 = m[4], mv8 = m[8];
@@ -191,8 +178,6 @@ function AbstractSkyEntity(in_radius, in_gl, in_canvas, in_position, in_xRad, in
         
         return m;
 	 }
-	 	
-	this.init();
 	
 	
 }
