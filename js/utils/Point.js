@@ -1,47 +1,99 @@
-function Point(in_xyz){
- 
-    var x, y, z;
-    var raDeg, decDeg;
- 
-    function init(){
-    	x = in_xyz[0];
-    	y = in_xyz[1];
-    	z = in_xyz[2];
-    	computeAstroCoords();
+class Point{
+	
+	constructor(in_xyz){
+		
+		this._x = in_xyz[0];
+		this._y = in_xyz[1];
+		this._z = in_xyz[2];
+		this._raDecDeg = this.computeAstroCoords(in_xyz);
+		
+	}
+	
+	computeAstroCoords(in_xyz){
+    	var phiThetaDeg = Utils.cartesianToSpherical([in_xyz[0], in_xyz[1], in_xyz[2]]);
+		var raDecDeg = Utils.sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
+		var raDecDeg = [raDecDeg.ra, raDecDeg.dec];
+		return raDecDeg;
+    }
+	
+	get x(){
+		return this._x;
+	}
+	
+	get y(){
+		return this._y;
+	}
+	
+	get z(){
+		return this._z;
+	}
+	
+	get xyz(){
+        return [this._x, this._y, this._z];
+    }
+	
+    get raDeg(){
+        return this._raDecDeg[0];
     }
     
-    function computeAstroCoords(){
-    	var phiThetaDeg = Utils.cartesianToSpherical([x, y, z]);
-		var raDecDeg = Utils.sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
-		raDeg = raDecDeg.ra;
-		decDeg = raDecDeg.dec;
+    get decDeg(){
+        return this._raDecDeg[1];
     }
- 
-    var _public = {
-
-		getX: function(){
-            return x;
-        },
-        getY: function(){
-            return y;
-        },
-        getZ: function(){
-            return z;
-        },
-        getXYZ: function(){
-            return [x, y, z];
-        },
-        getRADeg: function(){
-            return raDeg;
-        },
-        getDecDeg: function(){
-            return decDeg;
-        },
-        getRADecDeg: function(){
-            return [raDeg, decDeg];
-        }
+    
+    get raDecDeg(){
+        return this._raDecDeg;
     }
- 
-    init();
-    return _public;
+    
+    toString(){
+    	return this._raDecDeg[0]+","+this._raDecDeg[1];
+    }
 }
+
+
+//function Point(in_xyz){
+// 
+//    var x, y, z;
+//    var raDeg, decDeg;
+// 
+//    function init(){
+//    	x = in_xyz[0];
+//    	y = in_xyz[1];
+//    	z = in_xyz[2];
+//    	computeAstroCoords();
+//    }
+//    
+//    function computeAstroCoords(){
+//    	var phiThetaDeg = Utils.cartesianToSpherical([x, y, z]);
+//		var raDecDeg = Utils.sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
+//		raDeg = raDecDeg.ra;
+//		decDeg = raDecDeg.dec;
+//    }
+// 
+//    var _public = {
+//
+//		getX: function(){
+//            return x;
+//        },
+//        getY: function(){
+//            return y;
+//        },
+//        getZ: function(){
+//            return z;
+//        },
+//        getXYZ: function(){
+//            return [x, y, z];
+//        },
+//        getRADeg: function(){
+//            return raDeg;
+//        },
+//        getDecDeg: function(){
+//            return decDeg;
+//        },
+//        getRADecDeg: function(){
+//            return [raDeg, decDeg];
+//        }
+//    }
+// 
+//    init();
+//    return _public;
+//}

@@ -32,7 +32,7 @@ function FVPresenter(in_view, in_gl){
 		currentObj.camera = new Camera2([0.0, 0.0, 3.0]);
 
 		currentObj.raypicker = new RayPickingUtils();
-
+		global.rayPicker = currentObj.raypicker; 
 //		var systemView = new SystemView();
 //		systemPresenter = new SystemPresenter(systemView);
 //		currentObj.view.appendChild(systemView.getHtml());
@@ -313,6 +313,7 @@ function FVPresenter(in_view, in_gl){
 
 
 		var selectedModel = currentObj.modelRepo.objModels[neareastModelIdx];
+		global.model = selectedModel;
 		// compute FoV against the nearest object
 		// TODO this should be an object variable
 		selectedModel.refreshModel(
@@ -389,11 +390,17 @@ function FVPresenter(in_view, in_gl){
 				currentObj.refreshViewAndModel(true);
 			}
 		}
-
+		global.camera = currentObj.camera;
 		
 		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
 		in_gl.clear(in_gl.COLOR_BUFFER_BIT | in_gl.DEPTH_BUFFER_BIT);
+		global.gl = in_gl;
+		
+		// TODO move this part outside the draw loop. Not needed to reset the perspective matrix every loop cycle
 		mat4.perspective( currentObj.fovDeg, currentObj.aspectRatio, currentObj.nearPlane, currentObj.farPlane, currentObj.pMatrix );
+		if (global.pMatrix == null){
+			global.pMatrix = currentObj.pMatrix;
+		}
 		
 		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
 			

@@ -5,9 +5,9 @@
 
 class FoVUtils {
 	
-	constructor(inFovX = 180, inFovY = 180){
-		this._fovX_deg = in_FovX;
-		this._fovY_deg = in_FovY;
+	constructor(in_fovX = 180, in_fovY = 180){
+		this._fovX_deg = in_fovX;
+		this._fovY_deg = in_fovY;
 	}
 	
 	computeAngle (canvasX, canvasY, in_pMatrix, in_camera, in_model, in_canvas,
@@ -264,7 +264,7 @@ class FoVUtils {
 		
 		var i = 0;
 		for (i = 0; i < points.length; i++){
-			console.log("("+points[i].getRADeg()+", "+points[i].getDecDeg()+")");
+			console.log("("+points[i].raDeg+", "+points[i].decDeg+")");
 		}
 		
 		return points;
@@ -374,9 +374,9 @@ class FoVUtils {
 		var R = 1;	// sphere radius
 		var l, m, n;
 		var x_m, y_m, z_m;	// coordinates of the middle point of the segment point1-point2 
-		x_m = (point1.getX() + point2.getX()) / 2;
-		y_m = (point1.getY() + point2.getY()) / 2;
-		z_m = (point1.getZ() + point2.getZ()) / 2;
+		x_m = (point1.x + point2.x) / 2;
+		y_m = (point1.y + point2.y) / 2;
+		z_m = (point1.z + point2.z) / 2;
 		
 		l = x_m - x_s;
 		m = y_m - y_s;
@@ -552,6 +552,20 @@ class FoVUtils {
 		return points;
 	}
 	
+	
+	static getAstroFoVPolygon(points){
+		var poly = "";
+		var i = 0;
+		var point;
+		for (i = 0; i < points.length; i++){
+			point = points[i];
+			poly += point.toString();
+			if (i < points.length - 1){
+				poly += ",";
+			}
+		}
+		return poly;
+	}
 	
 }
 

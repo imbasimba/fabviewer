@@ -119,7 +119,7 @@ class AbstractSkyEntity{
 	drawAndSetMatrixUniform (projectionMatrix, cameraMatrix){
 		this.draw();
 		this.setMatricesUniform(projectionMatrix, cameraMatrix);
-	};
+	}
 	
 	refreshFoV(in_pMatrix, in_camera, in_raypicker){
 		
