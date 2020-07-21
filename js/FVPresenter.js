@@ -82,10 +82,9 @@ function FVPresenter(in_view, in_gl){
 		currentObj.view.setPickedObjectName(currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx].name);
 		
 		this.lastDrawTime = (new Date()).getTime() * 0.001;
-
-		// TODO organize shader programs in a STACK?
-//		currentObj.xyzRefSystemObj = new XYZSystem3(in_gl, currentObj.camera.getCameraPosition());
 		
+		this.refreshViewAndModel();
+
 	};
 	
 	this.initPresenter = function(){
