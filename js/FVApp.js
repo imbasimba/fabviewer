@@ -1,5 +1,5 @@
 /**
- * @author Fabrizio Giordano (Fab)
+ * @author Fabrizio Giordano (Fab77)
  */
 function FVApp(){
 	if (DEBUG){
@@ -35,9 +35,11 @@ function FVApp(){
 		
 		currentObj.view = new FVView(canvas);
 		
+		global.gl = currentObj.gl;
 		currentObj.presenter = new FVPresenter(currentObj.view, currentObj.gl);
 		
 		currentObj.fabVReqID = '';
+		
 		
 	};
 	

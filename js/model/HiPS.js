@@ -1,5 +1,5 @@
 /**
- * @author Fabrizio Giordano (Fab)
+ * @author Fabrizio Giordano (Fab77)
  * @param in_radius - number
  * @param in_gl - GL context
  * @param in_position - array of double e.g. [0.0, 0.0, -7]
@@ -200,7 +200,9 @@ class HiPS extends AbstractSkyEntity{
 		}
 		
 		var textureCoordinates = new Float32Array(8*nPixels);
-	    if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
+		
+		if (this.getMinFoV() >= this.allskyFovLimit){ // AllSky
+//	    if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
 	    	//0.037037037
 	    	var s_step=1/27;
 	    	//0.034482759
@@ -282,8 +284,8 @@ class HiPS extends AbstractSkyEntity{
 	initTexture (now) {
 	    
 		
-		
-		if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
+		if (this.getMinFoV() >= this.allskyFovLimit){ // AllSky
+//			if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
 			
 			this.textures = this.in_gl.createTexture();
 			
@@ -411,7 +413,8 @@ class HiPS extends AbstractSkyEntity{
 			}
 			
 			
-			if (_self.fovObj.getMinFoV() >= _self.allskyFovLimit){
+			if (_self.getMinFoV() >= _self.allskyFovLimit){
+//				if (_self.fovObj.getMinFoV() >= _self.allskyFovLimit){
 				// it's not a power of 2. Turn off mip and set wrapping to clamp to edge
 				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_S, _self.in_gl.CLAMP_TO_EDGE);
 				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_T, _self.in_gl.CLAMP_TO_EDGE);
@@ -445,12 +448,13 @@ class HiPS extends AbstractSkyEntity{
 	 * -rotate model coords by camera rotation
 	 * -compute pixels numbers from rotated model coords and add them to currentObj.pixels
 	 */ 
-	updateVisiblePixels (
-			in_camerObj, in_pMatrix, 
-			in_canvas, 
-			in_rayPickingObj, now){
+	updateVisiblePixels (now){
+//		updateVisiblePixels (
+//				in_camerObj, in_pMatrix, 
+//				in_canvas, 
+//				in_rayPickingObj, now){
 		
-		
+		var gl = global.gl;
 		
 		
 		if (this.getMinFoV() >= this.allskyFovLimit) {
@@ -466,9 +470,12 @@ class HiPS extends AbstractSkyEntity{
 //			
 //			mat4.multiplyVec4(in_camerObj.getCameraMatrix(), modelZPoint, modelZPoint);
 			
-			var maxX = in_canvas.width;
-			var maxY = in_canvas.height;
+			var maxX = gl.canvas.width;
+			var maxY = gl.canvas.height;
+//			var maxX = in_canvas.width;
+//			var maxY = in_canvas.height;
 
+			
 //			currentObj.pixels.splice(0, currentObj.pixels.length);
 			var xy = [];
 			var neighbours = [];
@@ -493,14 +500,8 @@ class HiPS extends AbstractSkyEntity{
 					
 					xy = [i,j];
 
-					intersectionWithModel = in_rayPickingObj.getIntersectionPointWithSingleModel(
-							xy[0], 
-							xy[1], 
-							in_pMatrix, 
-							in_camerObj, 
-							in_canvas, 
-							this
-							);
+					
+					intersectionWithModel = RayPickingUtils.getIntersectionPointWithSingleModel(xy[0], xy[1], this);
 					intersectionPoint = intersectionWithModel.intersectionPoint;
 
 					if (intersectionPoint.length > 0){
@@ -541,19 +542,21 @@ class HiPS extends AbstractSkyEntity{
 	
 	
 	
-	refreshModel (in_fov, in_pan, in_camerObj, in_pMatrix, in_canvas, in_rayPickingObj){
+	refreshModel (in_fov, in_pan){
+//		refreshModel (in_fov, in_pan, in_camerObj, in_pMatrix, in_canvas, in_rayPickingObj){
+		
+		
+		var camera = global.camera;
+		var pMatrix = global.pMatrix;
+		var gl = global.gl;
 		
 		var now = (new Date()).getTime();
 
 		if (in_pan && in_fov < this.allskyFovLimit){
 			
 			this.texturesNeedRefresh = false;
-			this.updateVisiblePixels(
-					in_camerObj, in_pMatrix, 
-					in_canvas, 
-					in_rayPickingObj,
-					now
-					);
+			this.updateVisiblePixels(now);
+
 			this.initBuffer();
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			// THIS ONE SHOULD GO INTO DRAW (probabky hehe)!!!!!!!
@@ -606,7 +609,9 @@ class HiPS extends AbstractSkyEntity{
 				// update buffers
 				// load textures
 				this.texturesNeedRefresh = true;
-				this.updateVisiblePixels(in_camerObj, in_pMatrix, in_canvas, in_rayPickingObj, now);
+				this.updateVisiblePixels(now);
+//				this.updateVisiblePixels(in_camerObj, in_pMatrix, in_canvas, now);
+//				this.updateVisiblePixels(in_camerObj, in_pMatrix, in_canvas, in_rayPickingObj, now);
 				this.initBuffer();
 				this.initTexture(now);
 			}	

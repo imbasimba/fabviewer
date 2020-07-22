@@ -1,47 +1,18 @@
-//var global = {
-//	pMatrix: null,	// projection matrix (perspective)
-//	mvMatrix: null,	// model view matrix ? needed?
-//	model: null,	// selected object
-//	camera: null,	// the camera object
-//	gl: null		// GL context
-//};
-//
-//function refreshGlobalpMatrix(in_pMatrix){
-//	global.pMatrix = in_pMatrix;
-//}
-//
-//function refreshGlobalmvMatrix(in_mvMatrix){
-//	global.mvMatrix = in_mvMatrix;
-//}
-//
-//function refreshGlobalModel(in_model){
-//	global.model = in_model;
-//}
-//
-//function refreshGlobalCamera(in_camera){
-//	global.camera = in_camera;
-//}
-//
-//function refreshGlobalpMatrix(in_gl){
-//	global.gl = in_gl;
-//}
-//
-
-
+"use strict";
 class Global{
 	constructor(){
 		this._pMatrix = null;	// projection matrix (perspective)
-		this._mvMatrix = null;	// model view matrix ? needed?
+		this._mvMatrix = null;	// TODO model view matrix ? needed?
 		this._model = null;	// selected object
 		this._camera = null;	// the camera object
 		this._gl = null;		// GL context
-		this._rayPicker = null;
+		this._rayPicker = null;	// TODO probably useless here ince all methods are static
 	}
 	
 	get pMatrix(){
 		return this._pMatrix;
 	}
-	
+	// IS IT USED?!?
 	get mvMatrix(){
 		return this._mvMatrix;
 	}
@@ -65,7 +36,7 @@ class Global{
 	set pMatrix(in_pMatrix){
 		this._pMatrix = in_pMatrix;
 	}
-	
+	// TODO
 	set mvMatrix(in_mvMatrix){
 		this._mvMatrix = in_mvMatrix;
 	}
@@ -81,7 +52,7 @@ class Global{
 	set gl(in_gl){
 		this._gl = in_gl;
 	}
-	
+	// TODO
 	set rayPicker(in_rayPicker){
 		this._rayPicker = in_rayPicker;
 	}

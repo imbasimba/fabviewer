@@ -112,7 +112,8 @@ class FoVUtils {
 			compute the middle point in the arc between the perpendicular plane and the point above (1 point)
 
 	 */
-	static getFoVPolygon (in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj, in_raypicker){
+	static getFoVPolygon (in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj){
+//		static getFoVPolygon (in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj, in_raypicker){
 
 		var in_vMatrix = in_cameraObj.getCameraMatrix();
 		var in_mMatrix = in_modelObj.getModelMatrix();
@@ -122,13 +123,11 @@ class FoVUtils {
 		var points = [];
 		
 		// Starting FIRST type of check
-		var intersectionWithModel = in_raypicker.getIntersectionPointWithSingleModel(
-				0, 0, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		var intersectionWithModel = RayPickingUtils.getIntersectionPointWithSingleModel(0, 0);
+		
 		// the screen is fully covered by the sphere. (CASE C) 
 		if (intersectionWithModel.intersectionPoint.length > 0){
-			let cornersPoints = FoVUtils.getScreenCornersIntersection(in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj, in_raypicker);
+			let cornersPoints = FoVUtils.getScreenCornersIntersection(in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj);
 			
 			points = cornersPoints;
 			
@@ -184,25 +183,9 @@ class FoVUtils {
 			D = M[15] + M[12];	// D = m44 + m14
 			leftPlaneNormal = [M[3] + M[0], M[7] + M[4], M[11] + M[8], M[15] + M[12]];
 	
-			let intersectionTopMiddle = in_raypicker.getIntersectionPointWithSingleModel(
-					canvasWidth/2, 0, 
-					in_pMatrix, in_cameraObj, 
-					in_gl_canvas, in_modelObj);
-			let intersectionRightMiddle = in_raypicker.getIntersectionPointWithSingleModel(
-					canvasWidth, canvasHeight/2, 
-					in_pMatrix, in_cameraObj, 
-					in_gl_canvas, in_modelObj);
-			let intersectionBottomMiddle = in_raypicker.getIntersectionPointWithSingleModel(
-					canvasWidth/2, canvasHeight, 
-					in_pMatrix, in_cameraObj, 
-					in_gl_canvas, in_modelObj);
-			let intersectionLeftMiddle = in_raypicker.getIntersectionPointWithSingleModel(
-					0, canvasHeight/2, 
-					in_pMatrix, in_cameraObj, 
-					in_gl_canvas, in_modelObj);
-			
-			
-			
+			let intersectionTopMiddle = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth/2, 0);
+			let intersectionRightMiddle = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth, canvasHeight/2);
+	
 			
 			// zoomed out. half emisphere fully visible (CASE A) 
 			// TODO N.B. this is the less precise algo. To make more precise, instead of computing the middle point between 2 points, 
@@ -282,7 +265,8 @@ class FoVUtils {
 	 *  
 	 * return an array of intersection points in clockwise order. Top left point is in position 0
 	 */
-	static getScreenCornersIntersection(in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj, in_raypicker){
+	static getScreenCornersIntersection(in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj){
+//		static getScreenCornersIntersection(in_pMatrix, in_cameraObj, in_gl_canvas, in_modelObj, in_raypicker){
 		
 		var topLeft = null,
 		topRight = null,
@@ -300,41 +284,28 @@ class FoVUtils {
 		// TODO The code below can be replaced by 2 nested for loops 
 		
 		// Screen top
-		topLeft = in_raypicker.getIntersectionPointWithSingleModel(0, 0, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
 		
-		middleTop = in_raypicker.getIntersectionPointWithSingleModel(canvasWidth/2, 0, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		topLeft = RayPickingUtils.getIntersectionPointWithSingleModel(0, 0);
 		
-		topRight = in_raypicker.getIntersectionPointWithSingleModel(canvasWidth, 0, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		middleTop = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth/2, 0);
+		
+		topRight = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth, 0);
 		
 		
 		// screen middle right
-		middleRight = in_raypicker.getIntersectionPointWithSingleModel(canvasWidth, canvasHeight/2, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		middleRight = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth, canvasHeight/2);
 		
 		// screen bottom
-		bottomRight = in_raypicker.getIntersectionPointWithSingleModel(canvasWidth, canvasHeight, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		bottomRight = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth, canvasHeight);
 		
-		middleBottom = in_raypicker.getIntersectionPointWithSingleModel(canvasWidth/2, canvasHeight, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		middleBottom = RayPickingUtils.getIntersectionPointWithSingleModel(canvasWidth/2, canvasHeight);
 		
-		bottomLeft = in_raypicker.getIntersectionPointWithSingleModel(0, canvasHeight, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		bottomLeft = RayPickingUtils.getIntersectionPointWithSingleModel(0, canvasHeight);
 		
 		// screen middle left
-		middleLeft = in_raypicker.getIntersectionPointWithSingleModel(0, canvasHeight/2, 
-				in_pMatrix, in_cameraObj, 
-				in_gl_canvas, in_modelObj);
+		middleLeft = RayPickingUtils.getIntersectionPointWithSingleModel(0, canvasHeight/2);
+		
+
 		
 		if (topLeft.intersectionPoint.length > 0){
 			points.push(new Point(topLeft.intersectionPoint));	

@@ -67,14 +67,14 @@ CatalogueRepo.retriveByFoV = function(url, descriptor, callback){
 	
 	var fovPolyCartesian = FoVUtils.getFoVPolygon (global.pMatrix, global.camera, global.gl.canvas, global.model, global.rayPicker);
 	var fovPolyAstro = FoVUtils.getAstroFoVPolygon(fovPolyCartesian);
-	console.log("Into CatalogueRepo.retriveByFoV");
-	console.log(fovPolyAstro);
+//	console.log("Into CatalogueRepo.retriveByFoV");
+//	console.log(fovPolyAstro);
 	var adqlQuery = "select top 2000 * " +
 			"from "+tapTable+" where " +
 			"1=CONTAINS(POINT('ICRS',"+raDeg+", "+decDeg+"), " +
 			"POLYGON('ICRS', "+fovPolyAstro+"))";
 	var queryString = "/esasky-tap/tap/sync?request=doQuery&lang=ADQL&format=json&query="+encodeURI(adqlQuery);
-	
+	console.log(queryString);
 	
 	xhr.open('GET', url+queryString, true);
 	xhr.responseType = 'json';
@@ -82,6 +82,7 @@ CatalogueRepo.retriveByFoV = function(url, descriptor, callback){
 		var status = xhr.status;
 		if (status === 200) {
 			console.log(xhr.response);
+			alert(JSON.stringify(xhr.response));
 		} else {
 			alert('Something went wrong: ' + xhr.response);
 		}

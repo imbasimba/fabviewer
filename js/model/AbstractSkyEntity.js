@@ -10,7 +10,8 @@ class AbstractSkyEntity{
 	
 	constructor(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils){
 		
-		this.fovObj = new FoV(in_gl, in_canvas, this);
+		this.fovObj = new FoV(this);
+//		this.fovObj = new FoV(in_gl, in_canvas, this);
 		this.refreshMe = false;
 		this.fovX_deg = 180;
 		this.fovY_deg = 180;
@@ -121,9 +122,11 @@ class AbstractSkyEntity{
 		this.setMatricesUniform(projectionMatrix, cameraMatrix);
 	}
 	
-	refreshFoV(in_pMatrix, in_camera, in_raypicker){
+	refreshFoV(){
+//		refreshFoV(in_pMatrix, in_camera, in_raypicker){
 		
-		var fovObj = this.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
+		var fovObj = this.fovObj.getFoV();
+//		var fovObj = this.fovObj.getFoV(in_pMatrix, in_camera, in_raypicker);
 		return fovObj;
 		
 	}

@@ -1,8 +1,7 @@
+//"use strict";
 /**
  * @author Fabrizio Giordano (Fab)
  */
-"use strict";
-
 function FVPresenter(in_view, in_gl){
 	if (DEBUG){
 		console.log("[FVPresenter::FVPresenter]");
@@ -17,33 +16,13 @@ function FVPresenter(in_view, in_gl){
 		}
 		currentObj.view = in_view;
 		
-//		var catalogueListView = new CatalogueListView();
-//		var catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
-//		currentObj.view.appendChild(catalogueListView.getHtml());
-//		
-//		currentObj.view.addCatalogueCheckedHandler(function(){
-//            // check if the new checkbox got checked or deselected
-//			// if it has been deselected -> remove the overlay
-//			// if it has been selected -> load data and overlay (-> via ModelRepo)
-//        });
-		
-
 		currentObj.then = 0;
 		currentObj.camera = new Camera2([0.0, 0.0, 3.0]);
-
+		global.camera = currentObj.camera;
 		currentObj.raypicker = new RayPickingUtils();
 		global.rayPicker = currentObj.raypicker; 
-//		var systemView = new SystemView();
-//		systemPresenter = new SystemPresenter(systemView);
-//		currentObj.view.appendChild(systemView.getHtml());
-//		
-//		var catalogueListView = new CatalogueListView();
-//		catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
-//		console.log(catalogueListView.getHtml());
-//		currentObj.view.appendChild(catalogueListView.getHtml());
 		
 		currentObj.initPresenter();
-		
 		
 		currentObj.catalogueRepo = new CatalogueRepo("https://sky.esa.int/esasky-tap/catalogs", catalogueListPresenter.addCatalogues);
 		
@@ -72,18 +51,28 @@ function FVPresenter(in_view, in_gl){
 		currentObj.previousSeconds;
 		
 		currentObj.nearestVisibleObjectIdx = 0;
-		currentObj.raypicker.getNearestObjectOnRay(
-				currentObj.view.canvas.width / 2, 
-				currentObj.view.canvas.height / 2,
-				currentObj.pMatrix,
-				currentObj.camera,
-				in_gl.canvas,
-				currentObj.modelRepo);
+//		RayPickingUtils.getNearestObjectOnRay(currentObj.view.canvas.width / 2, currentObj.view.canvas.height / 2, currentObj.modelRepo);
+		
+//		RayPickingUtils.getNearestObjectOnRay(
+//				currentObj.view.canvas.width / 2, 
+//				currentObj.view.canvas.height / 2,
+//				currentObj.pMatrix,
+//				currentObj.camera,
+//				in_gl.canvas,
+//				currentObj.modelRepo);
+		
+//		currentObj.raypicker.getNearestObjectOnRay(
+//				currentObj.view.canvas.width / 2, 
+//				currentObj.view.canvas.height / 2,
+//				currentObj.pMatrix,
+//				currentObj.camera,
+//				in_gl.canvas,
+//				currentObj.modelRepo);
 		currentObj.view.setPickedObjectName(currentObj.modelRepo.objModels[currentObj.nearestVisibleObjectIdx].name);
 		
 		this.lastDrawTime = (new Date()).getTime() * 0.001;
 		
-		this.refreshViewAndModel();
+//		this.refreshViewAndModel();
 
 	};
 	
@@ -101,23 +90,20 @@ function FVPresenter(in_view, in_gl){
 	this.getFovPoly = function(){
 		
 		console.log("this.getFovPoly");
-
-		
-		
-		
-//		FoVUtils.getFoVPolygon(
-//				currentObj.pMatrix,
-//				currentObj.camera.getCameraMatrix(),
-//				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]).getModelMatrix()
-//				);
 		
 		var raDecDeg = FoVUtils.getFoVPolygon(
 				currentObj.pMatrix,
 				currentObj.camera,
 				in_gl.canvas,
-				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]),
-				currentObj.raypicker
+				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx])
 				);
+//		var raDecDeg = FoVUtils.getFoVPolygon(
+//				currentObj.pMatrix,
+//				currentObj.camera,
+//				in_gl.canvas,
+//				(currentObj.modelRepo.objModels[currentObj.neareastModel.idx]),
+//				currentObj.raypicker
+//				);
 
 		console.log(raDecDeg);
 			
@@ -150,14 +136,23 @@ function FVPresenter(in_view, in_gl){
 			currentObj.lastMouseY = event.clientY;
 			
 			
-			var intersectionWithModel = currentObj.raypicker.getIntersectionPointWithModel(
-					currentObj.lastMouseX, 
-					currentObj.lastMouseY, 
-					currentObj.pMatrix, 
-					currentObj.camera, 
-					in_gl.canvas, 
-					currentObj.modelRepo
-					);
+			var intersectionWithModel = RayPickingUtils.getIntersectionPointWithModel(currentObj.lastMouseX, currentObj.lastMouseY, currentObj.modelRepo);
+//			var intersectionWithModel = RayPickingUtils.getIntersectionPointWithModel(
+//					currentObj.lastMouseX, 
+//					currentObj.lastMouseY, 
+//					currentObj.pMatrix, 
+//					currentObj.camera, 
+//					in_gl.canvas, 
+//					currentObj.modelRepo
+//					);
+//			var intersectionWithModel = currentObj.raypicker.getIntersectionPointWithModel(
+//					currentObj.lastMouseX, 
+//					currentObj.lastMouseY, 
+//					currentObj.pMatrix, 
+//					currentObj.camera, 
+//					in_gl.canvas, 
+//					currentObj.modelRepo
+//					);
 //			console.log("[FVPresenter::handleMouseUp] intersectionWithModel.intersectionPoint "+intersectionWithModel.intersectionPoint);
 			if (intersectionWithModel.intersectionPoint.intersectionPoint === undefined){
 				return;
@@ -296,10 +291,11 @@ function FVPresenter(in_view, in_gl){
 
 		var selectedModel = currentObj.modelRepo.objModels[neareastModelIdx];
 
-		var fovXY =  selectedModel.refreshFoV(
-				currentObj.pMatrix,
-				currentObj.camera, 
-				currentObj.raypicker);
+		var fovXY =  selectedModel.refreshFoV();
+//		var fovXY =  selectedModel.refreshFoV(
+//				currentObj.pMatrix,
+//				currentObj.camera, 
+//				currentObj.raypicker);
 		
 		return fovXY;
 		
@@ -315,12 +311,13 @@ function FVPresenter(in_view, in_gl){
 		global.model = selectedModel;
 		// compute FoV against the nearest object
 		// TODO this should be an object variable
-		selectedModel.refreshModel(
-				fov, pan, 
-				currentObj.camera,
-				currentObj.pMatrix,
-				in_gl.canvas, 
-				currentObj.raypicker);
+		selectedModel.refreshModel(fov, pan);
+//		selectedModel.refreshModel(
+//				fov, pan, 
+//				currentObj.camera,
+//				currentObj.pMatrix,
+//				in_gl.canvas, 
+//				currentObj.raypicker);
 		
 		
 	};
@@ -330,19 +327,20 @@ function FVPresenter(in_view, in_gl){
 		
 //		console.log(currentObj.modelRepo);
 		
-		currentObj.neareastModel = currentObj.raypicker.getNearestObjectOnRay(
-				currentObj.view.canvas.width / 2, 
-				currentObj.view.canvas.height / 2,
-				currentObj.pMatrix,
-				currentObj.camera,
-				in_gl.canvas,
-				currentObj.modelRepo);
+		currentObj.neareastModel = RayPickingUtils.getNearestObjectOnRay(currentObj.view.canvas.width / 2, currentObj.view.canvas.height / 2, currentObj.modelRepo);
+//		currentObj.neareastModel = RayPickingUtils.getNearestObjectOnRay(
+//				currentObj.view.canvas.width / 2, 
+//				currentObj.view.canvas.height / 2,
+//				currentObj.pMatrix,
+//				currentObj.camera,
+//				in_gl.canvas,
+//				currentObj.modelRepo);
 					
 		
 		
 		var fovObj = currentObj.refreshFov(currentObj.neareastModel.idx);
 		currentObj.view.updateFoV(fovObj);
-		currentObj.refreshModel(currentObj.neareastModel.idx, fovObj.getMinFoV(), pan);
+		currentObj.refreshModel(currentObj.neareastModel.idx, fovObj.minFoV, pan);
 	};
 	
 	
@@ -389,16 +387,19 @@ function FVPresenter(in_view, in_gl){
 				currentObj.refreshViewAndModel(true);
 			}
 		}
-		global.camera = currentObj.camera;
+//		global.camera = currentObj.camera;
 		
 		in_gl.viewport(0, 0, in_gl.viewportWidth, in_gl.viewportHeight);
 		in_gl.clear(in_gl.COLOR_BUFFER_BIT | in_gl.DEPTH_BUFFER_BIT);
-		global.gl = in_gl;
+//		global.gl = in_gl;
 		
 		// TODO move this part outside the draw loop. Not needed to reset the perspective matrix every loop cycle
 		mat4.perspective( currentObj.fovDeg, currentObj.aspectRatio, currentObj.nearPlane, currentObj.farPlane, currentObj.pMatrix );
 		if (global.pMatrix == null){
+			console.log("Initializing view and model");
 			global.pMatrix = currentObj.pMatrix;
+			this.refreshViewAndModel();
+
 		}
 		
 		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
