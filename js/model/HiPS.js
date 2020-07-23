@@ -620,8 +620,7 @@ class HiPS extends AbstractSkyEntity{
 	}
 	
 	
-	draw(pMatrix, vMatrix){
-
+	enableShader(pMatrix, vMatrix){
 		this.in_gl.useProgram(this.shaderProgram);
 		
 		this.shaderProgram.pMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uPMatrix");
@@ -642,6 +641,33 @@ class HiPS extends AbstractSkyEntity{
 		this.uniformVertexTextureFactorLoc = this.in_gl.getUniformLocation(this.shaderProgram, "uFactor0");
 		
 		this.in_gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, 0.0);
+
+		
+	}
+	
+	draw(pMatrix, vMatrix){
+
+		this.enableShader(pMatrix, vMatrix);
+//		this.in_gl.useProgram(this.shaderProgram);
+//		
+//		this.shaderProgram.pMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+//		this.shaderProgram.mMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uMMatrix");
+//		this.shaderProgram.vMatrixUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uVMatrix");
+//		this.shaderProgram.samplerUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uSampler0");
+//		this.shaderProgram.uniformVertexTextureFactor = this.in_gl.getUniformLocation(this.shaderProgram, "uFactor0");
+//		this.shaderProgram.sphericalGridEnabledUniform = this.in_gl.getUniformLocation(this.shaderProgram, "uSphericalGrid");
+//		
+//		this.shaderProgram.vertexPositionAttribute = this.in_gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
+//		this.shaderProgram.textureCoordAttribute = this.in_gl.getAttribLocation(this.shaderProgram, "aTextureCoord");
+//
+//		this.in_gl.uniform1f(this.shaderProgram.uniformVertexTextureFactor, 1.0);		
+//		this.in_gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.modelMatrix);
+//		this.in_gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, pMatrix);
+//		this.in_gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, vMatrix);
+//		
+//		this.uniformVertexTextureFactorLoc = this.in_gl.getUniformLocation(this.shaderProgram, "uFactor0");
+//		
+//		this.in_gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, 0.0);
 
 				
 		this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.vertexPositionBuffer);

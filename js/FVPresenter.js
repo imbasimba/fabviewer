@@ -260,17 +260,7 @@ function FVPresenter(in_view, in_gl){
 					break;
 			}
 			currentObj.keyPressed = true;
-//			var neareastModel = currentObj.raypicker.getNearestObjectOnRay(
-//					currentObj.view.canvas.width / 2, 
-//					currentObj.view.canvas.height / 2,
-//					currentObj.pMatrix,
-//					currentObj.camera,
-//					in_gl.canvas,
-//					currentObj.modelRepo);
-//						
-//			var fovObj = currentObj.refreshFov(neareastModel.idx);
-//			currentObj.view.updateFoV(fovObj);
-//			currentObj.refreshModel(neareastModel.idx, fovObj.getMinFoV(), pan);
+
 		}
 		
 
@@ -292,11 +282,6 @@ function FVPresenter(in_view, in_gl){
 		var selectedModel = currentObj.modelRepo.objModels[neareastModelIdx];
 
 		var fovXY =  selectedModel.refreshFoV();
-//		var fovXY =  selectedModel.refreshFoV(
-//				currentObj.pMatrix,
-//				currentObj.camera, 
-//				currentObj.raypicker);
-		
 		return fovXY;
 		
 	};
@@ -312,32 +297,13 @@ function FVPresenter(in_view, in_gl){
 		// compute FoV against the nearest object
 		// TODO this should be an object variable
 		selectedModel.refreshModel(fov, pan);
-//		selectedModel.refreshModel(
-//				fov, pan, 
-//				currentObj.camera,
-//				currentObj.pMatrix,
-//				in_gl.canvas, 
-//				currentObj.raypicker);
-		
-		
+
 	};
 	
 	this.neareastModel;
 	this.refreshViewAndModel = function(pan) {
-		
-//		console.log(currentObj.modelRepo);
-		
+
 		currentObj.neareastModel = RayPickingUtils.getNearestObjectOnRay(currentObj.view.canvas.width / 2, currentObj.view.canvas.height / 2, currentObj.modelRepo);
-//		currentObj.neareastModel = RayPickingUtils.getNearestObjectOnRay(
-//				currentObj.view.canvas.width / 2, 
-//				currentObj.view.canvas.height / 2,
-//				currentObj.pMatrix,
-//				currentObj.camera,
-//				in_gl.canvas,
-//				currentObj.modelRepo);
-					
-		
-		
 		var fovObj = currentObj.refreshFov(currentObj.neareastModel.idx);
 		currentObj.view.updateFoV(fovObj);
 		currentObj.refreshModel(currentObj.neareastModel.idx, fovObj.minFoV, pan);
@@ -407,6 +373,19 @@ function FVPresenter(in_view, in_gl){
 			currentObj.modelRepo.objModels[i].draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 			
 		}
+		
+		var k,
+		catalogue;
+		for (k = 0; k < CatalogueRepo.catalogues.length; k++){
+			catalogue = CatalogueRepo.catalogues[k];
+			catalogue.draw();
+		}
+		
+//		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
+//			
+//			currentObj.modelRepo.objModels[i].enableShader(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
+//			
+//		}
 
 //		currentObj.xyzRefSystemObj.draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 	};

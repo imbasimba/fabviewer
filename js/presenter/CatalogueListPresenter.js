@@ -3,18 +3,18 @@
 
 class CatalogueListPresenter{
 	
-	_view = null;
-	_model = null;
+	#view = null;
+	#model = null;
 	
 	constructor(in_view){
 		
-		this._view = in_view;
-		this._model = null;
+		this.#view = in_view;
+		this.#model = null;
 //		var _self = this;
 	}
 	
 	get view(){
-        return this._view;
+        return this.#view;
     }
 	
 	// this cause a syntax error in Eclipse 4.15.0 since it doesn't support ES6 
@@ -24,7 +24,7 @@ class CatalogueListPresenter{
     		let model = new CatalogueDescriptor(catalogue);
             let cataloguePresenter = new CataloguePresenter(new CatalogueView());
             cataloguePresenter.model = model;
-            this._view.addCatalogue(cataloguePresenter.view);
+            this.#view.addCatalogue(cataloguePresenter.view);
     	}
     }
 	

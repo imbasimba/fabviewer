@@ -15,6 +15,7 @@ class CataloguePresenter{
         	console.log(self._model);
         	var results = CatalogueRepo.retriveByFoV("https://sky.esa.int/", self._model, null);
             // TODO overlay results
+        	
 
         });
 		

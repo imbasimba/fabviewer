@@ -26,7 +26,7 @@ class FoVUtils {
 		var cos_angle = 0;
 		var angle_rad = 0;
 		var angle_deg = 0;
-		
+
 		rayWorld = in_raypicker.getRayFromMouse(canvasX, canvasY, in_pMatrix, 
 				in_camera.getCameraMatrix(), in_canvas);
 		
@@ -308,28 +308,68 @@ class FoVUtils {
 
 		
 		if (topLeft.intersectionPoint.length > 0){
-			points.push(new Point(topLeft.intersectionPoint));	
+//			points.push(new Point(topLeft.intersectionPoint));
+			points.push(new Point({
+				"x": topLeft.intersectionPoint[0],
+				"y": topLeft.intersectionPoint[1],
+				"z": topLeft.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (middleTop.intersectionPoint.length > 0){
-			points.push(new Point(middleTop.intersectionPoint));	
+//			points.push(new Point(middleTop.intersectionPoint));
+			points.push(new Point({
+				"x": middleTop.intersectionPoint[0],
+				"y": middleTop.intersectionPoint[1],
+				"z": middleTop.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (topRight.intersectionPoint.length > 0){
-			points.push(new Point(topRight.intersectionPoint));	
+//			points.push(new Point(topRight.intersectionPoint));
+			points.push(new Point({
+				"x": topRight.intersectionPoint[0],
+				"y": topRight.intersectionPoint[1],
+				"z": topRight.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (middleRight.intersectionPoint.length > 0){
-			points.push(new Point(middleRight.intersectionPoint));	
+//			points.push(new Point(middleRight.intersectionPoint));
+			points.push(new Point({
+				"x": middleRight.intersectionPoint[0],
+				"y": middleRight.intersectionPoint[1],
+				"z": middleRight.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (bottomRight.intersectionPoint.length > 0){
-			points.push(new Point(bottomRight.intersectionPoint));	
+//			points.push(new Point(bottomRight.intersectionPoint));
+			points.push(new Point({
+				"x": bottomRight.intersectionPoint[0],
+				"y": bottomRight.intersectionPoint[1],
+				"z": bottomRight.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (middleBottom.intersectionPoint.length > 0){
-			points.push(new Point(middleBottom.intersectionPoint));	
+//			points.push(new Point(middleBottom.intersectionPoint));
+			points.push(new Point({
+				"x": middleBottom.intersectionPoint[0],
+				"y": middleBottom.intersectionPoint[1],
+				"z": middleBottom.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (bottomLeft.intersectionPoint.length > 0){
-			points.push(new Point(bottomLeft.intersectionPoint));
+//			points.push(new Point(bottomLeft.intersectionPoint));
+			points.push(new Point({
+				"x": bottomLeft.intersectionPoint[0],
+				"y": bottomLeft.intersectionPoint[1],
+				"z": bottomLeft.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 		if (middleLeft.intersectionPoint.length > 0){
-			points.push(new Point(middleLeft.intersectionPoint));
+//			points.push(new Point(middleLeft.intersectionPoint));
+			points.push(new Point({
+				"x": middleLeft.intersectionPoint[0],
+				"y": middleLeft.intersectionPoint[1],
+				"z": middleLeft.intersectionPoint[2]
+			}, CoordsType.CARTESIAN));
 		}
 
 		return points;
@@ -367,9 +407,19 @@ class FoVUtils {
 		
 		
 		if (dist_1_M < dist_2_M){
-			points.push(new Point([x_1, y_1, z_1]));
+//			points.push(new Point([x_1, y_1, z_1]));
+			points.push(new Point({
+				"x": x_1,
+				"y": y_1,
+				"z": z_1
+			}, CoordsType.CARTESIAN));
 		}else{
-			points.push(new Point([x_2, y_2, z_2]));
+//			points.push(new Point([x_2, y_2, z_2]));
+			points.push(new Point({
+				"x": x_2,
+				"y": y_2,
+				"z": z_2
+			}, CoordsType.CARTESIAN));
 		}
 		return points;
 		
@@ -383,9 +433,7 @@ class FoVUtils {
 	static getNearestSpherePoint(plane){
 		
 		var points = [];
-		var P_intersection = null,
-		P_intersection_1 = null,
-		P_intersection_2 = null;
+		var P_intersection = null;
 		
 		var A = plane[0],
 		B = plane[1],
@@ -414,7 +462,12 @@ class FoVUtils {
 		}
 		
 		
-		points.push(new Point(P_intersection));
+//		points.push(new Point(P_intersection));
+		points.push(new Point({
+			"x": P_intersection[0],
+			"y": P_intersection[1],
+			"z": P_intersection[2]
+		}, CoordsType.CARTESIAN));
 		
 		return points;
 		
@@ -518,8 +571,20 @@ class FoVUtils {
 			console.log("Top frustum plane not intersecting the sphere");
 			P_intersection_1 = P_intersection_2 = null;
 		}
-		points.push(new Point(P_intersection_1));
-		points.push(new Point(P_intersection_2));
+//		points.push(new Point(P_intersection_1));
+		points.push(new Point({
+			"x": P_intersection_1[0],
+			"y": P_intersection_1[1],
+			"z": P_intersection_1[2]	
+		}, CoordsType.CARTESIAN));
+		
+//		points.push(new Point(P_intersection_2));
+		points.push(new Point({
+			"x": P_intersection_2[0],
+			"y": P_intersection_2[1],
+			"z": P_intersection_2[2]	
+		}, CoordsType.CARTESIAN));
+		
 		return points;
 	}
 	
@@ -530,7 +595,7 @@ class FoVUtils {
 		var point;
 		for (i = 0; i < points.length; i++){
 			point = points[i];
-			poly += point.toString();
+			poly += point.toADQL();
 			if (i < points.length - 1){
 				poly += ",";
 			}

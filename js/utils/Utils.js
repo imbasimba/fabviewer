@@ -106,6 +106,30 @@ Utils.sphericalToAstroDeg = function(phiDeg, thetaDeg){
 
 };
 
+Utils.astroDegToSpherical = function(raDeg, decDeg){
+	var phiDeg, thetaDeg;
+//	phiDeg = 90 - raDeg;
+	phiDeg = raDeg;
+	if (phiDeg < 0){
+		phiDeg += 360;
+	}
+	
+	thetaDeg = 90 - decDeg;
+	
+	return {
+		phi: phiDeg,
+		theta: thetaDeg
+	};
+};
+
+Utils.sphericalToCartesian = function(phiDeg, thetaDeg, r){
+	var x = r * Math.sin(phiDeg) * Math.cos(thetaDeg);
+	var y = r * Math.sin(phiDeg) * Math.sin(thetaDeg);
+	var z = r * Math.cos(thetaDeg);
+	return [x, y, z];
+};
+
+
 function astroDegToSpherical(raDeg, decDeg){
 	
 	var phiDeg, thetaDeg;
@@ -122,6 +146,9 @@ function astroDegToSpherical(raDeg, decDeg){
 		theta: thetaDeg
 	};
 }
+
+
+
 
 function raDegToHMS(raDeg){
 	

@@ -1,162 +1,219 @@
-function Catalogue(in_radius, in_gl, in_canvas, in_position, 
-		in_xRad, in_yRad, in_name, in_fovUtils, cooFrame, refEpoch){
+"use strict";
+class Catalogue{
 	
-	AbstractSkyEntity.call(this, in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils);
-	var CatalogueObj = this;
+	#name;
+	#metadata;
+	#raIdx;
+	#decIdx;
+	#nameIdx;
+	#shaderProgram;
+	#gl;
+	#vertexCataloguePositionBuffer;
+	#vertexIndexBuffer;
+	#sources = [];
+	
+	constructor(in_name, in_metadata, in_raIdx, in_decIdx, in_nameIdx){
 
+		this.#name = in_name;
+		this.#metadata = in_metadata;
+		this.#raIdx = in_raIdx;
+		this.#decIdx = in_decIdx;
+		this.#nameIdx = in_nameIdx;
+		this.#gl = global.gl;
+		this.#shaderProgram = this.#gl.createProgram();
+		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
+		this.#vertexIndexBuffer = {
+				"itemSize": 3,
+				"numItems": 0
+		};
+			
+		this.initShaders();
+		
+	}
 	
-	this.localInit = function(){
-		CatalogueObj.sources = [];	// array of Source
-	};
-	
-	this.getName = function(){
-		return CatalogueObj.in_name;
-	};
 	
 	
 	
-	this.initShaders = function () {
-		var fragmentShader = getShader("cat-shader-fs");
-		var vertexShader = getShader("cat-shader-vs");
+	initShaders(){
+		
+		var self = this;
+		var gl = this.#gl;
+		var shaderProgram = this.#shaderProgram;
+		
+		var fragmentShader = this.loadShaderFromDOM("cat-shader-fs");
+		var vertexShader = this.loadShaderFromDOM("cat-shader-vs");
+		
+		gl.attachShader(shaderProgram, vertexShader);
+		gl.attachShader(shaderProgram, fragmentShader);
+		gl.linkProgram(shaderProgram);
 
-		in_gl.attachShader(CatalogueObj.shaderProgram, vertexShader);
-		in_gl.attachShader(CatalogueObj.shaderProgram, fragmentShader);
-		in_gl.linkProgram(CatalogueObj.shaderProgram);
-
-		if (!in_gl.getProgramParameter(CatalogueObj.shaderProgram, in_gl.LINK_STATUS)) {
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 			alert("Could not initialise shaders");
 		}
 
-		in_gl.useProgram(CatalogueObj.shaderProgram);
+		gl.useProgram(shaderProgram);
 
-		CatalogueObj.setUniformLocation(); 
+		// TODO USELESS
+		this.setUniformLocation();
 		
-	    function getShader(id){
-	    	var shaderScript = document.getElementById(id);
-			if (!shaderScript) {
-				return null;
-			}
-
-			var str = "";
-			var k = shaderScript.firstChild;
-			while (k) {
-				if (k.nodeType == 3) {
-					str += k.textContent;
-				}
-				k = k.nextSibling;
-			}
-
-			var shader;
-			if (shaderScript.type == "x-shader/x-fragment") {
-				shader = in_gl.createShader(in_gl.FRAGMENT_SHADER);
-			} else if (shaderScript.type == "x-shader/x-vertex") {
-				shader = in_gl.createShader(in_gl.VERTEX_SHADER);
-			} else {
-				return null;
-			}
-
-			in_gl.shaderSource(shader, str);
-			in_gl.compileShader(shader);
-
-			if (!in_gl.getShaderParameter(shader, in_gl.COMPILE_STATUS)) {
-				alert(in_gl.getShaderInfoLog(shader));
-				return null;
-			}
-
-			return shader;
+	}
+	
+	
+	loadShaderFromDOM(shaderId) {
+		var gl = this.#gl;
+		
+	    var shaderScript = document.getElementById(shaderId);
+	    
+	    // If we don't find an element with the specified id
+	    // we do an early exit 
+	    if (!shaderScript) {
+	    	return null;
 	    }
-	};
+	    
+	    // Loop through the children for the found DOM element and
+	    // build up the shader source code as a string
+	    var shaderSource = "";
+	    var currentChild = shaderScript.firstChild;
+	    while (currentChild) {
+	        if (currentChild.nodeType == 3) { // 3 corresponds to TEXT_NODE
+	      		shaderSource += currentChild.textContent;
+	        }
+	        currentChild = currentChild.nextSibling;
+	    }
+	    
+	    var shader;
+	    if (shaderScript.type == "x-shader/x-fragment") {
+	    	shader = gl.createShader(gl.FRAGMENT_SHADER);
+	    } else if (shaderScript.type == "x-shader/x-vertex") {
+	    	shader = gl.createShader(gl.VERTEX_SHADER);
+	    } else {
+	    	return null;
+	    }
+	    
+	    gl.shaderSource(shader, shaderSource);
+	    gl.compileShader(shader);
+	    
+	    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+	    	alert(gl.getShaderInfoLog(shader));
+	    	return null;
+	    } 
+	    return shader;
+	}
 	
-	this.setUniformLocation = function(){
-
-		CatalogueObj.shaderProgram.pMatrixUniform = in_gl.getUniformLocation(CatalogueObj.shaderProgram, "uPMatrix");
-		CatalogueObj.shaderProgram.mvMatrixUniform = in_gl.getUniformLocation(CatalogueObj.shaderProgram, "uMVMatrix");
-
-	};
 	
-	this.initBuffer = function () {
-		CatalogueObj.vertexCataloguePositionBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, CatalogueObj.vertexCataloguePositionBuffer);
-		var nSources = CatalogueObj.sources.length;
+	// TODO USELESS
+	setUniformLocation(){
+		
+		var gl = this.#gl;
+		var shaderProgram = this.#shaderProgram;
+
+		shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+		shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+
+	}
+	
+	
+	get name(){
+		return this.#name;
+	}
+	
+	get sources(){
+		return this.#sources;
+	}
+	
+	addSource(in_source){
+		this.#sources.push(in_source);
+	}
+	
+	/**
+	 * @param in_sources: it's the TAP response data object 
+	 */
+	addSources(in_data){
+		var j,
+		point,
+		source;
+		
+		for ( j = 0; j < in_data.length; j++){
+			
+			point = new Point({
+				"raDeg": in_data[this.#raIdx],
+				"decDeg": in_data[this.#decIdx]
+			}, CoordsType.ASTRO);
+			
+			source = new Source(point, in_data[this.#nameIdx], in_data[j]);
+			this.addSource(source);
+		}
+		this.initBuffer();
+	}
+	
+	
+	
+	
+	initBuffer () {
+
+		var gl = this.#gl;
+		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
+		var sources = this.#sources;
+		var vertexIndexBuffer = this.#vertexIndexBuffer;
+			
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
+		var nSources = sources.length;
 		var vertexCataloguePosition = new Float32Array(nSources*3);
 		var positionIndex = 0;
 //			var epsilon = 0.00000001;
 		var epsilon = 0.0;
 		for(var j = 0; j < nSources; j++){
 			
-			vertexCataloguePosition[positionIndex] = CatalogueObj.sources[j].x + epsilon;
-			vertexCataloguePosition[positionIndex+1] = CatalogueObj.sources[j].y + epsilon;
-			vertexCataloguePosition[positionIndex+2] = CatalogueObj.sources[j].z + epsilon;
+			vertexCataloguePosition[positionIndex] = sources[j].point.x + epsilon;
+			vertexCataloguePosition[positionIndex+1] = sources[j].point.y + epsilon;
+			vertexCataloguePosition[positionIndex+2] = sources[j].point.z + epsilon;
 			positionIndex +=3;
 			
 		}
 
 		gl.bufferData(gl.ARRAY_BUFFER, vertexCataloguePosition, gl.STATIC_DRAW);
-		CatalogueObj.vertexIndexBuffer.itemSize = 3;
-		CatalogueObj.vertexIndexBuffer.numItems = vertexCataloguePosition.length/3;
+		vertexIndexBuffer.itemSize = 3;
+		vertexIndexBuffer.numItems = vertexCataloguePosition.length/3;
 
-	};
+	}
 	
-	// This function is not really needed. It could be used to load icons/images for source drawing 
-	this.initTexture = function (now) {
+	enableShader(){
+		var shaderProgram = this.#shaderProgram;
+		var gl = this.#gl;
+		var vertexIndexBuffer = this.#vertexIndexBuffer;
+		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
 		
-	};
-	
-	this.computeVisibility = function (now) {
-		// if we assign an Npix of nside 512 or more to each source, we can use HEALPix to compute the visibility 
-	};
-	
-	
-	this.draw = function(pMatrix, vMatrix){
-		in_gl.useProgram(CatalogueObj.shaderProgram);
+		gl.useProgram(shaderProgram);
 		
-		CatalogueObj.catUniformMVMatrixLoc = in_gl.getUniformLocation(CatalogueObj.shaderProgram, "uMVMatrix");
-		CatalogueObj.catUniformProjMatrixLoc = in_gl.getUniformLocation(CatalogueObj.shaderProgram, "uPMatrix");
-		CatalogueObj.vertexCatPositionAttributeLoc = in_gl.getAttribLocation(CatalogueObj.shaderProgram, 'aCatPosition');
+
+		shaderProgram.catUniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+		shaderProgram.catUniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
+		shaderProgram.vertexCatPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aCatPosition');
 		  
 	
-		in_gl.uniformMatrix4fv(CatalogueObj.shaderProgram.mvMatrixUniform, false, CatalogueObj.modelMatrix);
-		in_gl.uniformMatrix4fv(CatalogueObj.shaderProgram.pMatrixUniform, false, pMatrix);
-		in_gl.uniformMatrix4fv(CatalogueObj.shaderProgram.vMatrixUniform, false, vMatrix);
-		
+		// TODO the following model matrix must be the same of the HiPS model matrix
+		var modelMatrix = mat4.create();
+		mat4.identity(modelMatrix);
+		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, global.camera.getCameraMatrix());
+		gl.uniformMatrix4fv(shaderProgram.catUniformProjMatrixLoc, false, global.pMatrix);
 
-				
-		in_gl.bindBuffer(in_gl.ARRAY_BUFFER, CatalogueObj.vertexPositionBuffer);
-		in_gl.vertexAttribPointer(CatalogueObj.shaderProgram.vertexPositionAttribute, CatalogueObj.vertexPositionBuffer.itemSize, in_gl.FLOAT, false, 0, 0);
-		
-		
-		in_gl.bindBuffer(in_gl.ELEMENT_ARRAY_BUFFER, CatalogueObj.vertexIndexBuffer);
-		
-	    in_gl.enableVertexAttribArray(CatalogueObj.shaderProgram.vertexPositionAttribute);
-		
-
-	    in_gl.bindBuffer(gl.ARRAY_BUFFER, CatalogueObj.vertexCataloguePositionBuffer);
-	    in_gl.vertexAttribPointer(CatalogueObj.vertexCatPositionAttributeLoc, 
-				CatalogueObj.vertexIndexBuffer.itemSize, 
-				in_gl.FLOAT, false, 0, 0);
-	    in_gl.enableVertexAttribArray(CatalogueObj.vertexCatPositionAttributeLoc);
-	    in_gl.drawArrays(in_gl.POINTS, 0, CatalogueObj.vertexIndexBuffer.numItems);
-		
-	};
-
-	/*
-	 * source: single Source objects
-	 */
-	this.addSource = function(source){
-		/* TODO after adding a new source, the source position 
-		 * should be added to the GL buffer (initBuffer for a 
-		 * single source)*/
-		CatalogueObj.sources.push(source);
-	};
+	}
 	
-	/*
-	 * sources: array of Source
-	 */
-	this.addSources = function(sources){
-		CatalogueObj.sources = sources;
-		CatalogueObj.initBuffer();
-	};
+	draw(){
+		
+		this.enableShader();
+		
+		var vertexIndexBuffer = this.#vertexIndexBuffer;
+		var gl = this.#gl;
+		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
+		var shaderProgram = this.#shaderProgram;
+		
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
+		gl.vertexAttribPointer(shaderProgram.vertexCatPositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(shaderProgram.vertexCatPositionAttributeLoc);
+		gl.drawArrays(gl.POINTS, 0, vertexIndexBuffer.numItems);
+		
+	}
+
 	
-	this.localInit();
-	this.initShaders();
 }
