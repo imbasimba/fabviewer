@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @author Fabrizio Giordano (Fab77)
  * @param in_radius - number
@@ -287,7 +288,11 @@ class HiPS extends AbstractSkyEntity{
 		if (this.getMinFoV() >= this.allskyFovLimit){ // AllSky
 //			if (this.fovObj.getMinFoV() >= this.allskyFovLimit){ // AllSky
 			
-			this.textures = this.in_gl.createTexture();
+//			this.textures = this.in_gl.createTexture();
+			
+			
+		
+			
 			
 			if (this.textures.images === undefined){
 				this.textures.images = [];
@@ -299,7 +304,17 @@ class HiPS extends AbstractSkyEntity{
 			
 			this.textures.images[0] = this.in_gl.createTexture();
 			
+			// binding fake black image until the real image has been loaded (https://stackoverflow.com/questions/19722247/webgl-wait-for-texture-to-load/19748905#19748905) 
+			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0]);
+			this.in_gl.texImage2D(this.in_gl.TEXTURE_2D, 0, this.in_gl.RGBA, 1, 1, 0, this.in_gl.RGBA, this.in_gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255])); // black
+			
 			this.textures.images[0].image = new Image();
+			this.textures.images[0].image.setAttribute('crossorigin', 'anonymous');
+		    this.textures.images[0].image.setAttribute('crossOrigin', 'anonymous');
+		    this.textures.images[0].image.crossOrigin = "anonymous";
+		    this.textures.images[0].image.src = this.URL+"/Norder3/Allsky.jpg";
+			
+			
 		    var _self = this;
 			this.textures.images[0].image.onload = function () {
 		        
@@ -307,10 +322,10 @@ class HiPS extends AbstractSkyEntity{
 		    
 		    };
 		    
-		    this.textures.images[0].image.setAttribute('crossorigin', 'anonymous');
-		    this.textures.images[0].image.setAttribute('crossOrigin', 'anonymous');
-		    this.textures.images[0].image.crossOrigin = "anonymous";
-		    this.textures.images[0].image.src = this.URL+"/Norder3/Allsky.jpg";
+//		    this.textures.images[0].image.setAttribute('crossorigin', 'anonymous');
+//		    this.textures.images[0].image.setAttribute('crossOrigin', 'anonymous');
+//		    this.textures.images[0].image.crossOrigin = "anonymous";
+//		    this.textures.images[0].image.src = this.URL+"/Norder3/Allsky.jpg";
 		    		    
 		}else{
 			
@@ -352,6 +367,10 @@ class HiPS extends AbstractSkyEntity{
 				}else{
 
 					this.textures.images[n] = this.in_gl.createTexture();
+					// binding fake black image until the real image has been loaded (https://stackoverflow.com/questions/19722247/webgl-wait-for-texture-to-load/19748905#19748905) 
+					this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[n]);
+					this.in_gl.texImage2D(this.in_gl.TEXTURE_2D, 0, this.in_gl.RGBA, 1, 1, 0, this.in_gl.RGBA, this.in_gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255])); // black
+
 									
 					this.textures.images[n].image = new Image();
 					this.textures.images[n].image.n = n;
@@ -405,7 +424,9 @@ class HiPS extends AbstractSkyEntity{
 	    	_self.in_gl.pixelStorei(_self.in_gl.UNPACK_FLIP_Y_WEBGL, true);
 	    	_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, gl_texture);
 			try{
-				_self.in_gl.texImage2D(_self.in_gl.TEXTURE_2D, 0, _self.in_gl.RGBA, _self.in_gl.RGBA, _self.in_gl.UNSIGNED_BYTE, gl_texture.image);	
+				_self.in_gl.texImage2D(_self.in_gl.TEXTURE_2D, 0, _self.in_gl.RGBA, _self.in_gl.RGBA, _self.in_gl.UNSIGNED_BYTE, gl_texture.image);
+//				_self.in_gl.pixelStorei(_self.in_gl.UNPACK_FLIP_Y_WEBGL, true);
+//		    	_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, gl_texture);
 			}catch(error){
 				console.error(error);
 				console.error("idx: "+idx+" pixels[idx] "+_self.pixels[idx]);
@@ -414,6 +435,7 @@ class HiPS extends AbstractSkyEntity{
 			
 			
 			if (_self.getMinFoV() >= _self.allskyFovLimit){
+				console.log("handleLoadedTexture - Full sky - no mipmap");
 //				if (_self.fovObj.getMinFoV() >= _self.allskyFovLimit){
 				// it's not a power of 2. Turn off mip and set wrapping to clamp to edge
 				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_S, _self.in_gl.CLAMP_TO_EDGE);

@@ -136,11 +136,11 @@ class Catalogue{
 		for ( j = 0; j < in_data.length; j++){
 			
 			point = new Point({
-				"raDeg": in_data[this.#raIdx],
-				"decDeg": in_data[this.#decIdx]
+				"raDeg": in_data[j][this.#raIdx],
+				"decDeg": in_data[j][this.#decIdx]
 			}, CoordsType.ASTRO);
 			
-			source = new Source(point, in_data[this.#nameIdx], in_data[j]);
+			source = new Source(point, in_data[j][this.#nameIdx], in_data[j]);
 			this.addSource(source);
 		}
 		this.initBuffer();
@@ -207,6 +207,7 @@ class Catalogue{
 		var gl = this.#gl;
 		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
 		var shaderProgram = this.#shaderProgram;
+
 		
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
 		gl.vertexAttribPointer(shaderProgram.vertexCatPositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);

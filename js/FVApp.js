@@ -20,6 +20,15 @@ function FVApp(){
 			}
 			
 			currentObj.gl = canvas.getContext("experimental-webgl");
+			
+			console.log("before");
+			
+			let params = new URLSearchParams(location.search);
+			if (params.get('debug') != null){
+				console.warn("WebGL DEBUG MODE ON");
+				currentObj.gl = WebGLDebugUtils.makeDebugContext(currentObj.gl);	
+			}
+			
 			currentObj.gl.viewportWidth = canvas.width;
 			currentObj.gl.viewportHeight = canvas.height;
 			currentObj.gl.clearColor(0.412, 0.412, 0.412, 1.0);
@@ -54,14 +63,13 @@ function FVApp(){
 		}
 		
 		function handleContextLost(event){
-//			console.log("[handleContextLost]");
+			console.log("[handleContextLost]");
 			event.preventDefault();
 			cancelRequestAnimFrame(currentObj.fabVReqID);
-			
 		}
 
 		function handleContextRestored(event){
-			
+			console.log("[handleContextRestored]");
 			currentObj.gl.viewportWidth = canvas.width;
 			currentObj.gl.viewportHeight = canvas.height;
 			currentObj.gl.clearColorrgbrgb(0.86, 0.86, 0.86, 1.0);
@@ -87,10 +95,15 @@ function FVApp(){
 	
 	this.tick = function () {
 		
+		currentObj.drawScene();
+		var error = currentObj.gl.getError();
+		if (error != currentObj.gl.NO_ERROR && error != currentObj.gl.CONTEXT_LOST_WEBGL) {
+//			alert("GL error: "+error);
+			console.log("GL error: "+error);
+		}
+
 		currentObj.fabVReqID = requestAnimFrame(currentObj.tick);
 		
-		currentObj.drawScene();
-
 	}
 
 	

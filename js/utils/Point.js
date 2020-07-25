@@ -58,7 +58,7 @@ class Point{
 	
 	computeCartesianCoords(){
 		var phiThetaDeg = Utils.astroDegToSpherical(this.#raDeg, this.#decDeg);
-		var xyz = Utils.sphericalToCartesian([phiThetaDeg.phi, phiThetaDeg.theta], 1);
+		var xyz = Utils.sphericalToCartesian(phiThetaDeg.phi, phiThetaDeg.theta, 1);
 		return xyz;
 	}
 
