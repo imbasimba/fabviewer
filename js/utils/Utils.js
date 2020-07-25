@@ -123,9 +123,11 @@ Utils.astroDegToSpherical = function(raDeg, decDeg){
 };
 
 Utils.sphericalToCartesian = function(phiDeg, thetaDeg, r){
-	var x = r * Math.sin(phiDeg) * Math.cos(thetaDeg);
-	var y = r * Math.sin(phiDeg) * Math.sin(thetaDeg);
-	var z = r * Math.cos(thetaDeg);
+	
+	
+	var x = r * Math.sin(degToRad(thetaDeg)) * Math.cos(degToRad(phiDeg));
+	var y = r * Math.sin(degToRad(phiDeg)) * Math.sin(degToRad(thetaDeg));
+	var z = r * Math.cos(degToRad(thetaDeg));
 	return [x, y, z];
 };
 
