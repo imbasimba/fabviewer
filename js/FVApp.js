@@ -19,7 +19,8 @@ function FVApp(){
 				console.log(canvas);
 			}
 			
-			currentObj.gl = canvas.getContext("experimental-webgl");
+//			currentObj.gl = canvas.getContext("experimental-webgl");
+			currentObj.gl = canvas.getContext("webgl");
 			
 			console.log("before");
 			

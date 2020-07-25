@@ -302,10 +302,16 @@ class HiPS extends AbstractSkyEntity{
 			}
 			this.textures.cache.splice(0, this.textures.cache.length);
 			
-			this.textures.images[0] = this.in_gl.createTexture();
+			
+			this.textures.images[0] = {
+					tex: this.in_gl.createTexture(),
+					image: new Image()
+			};
+			
+//			this.textures.images[0] = this.in_gl.createTexture();
 			
 			// binding fake black image until the real image has been loaded (https://stackoverflow.com/questions/19722247/webgl-wait-for-texture-to-load/19748905#19748905) 
-			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0]);
+			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0].tex);
 			this.in_gl.texImage2D(this.in_gl.TEXTURE_2D, 0, this.in_gl.RGBA, 1, 1, 0, this.in_gl.RGBA, this.in_gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255])); // black
 			
 			this.textures.images[0].image = new Image();
@@ -341,7 +347,7 @@ class HiPS extends AbstractSkyEntity{
 				
 				
 				for (var d=0; d < this.textures.images.length; d++){
-					this.in_gl.deleteTexture(this.textures.images[d]);
+					this.in_gl.deleteTexture(this.textures.images[d].tex);
 				}
 				
 				this.textures.images.splice(0, this.textures.images.length);
@@ -360,24 +366,35 @@ class HiPS extends AbstractSkyEntity{
 					if (this.textures.cache[texCacheIdx] == undefined){
 						console.log("[HiPS::initTexture] missed in texcache but present in pixelcache"+texCacheIdx);
 					}else{
-						this.textures.images[n] = this.in_gl.createTexture();
-						this.textures.images[n] = this.textures.cache[texCacheIdx];	
+						console.log("[HiPS::initTexture] in texcache idx "+texCacheIdx+" pixel "+this.pixels[n]);
+						this.textures.images[n] = [];
+						this.textures.images[n].tex = this.textures.cache[texCacheIdx].tex;
+						this.textures.images[n].image = this.textures.cache[texCacheIdx].image;	
 					}
-
+//					this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[n].tex);
+//					this.in_gl.texImage2D(this.in_gl.TEXTURE_2D, 0, this.in_gl.RGBA, 1, 1, 0, this.in_gl.RGBA, this.in_gl.UNSIGNED_BYTE, new Uint8Array([255, 0, 0, 255])); // black
 				}else{
 
-					this.textures.images[n] = this.in_gl.createTexture();
+//					this.textures.images[n] = this.in_gl.createTexture();
+					console.log("[HiPS::initTexture] new texture "+this.pixels[n]);
+					this.textures.images[n] = {
+							tex: this.in_gl.createTexture(),
+							image: new Image()
+					};
+					
 					// binding fake black image until the real image has been loaded (https://stackoverflow.com/questions/19722247/webgl-wait-for-texture-to-load/19748905#19748905) 
-					this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[n]);
-					this.in_gl.texImage2D(this.in_gl.TEXTURE_2D, 0, this.in_gl.RGBA, 1, 1, 0, this.in_gl.RGBA, this.in_gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255])); // black
+					this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[n].tex);
+					this.in_gl.texImage2D(this.in_gl.TEXTURE_2D, 0, this.in_gl.RGBA, 1, 1, 0, this.in_gl.RGBA, this.in_gl.UNSIGNED_BYTE, new Uint8Array([255, 0, 0, 255])); // black
 
-									
+					var dirNumber = Math.floor(this.pixels[n] / 10000) * 10000;
+					
 					this.textures.images[n].image = new Image();
 					this.textures.images[n].image.n = n;
-					var dirNumber = Math.floor(this.pixels[n] / 10000) * 10000;
+					
 					var _self = this;
 					this.textures.images[n].image.onload = function () {
 				        // last param this.n is passed just for debug
+//						handleLoadedTexture(_self.textures.images[this.n], 0, this.n);
 						handleLoadedTexture(_self.textures.images[this.n], 0, this.n);
 				    
 				    };
@@ -411,23 +428,26 @@ class HiPS extends AbstractSkyEntity{
 //			    console.log("n="+n+" image.src="+currentObj.textures.images[n].image.src);
 			    
 			}
+			console.log("this.textures.images.length="+this.textures.images.length);
 
 			this.textures.cache = this.textures.images.slice();
 			
 		}
 		
 	    
-	    function handleLoadedTexture (gl_texture, shaderSkyIndex, idx){
+		function handleLoadedTexture (textureObj, shaderSkyIndex, idx){
+//			function handleLoadedTexture (gl_texture, shaderSkyIndex, idx){
 			
 	    	_self.in_gl.activeTexture(_self.in_gl.TEXTURE0+shaderSkyIndex);
 	        
 	    	_self.in_gl.pixelStorei(_self.in_gl.UNPACK_FLIP_Y_WEBGL, true);
-	    	_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, gl_texture);
+	    	_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, textureObj.tex);
 			try{
-				_self.in_gl.texImage2D(_self.in_gl.TEXTURE_2D, 0, _self.in_gl.RGBA, _self.in_gl.RGBA, _self.in_gl.UNSIGNED_BYTE, gl_texture.image);
-//				_self.in_gl.pixelStorei(_self.in_gl.UNPACK_FLIP_Y_WEBGL, true);
-//		    	_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, gl_texture);
+//				_self.in_gl.texImage2D(_self.in_gl.TEXTURE_2D, 0, _self.in_gl.RGBA, _self.in_gl.RGBA, _self.in_gl.UNSIGNED_BYTE, gl_texture.image);
+				_self.in_gl.texImage2D(_self.in_gl.TEXTURE_2D, 0, _self.in_gl.RGBA, _self.in_gl.RGBA, _self.in_gl.UNSIGNED_BYTE, textureObj.image);
+				
 			}catch(error){
+				console.error("ERRORE");
 				console.error(error);
 				console.error("idx: "+idx+" pixels[idx] "+_self.pixels[idx]);
 				console.error(_self.pixels);
@@ -436,7 +456,6 @@ class HiPS extends AbstractSkyEntity{
 			
 			if (_self.getMinFoV() >= _self.allskyFovLimit){
 				console.log("handleLoadedTexture - Full sky - no mipmap");
-//				if (_self.fovObj.getMinFoV() >= _self.allskyFovLimit){
 				// it's not a power of 2. Turn off mip and set wrapping to clamp to edge
 				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_S, _self.in_gl.CLAMP_TO_EDGE);
 				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_WRAP_T, _self.in_gl.CLAMP_TO_EDGE);
@@ -444,16 +463,23 @@ class HiPS extends AbstractSkyEntity{
 			    
 			}else{
 				_self.in_gl.generateMipmap(_self.in_gl.TEXTURE_2D);
-				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MAG_FILTER, _self.in_gl.NEAREST);
-				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MIN_FILTER, _self.in_gl.NEAREST);
+				// TODO check which mipmap filtering is better. The one active or the commented alternative
+				_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MIN_FILTER, _self.in_gl.LINEAR_MIPMAP_LINEAR);
+//	DO NOT DELETE_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MAG_FILTER, _self.in_gl.NEAREST);
+//	DO NOT DELETE_self.in_gl.texParameteri(_self.in_gl.TEXTURE_2D, _self.in_gl.TEXTURE_MIN_FILTER, _self.in_gl.NEAREST);
 			}
 			
 			// TODO REVIEW uniformSamplerLoc[shaderSkyIndex] !!!
 			_self.in_gl.uniform1i(_self.shaderProgram.samplerUniform, shaderSkyIndex);
 
-			if (!_self.in_gl.isTexture(gl_texture)){
+			if (!_self.in_gl.isTexture(textureObj.tex)){
 		    	console.log("error in texture");
 		    }
+//			if (!_self.in_gl.isTexture(gl_texture)){
+//		    	console.log("error in texture");
+//		    }
+			
+			
 			_self.in_gl.bindTexture(_self.in_gl.TEXTURE_2D, null);
 	        
 		}
@@ -708,7 +734,8 @@ class HiPS extends AbstractSkyEntity{
 		// 4. draw
 		if (this.getMinFoV() >= this.allskyFovLimit){ // AllSky
 			this.in_gl.activeTexture(this.in_gl.TEXTURE0);
-			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0]);
+//			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0]);
+			this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[0].tex);
 			this.in_gl.uniform1f(this.shaderProgram.uniformVertexTextureFactor, this.opacity);
 			
 			
@@ -724,14 +751,14 @@ class HiPS extends AbstractSkyEntity{
 		}else{
 			
 			if (!this.below){
-				console.log("Switched to single textures on FoV "+this.getMinFoV());
+				console.log("Switched to multiple textures on FoV "+this.getMinFoV());
 				this.below = true;
 			}
 			
 			for (var i=0;i<this.pixels.length;i++){
 					
 				this.in_gl.activeTexture(this.in_gl.TEXTURE0);
-				this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[i]);
+				this.in_gl.bindTexture(this.in_gl.TEXTURE_2D, this.textures.images[i].tex);
 				this.in_gl.uniform1f(this.uniformVertexTextureFactorLoc, this.opacity);
 					
 				this.in_gl.drawElements(this.in_gl.TRIANGLES, 6, 
