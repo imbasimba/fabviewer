@@ -177,11 +177,11 @@ class Catalogue{
 
 	}
 	
-	enableShader(){
+	enableShader(in_mMatrix){
 		var shaderProgram = this.#shaderProgram;
 		var gl = this.#gl;
-		var vertexIndexBuffer = this.#vertexIndexBuffer;
-		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
+//		var vertexIndexBuffer = this.#vertexIndexBuffer;
+//		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
 		
 		gl.useProgram(shaderProgram);
 		
@@ -190,18 +190,20 @@ class Catalogue{
 		shaderProgram.catUniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
 		shaderProgram.vertexCatPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aCatPosition');
 		  
-	
+		var mvMatrix = mat4.create();
+		mvMatrix = mat4.multiply(global.camera.getCameraMatrix(), in_mMatrix, mvMatrix);
 		// TODO the following model matrix must be the same of the HiPS model matrix
-		var modelMatrix = mat4.create();
-		mat4.identity(modelMatrix);
-		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, global.camera.getCameraMatrix());
+//		var modelMatrix = mat4.create();
+//		mat4.identity(modelMatrix);
+//		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, global.camera.getCameraMatrix());
+		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, mvMatrix);
 		gl.uniformMatrix4fv(shaderProgram.catUniformProjMatrixLoc, false, global.pMatrix);
 
 	}
 	
-	draw(){
+	draw(in_mMatrix){
 		
-		this.enableShader();
+		this.enableShader(in_mMatrix);
 		
 		var vertexIndexBuffer = this.#vertexIndexBuffer;
 		var gl = this.#gl;

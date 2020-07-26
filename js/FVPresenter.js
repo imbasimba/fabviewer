@@ -374,11 +374,14 @@ function FVPresenter(in_view, in_gl){
 			
 		}
 		
+		
+		var mMatrix = currentObj.modelRepo.objModels[0].getModelMatrix();
+		
 		var k,
 		catalogue;
 		for (k = 0; k < CatalogueRepo.catalogues.length; k++){
 			catalogue = CatalogueRepo.catalogues[k];
-			catalogue.draw();
+			catalogue.draw(mMatrix);
 		}
 		
 //		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
