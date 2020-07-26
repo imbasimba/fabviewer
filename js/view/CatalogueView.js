@@ -1,4 +1,4 @@
-function CatalogueView(in_name){
+function CatalogueView(){
  
     var html;
  

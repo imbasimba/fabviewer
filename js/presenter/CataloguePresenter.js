@@ -11,11 +11,16 @@ class CataloguePresenter{
 		var self = this;
 		
 		this._view.addCheckedHandler(function(){
-        	console.log("// TODO call CatalogueRepo to retrieve metadata with the current FoV");
-        	console.log(self._model);
-        	var results = CatalogueRepo.retriveByFoV("https://sky.esa.int/", self._model, null);
-            // TODO overlay results
+
+			var checkbox = this;
+
+			if (checkbox.checked){
+				CatalogueRepo.retriveByFoV("https://sky.esa.int/", self._model, null);	
+			}else{
+				CatalogueRepo.removeCatalogue(self._model.name);
+			}
         	
+
 
         });
 		

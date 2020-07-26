@@ -180,9 +180,6 @@ class Catalogue{
 	enableShader(in_mMatrix){
 		var shaderProgram = this.#shaderProgram;
 		var gl = this.#gl;
-//		var vertexIndexBuffer = this.#vertexIndexBuffer;
-//		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
-		
 		gl.useProgram(shaderProgram);
 		
 
@@ -192,15 +189,14 @@ class Catalogue{
 		  
 		var mvMatrix = mat4.create();
 		mvMatrix = mat4.multiply(global.camera.getCameraMatrix(), in_mMatrix, mvMatrix);
-		// TODO the following model matrix must be the same of the HiPS model matrix
-//		var modelMatrix = mat4.create();
-//		mat4.identity(modelMatrix);
-//		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, global.camera.getCameraMatrix());
 		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, mvMatrix);
 		gl.uniformMatrix4fv(shaderProgram.catUniformProjMatrixLoc, false, global.pMatrix);
 
 	}
 	
+	/**
+	 * @param in_Matrix: model matrix the current catalogue is associated to (e.g. HiPS matrix)
+	 */
 	draw(in_mMatrix){
 		
 		this.enableShader(in_mMatrix);
