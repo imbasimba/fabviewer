@@ -137,7 +137,7 @@ class RayPickingUtils{
 		var intersectionPoint = [],
 		intersectionModelPoint = [];
 		var intersectionPoint4d;
-		var pickedObject; //TODO check if this is needed
+		var pickedObject = in_modelObj; //TODO check if this is needed
 		
 		if (intersectionDistance >= 0){
 			

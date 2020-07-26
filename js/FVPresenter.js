@@ -137,23 +137,6 @@ function FVPresenter(in_view, in_gl){
 			
 			
 			var intersectionWithModel = RayPickingUtils.getIntersectionPointWithModel(currentObj.lastMouseX, currentObj.lastMouseY, currentObj.modelRepo);
-//			var intersectionWithModel = RayPickingUtils.getIntersectionPointWithModel(
-//					currentObj.lastMouseX, 
-//					currentObj.lastMouseY, 
-//					currentObj.pMatrix, 
-//					currentObj.camera, 
-//					in_gl.canvas, 
-//					currentObj.modelRepo
-//					);
-//			var intersectionWithModel = currentObj.raypicker.getIntersectionPointWithModel(
-//					currentObj.lastMouseX, 
-//					currentObj.lastMouseY, 
-//					currentObj.pMatrix, 
-//					currentObj.camera, 
-//					in_gl.canvas, 
-//					currentObj.modelRepo
-//					);
-//			console.log("[FVPresenter::handleMouseUp] intersectionWithModel.intersectionPoint "+intersectionWithModel.intersectionPoint);
 			if (intersectionWithModel.intersectionPoint.intersectionPoint === undefined){
 				return;
 			}
@@ -190,6 +173,41 @@ function FVPresenter(in_view, in_gl){
 				
 		     	currentObj.inertiaX += 0.1 * deltaX;
 				currentObj.inertiaY += 0.1 * deltaY;
+				
+			}else{
+				
+				// TODO 
+				/**
+				 * algo for source picking
+				 * do raypicking against the HiPS sphere each draw cycle with mouse coords converted into model coords
+				 * pass these coords to the fragment shader (catalogue fragment shader)
+				 * In the fragment shader, compute if the segment from mouse coords and source point is less than the point radius (gl_PointSize)
+				 * 
+				 */
+				
+				var mousePicker = RayPickingUtils.getIntersectionPointWithSingleModel(newX, newY);
+				var mousePoint = mousePicker.intersectionPoint;
+				var mouseObjectPicked = mousePicker.pickedObject;
+				if (mousePoint !== undefined){
+					
+					if (mousePoint.length > 0){
+						
+						var phiThetaDeg = cartesianToSpherical(mousePoint);
+						var raDecDeg = sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
+						var raHMS = raDegToHMS(raDecDeg.ra);
+						var decDMS = decDegToDMS(raDecDeg.dec);
+						currentObj.view.setPickedSphericalCoordinates(phiThetaDeg);
+						currentObj.view.setPickedAstroCoordinates(raDecDeg, raHMS, decDMS);
+						currentObj.view.setPickedObjectName(mouseObjectPicked.name);
+						currentObj.mouseCoords = mousePoint;
+						
+					}else{
+						this.mouseCoords = null;
+						console.log("no intersection");
+					}	
+					
+				}
+				
 				
 			}
 			
@@ -381,15 +399,11 @@ function FVPresenter(in_view, in_gl){
 		catalogue;
 		for (k = 0; k < CatalogueRepo.catalogues.length; k++){
 			catalogue = CatalogueRepo.catalogues[k];
-			catalogue.draw(mMatrix);
+			catalogue.draw(mMatrix, this.mouseCoords);
 		}
 		
-//		for (var i = 0; i < currentObj.modelRepo.objModels.length; i++){
-//			
-//			currentObj.modelRepo.objModels[i].enableShader(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
-//			
-//		}
-
+		
+		
 //		currentObj.xyzRefSystemObj.draw(currentObj.pMatrix, currentObj.camera.getCameraMatrix());
 	};
 	

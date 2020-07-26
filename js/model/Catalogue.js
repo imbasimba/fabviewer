@@ -186,6 +186,7 @@ class Catalogue{
 		shaderProgram.catUniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 		shaderProgram.catUniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
 		shaderProgram.vertexCatPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aCatPosition');
+		shaderProgram.vertexMousePositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aMousePosition');
 		  
 		var mvMatrix = mat4.create();
 		mvMatrix = mat4.multiply(global.camera.getCameraMatrix(), in_mMatrix, mvMatrix);
@@ -197,9 +198,11 @@ class Catalogue{
 	/**
 	 * @param in_Matrix: model matrix the current catalogue is associated to (e.g. HiPS matrix)
 	 */
-	draw(in_mMatrix){
+	draw(in_mMatrix, in_mouseCoords){
 		
 		this.enableShader(in_mMatrix);
+		
+		
 		
 		var vertexIndexBuffer = this.#vertexIndexBuffer;
 		var gl = this.#gl;
@@ -210,6 +213,12 @@ class Catalogue{
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
 		gl.vertexAttribPointer(shaderProgram.vertexCatPositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(shaderProgram.vertexCatPositionAttributeLoc);
+		
+		if (in_mouseCoords != null){
+//			console.log(in_mouseCoords );
+			gl.vertexAttribPointer(shaderProgram.vertexMousePositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shaderProgram.vertexMousePositionAttributeLoc);	
+		}
 		gl.drawArrays(gl.POINTS, 0, vertexIndexBuffer.numItems);
 		
 	}
