@@ -9,6 +9,7 @@ function FVPresenter(in_view, in_gl){
 	var currentObj = this;
 	var systemPresenter;
 	var catalogueListPresenter;
+	var sourceSelectionPresenter;
 	
 	this.init = function (){
 		if (DEBUG){
@@ -85,6 +86,12 @@ function FVPresenter(in_view, in_gl){
 		var catalogueListView = new CatalogueListView();
 		catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
 		currentObj.view.appendChild(catalogueListView.getHtml());
+		
+		
+		var sourceSelView = new SourceSelectionView();
+		sourceSelectionPresenter = new SourceSelectionPresenter(sourceSelView);
+		currentObj.view.appendChild(sourceSelView.html);
+		
 	};
 	
 	this.getFovPoly = function(){

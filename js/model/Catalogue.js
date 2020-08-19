@@ -209,8 +209,8 @@ class Catalogue{
 			let dist = Math.sqrt( (sourcexyz[0] - in_mouseCoords[0] )*(sourcexyz[0] - in_mouseCoords[0] ) + (sourcexyz[1] - in_mouseCoords[1] )*(sourcexyz[1] - in_mouseCoords[1] ) + (sourcexyz[2] - in_mouseCoords[2] )*(sourcexyz[2] - in_mouseCoords[2] ) );
 			if (dist <= 0.002){
 				
-				console.log("Source found");
-				console.log(sources[j]);
+//				console.log("Source found");
+//				console.log(sources[j]);
 				
 				selectionIndexes.push(j);
 					
@@ -278,10 +278,17 @@ class Catalogue{
 			 * 			bool selected;
 			 * 		}
 			*/
-			console.log(in_mouseCoords);
+//			console.log(in_mouseCoords);
 			let selectionIndexes = this.checkSelection(in_mouseCoords);
+			let selectedSources = [];
 			for (var i = 0; i < selectionIndexes.length; i++){
-				console.log(this.#sources[selectionIndexes[i]]);
+				selectedSources.push(this.#sources[selectionIndexes[i]]);
+//				console.log(this.#sources[selectionIndexes[i]]);
+			}
+			
+			if (selectionIndexes.length > 0){
+				const event = new CustomEvent('sourceSelected', { detail: selectedSources });
+				window.dispatchEvent(event);	
 			}
 			
 			for (var i = 0; i < selectionIndexes.length; i++) {
@@ -289,6 +296,9 @@ class Catalogue{
 				this.#vertexCataloguePosition[ (selectionIndexes[i] * Catalogue.ELEM_SIZE) + 3] = 1.0;
 				
 			}
+			
+			
+			
 			
 			
 		}
