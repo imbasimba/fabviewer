@@ -18,6 +18,8 @@ class Catalogue{
 	#oldMouseCoords;
 	#vertexCataloguePosition;
 	#attribLocations = {};
+//	#oldSelectedSourceIdxs;
+	#selectionIndexes;
 	
 	
 	constructor(in_name, in_metadata, in_raIdx, in_decIdx, in_nameIdx){
@@ -33,6 +35,9 @@ class Catalogue{
 		this.#vertexSelectionCataloguePositionBuffer = this.#gl.createBuffer();
 		
 		this.#vertexCataloguePosition = [];
+		
+//		this.#oldSelectedSourceIdxs = [];
+		this.#selectionIndexes = [];
 		
 		this.#oldMouseCoords = null;
 		
@@ -172,10 +177,10 @@ class Catalogue{
 	initBuffer () {
 
 		var gl = this.#gl;
-		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
+//		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
 		var sources = this.#sources;
 			
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.#vertexCataloguePositionBuffer);
 		var nSources = sources.length;
 
 		this.#vertexCataloguePosition = new Float32Array( nSources * Catalogue.ELEM_SIZE );
@@ -251,7 +256,7 @@ class Catalogue{
 		this.#gl.useProgram(this.#shaderProgram);
 		
 		
-		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
+//		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
 		
 		this.enableShader(in_mMatrix);
 		
@@ -269,31 +274,30 @@ class Catalogue{
 		
 		
 		if (in_mouseCoords != null && in_mouseCoords != this.#oldMouseCoords){
-//			gl.vertexAttribPointer(shaderProgram.vertexMousePositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-//			gl.enableVertexAttribArray(shaderProgram.vertexMousePositionAttributeLoc);
-			/* - potrei usare il 4 elemento dell'array vertexCataloguePositionBuffer per la selezione. 1 = selezionato, 0 non selezionato
-			 * - altra opzione sarebbe usare una struct nello shader del tipo: (check https://webglfundamentals.org/webgl/lessons/webgl-shaders-and-glsl.html)
-			 * 		struct cat {
-			 * 			vec4 pos;
-			 * 			bool selected;
-			 * 		}
-			*/
-//			console.log(in_mouseCoords);
-			let selectionIndexes = this.checkSelection(in_mouseCoords);
-			let selectedSources = [];
-			for (var i = 0; i < selectionIndexes.length; i++){
-				selectedSources.push(this.#sources[selectionIndexes[i]]);
-//				console.log(this.#sources[selectionIndexes[i]]);
-			}
 			
-			if (selectionIndexes.length > 0){
+			console.log("before ->"+this.#vertexCataloguePosition.length);
+			for (var k = 0; k < this.#selectionIndexes.length; k++){
+				this.#vertexCataloguePosition[ (this.#selectionIndexes[k] * Catalogue.ELEM_SIZE) + 3] = 0.0;
+			}	
+			
+			
+
+			this.#selectionIndexes = this.checkSelection(in_mouseCoords);
+			console.log("after ->"+this.#vertexCataloguePosition.length);
+			let selectedSources = [];
+			for (var i = 0; i < this.#selectionIndexes.length; i++){
+				selectedSources.push(this.#sources[this.#selectionIndexes[i]]);
+			}
+//			this.#oldSelectedSourceIdxs = selectionIndexes;
+			
+			if (this.#selectionIndexes.length > 0){
 				const event = new CustomEvent('sourceSelected', { detail: selectedSources });
 				window.dispatchEvent(event);	
 			}
 			
-			for (var i = 0; i < selectionIndexes.length; i++) {
+			for (var i = 0; i < this.#selectionIndexes.length; i++) {
 				
-				this.#vertexCataloguePosition[ (selectionIndexes[i] * Catalogue.ELEM_SIZE) + 3] = 1.0;
+				this.#vertexCataloguePosition[ (this.#selectionIndexes[i] * Catalogue.ELEM_SIZE) + 3] = 1.0;
 				
 			}
 			
