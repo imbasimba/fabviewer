@@ -61,42 +61,48 @@
 <script id="cat-shader-vs" type="x-shader/x-vertex">
 
 	attribute vec4 aCatPosition;
-	attribute vec4 aMousePosition;
-	
-	varying vec4 vCatPosition;
-	varying vec4 vMousePosition;
+	attribute float a_selected;
+	attribute float a_pointsize;
 
+	//attribute vec4 aColor;
+
+	varying lowp vec4 vColor;
+
+	
 	uniform mat4 uMVMatrix;
 	uniform mat4 uPMatrix;
 
-	varying float vPointSize;
+	//varying float vPointSize;
 
 	void main() {
-		vCatPosition = aCatPosition;
-		vMousePosition = aMousePosition;
-		vPointSize = 3.0;
+		//vCatPosition = aCatPosition;
+		//vPointSize = 3.0;
 
 		gl_Position = uPMatrix * uMVMatrix * aCatPosition;
-		//gl_PointSize = 3.0;
-		gl_PointSize = vPointSize;
+
+		//gl_PointSize = aPointSize;
+		gl_PointSize = a_pointsize;
+
+		vColor = vec4(0.0, 1.0, 0.0, 1.0);
+		if ( a_selected == 1.0 ){
+			// selected source
+			vColor = vec4(1.0, 0.0, 0.0, 1.0);
+			gl_PointSize = 6.0;
+		}
 
 	}
 </script>
 <script id="cat-shader-fs" type="x-shader/x-fragment">
   	precision mediump float;
 
-	varying vec4 vCatPosition;
-	varying vec4 vMousePosition;
+	//varying vec4 vCatPosition;
 
-	varying float vPointSize;
+	varying lowp vec4 vColor;
 
   	void main() {
-		float dist = sqrt( (vCatPosition[0] - vMousePosition[0] )*(vCatPosition[0] - vMousePosition[0] ) + (vCatPosition[0] - vMousePosition[1] )*(vCatPosition[1] - vMousePosition[1] ) + (vCatPosition[2] - vMousePosition[2] )*(vCatPosition[2] - vMousePosition[2] ) );
-		if (dist <= vPointSize){
-			gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-		}else{
-			gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-		}
+
+		gl_FragColor = vColor;
+		//gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 
   	} 
 </script>

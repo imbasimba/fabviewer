@@ -1,6 +1,9 @@
 "use strict";
 class Catalogue{
 	
+	static ELEM_SIZE = 5;
+	static BYTES_X_ELEM = new Float32Array().BYTES_PER_ELEMENT;
+	
 	#name;
 	#metadata;
 	#raIdx;
@@ -9,8 +12,13 @@ class Catalogue{
 	#shaderProgram;
 	#gl;
 	#vertexCataloguePositionBuffer;
-	#vertexIndexBuffer;
+	#vertexSelectionCataloguePositionBuffer;
+//	#vertexIndexBuffer;
 	#sources = [];
+	#oldMouseCoords;
+	#vertexCataloguePosition;
+	#attribLocations = {};
+	
 	
 	constructor(in_name, in_metadata, in_raIdx, in_decIdx, in_nameIdx){
 
@@ -22,10 +30,22 @@ class Catalogue{
 		this.#gl = global.gl;
 		this.#shaderProgram = this.#gl.createProgram();
 		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
-		this.#vertexIndexBuffer = {
-				"itemSize": 3,
-				"numItems": 0
+		this.#vertexSelectionCataloguePositionBuffer = this.#gl.createBuffer();
+		
+		this.#vertexCataloguePosition = [];
+		
+		this.#oldMouseCoords = null;
+		
+		this.#attribLocations = {
+				position: 0,
+				selected: 1,
+				pointSize: 2
 		};
+		
+//		this.#vertexIndexBuffer = {
+//				"itemSize": 3,
+//				"numItems": 0
+//		};
 			
 		this.initShaders();
 		
@@ -154,44 +174,71 @@ class Catalogue{
 		var gl = this.#gl;
 		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
 		var sources = this.#sources;
-		var vertexIndexBuffer = this.#vertexIndexBuffer;
 			
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
 		var nSources = sources.length;
-		var vertexCataloguePosition = new Float32Array(nSources*3);
+
+		this.#vertexCataloguePosition = new Float32Array( nSources * Catalogue.ELEM_SIZE );
 		var positionIndex = 0;
-//			var epsilon = 0.00000001;
 		var epsilon = 0.0;
 		for(var j = 0; j < nSources; j++){
 			
-			vertexCataloguePosition[positionIndex] = sources[j].point.x + epsilon;
-			vertexCataloguePosition[positionIndex+1] = sources[j].point.y + epsilon;
-			vertexCataloguePosition[positionIndex+2] = sources[j].point.z + epsilon;
-			positionIndex +=3;
+			this.#vertexCataloguePosition[positionIndex] = sources[j].point.x + epsilon;
+			this.#vertexCataloguePosition[positionIndex+1] = sources[j].point.y + epsilon;
+			this.#vertexCataloguePosition[positionIndex+2] = sources[j].point.z + epsilon;
+			this.#vertexCataloguePosition[positionIndex+3] = 0.0;
+			this.#vertexCataloguePosition[positionIndex+4] = 3.0;
+			
+			positionIndex += Catalogue.ELEM_SIZE;
 			
 		}
 
-		gl.bufferData(gl.ARRAY_BUFFER, vertexCataloguePosition, gl.STATIC_DRAW);
-		vertexIndexBuffer.itemSize = 3;
-		vertexIndexBuffer.numItems = vertexCataloguePosition.length/3;
-
 	}
+	
+	
+	
+	
+	checkSelection (in_mouseCoords) {
+		var sources = this.#sources;
+		var nSources = sources.length;
+		var selectionIndexes = [];
+		
+		for(var j = 0; j < nSources; j++){
+			let sourcexyz = [sources[j].point.x , sources[j].point.y , sources[j].point.z];
+			
+			let dist = Math.sqrt( (sourcexyz[0] - in_mouseCoords[0] )*(sourcexyz[0] - in_mouseCoords[0] ) + (sourcexyz[1] - in_mouseCoords[1] )*(sourcexyz[1] - in_mouseCoords[1] ) + (sourcexyz[2] - in_mouseCoords[2] )*(sourcexyz[2] - in_mouseCoords[2] ) );
+			if (dist <= 0.002){
+				
+				console.log("Source found");
+				console.log(sources[j]);
+				
+				selectionIndexes.push(j);
+					
+			}
+		}
+		return selectionIndexes;
+		
+	}
+	
+	
+
 	
 	enableShader(in_mMatrix){
 		var shaderProgram = this.#shaderProgram;
-		var gl = this.#gl;
-		gl.useProgram(shaderProgram);
-		
 
-		shaderProgram.catUniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-		shaderProgram.catUniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
-		shaderProgram.vertexCatPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aCatPosition');
-		shaderProgram.vertexMousePositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aMousePosition');
-		  
+		this.#shaderProgram.catUniformMVMatrixLoc = this.#gl.getUniformLocation(this.#shaderProgram, "uMVMatrix");
+		this.#shaderProgram.catUniformProjMatrixLoc = this.#gl.getUniformLocation(this.#shaderProgram, "uPMatrix");
+		
+		this.#attribLocations.position  = this.#gl.getAttribLocation(this.#shaderProgram, 'aCatPosition');
+		
+		this.#attribLocations.selected  = this.#gl.getAttribLocation(this.#shaderProgram, 'a_selected');
+
+		this.#attribLocations.pointSize = this.#gl.getAttribLocation(this.#shaderProgram, 'a_PointSize');
+				  
 		var mvMatrix = mat4.create();
 		mvMatrix = mat4.multiply(global.camera.getCameraMatrix(), in_mMatrix, mvMatrix);
-		gl.uniformMatrix4fv(shaderProgram.catUniformMVMatrixLoc, false, mvMatrix);
-		gl.uniformMatrix4fv(shaderProgram.catUniformProjMatrixLoc, false, global.pMatrix);
+		this.#gl.uniformMatrix4fv(this.#shaderProgram.catUniformMVMatrixLoc, false, mvMatrix);
+		this.#gl.uniformMatrix4fv(this.#shaderProgram.catUniformProjMatrixLoc, false, global.pMatrix);
 
 	}
 	
@@ -200,26 +247,60 @@ class Catalogue{
 	 */
 	draw(in_mMatrix, in_mouseCoords){
 		
+
+		this.#gl.useProgram(this.#shaderProgram);
+		
+		
+		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
+		
 		this.enableShader(in_mMatrix);
 		
+		this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, this.#vertexCataloguePositionBuffer);
 		
-		
-		var vertexIndexBuffer = this.#vertexIndexBuffer;
-		var gl = this.#gl;
-		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
-		var shaderProgram = this.#shaderProgram;
+		this.#gl.vertexAttribPointer(this.#attribLocations.position, 3, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, 0);
+		this.#gl.enableVertexAttribArray(this.#attribLocations.position);
+
+		this.#gl.vertexAttribPointer(this.#attribLocations.selected, 1, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, Catalogue.BYTES_X_ELEM * 3);
+		this.#gl.enableVertexAttribArray(this.#attribLocations.selected);
+
+		this.#gl.vertexAttribPointer(this.#shaderProgram.pointSize, 1, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, Catalogue.BYTES_X_ELEM * 4);
+		this.#gl.enableVertexAttribArray(this.#shaderProgram.pointSize);
 
 		
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexCataloguePositionBuffer);
-		gl.vertexAttribPointer(shaderProgram.vertexCatPositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(shaderProgram.vertexCatPositionAttributeLoc);
 		
-		if (in_mouseCoords != null){
-//			console.log(in_mouseCoords );
-			gl.vertexAttribPointer(shaderProgram.vertexMousePositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(shaderProgram.vertexMousePositionAttributeLoc);	
+		if (in_mouseCoords != null && in_mouseCoords != this.#oldMouseCoords){
+//			gl.vertexAttribPointer(shaderProgram.vertexMousePositionAttributeLoc, vertexIndexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+//			gl.enableVertexAttribArray(shaderProgram.vertexMousePositionAttributeLoc);
+			/* - potrei usare il 4 elemento dell'array vertexCataloguePositionBuffer per la selezione. 1 = selezionato, 0 non selezionato
+			 * - altra opzione sarebbe usare una struct nello shader del tipo: (check https://webglfundamentals.org/webgl/lessons/webgl-shaders-and-glsl.html)
+			 * 		struct cat {
+			 * 			vec4 pos;
+			 * 			bool selected;
+			 * 		}
+			*/
+			console.log(in_mouseCoords);
+			let selectionIndexes = this.checkSelection(in_mouseCoords);
+			for (var i = 0; i < selectionIndexes.length; i++){
+				console.log(this.#sources[selectionIndexes[i]]);
+			}
+			
+			for (var i = 0; i < selectionIndexes.length; i++) {
+				
+				this.#vertexCataloguePosition[ (selectionIndexes[i] * Catalogue.ELEM_SIZE) + 3] = 1.0;
+				
+			}
+			
+			
 		}
-		gl.drawArrays(gl.POINTS, 0, vertexIndexBuffer.numItems);
+		this.#gl.bufferData(this.#gl.ARRAY_BUFFER, this.#vertexCataloguePosition, this.#gl.STATIC_DRAW);
+		
+
+		var numItems = this.#vertexCataloguePosition.length/Catalogue.ELEM_SIZE;
+
+		this.#gl.drawArrays(this.#gl.POINTS, 0, numItems);
+
+		this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, null);
+		this.#oldMouseCoords = in_mouseCoords;
 		
 	}
 
