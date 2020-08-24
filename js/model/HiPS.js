@@ -36,9 +36,9 @@ class HiPS extends AbstractSkyEntity{
 		this.URL = "http://skies.esac.esa.int/DSSColor/";
 		this.maxOrder = 9;
 		
-		this.sphericalGrid = false;
-		this.xyzRefCoord = true;
-		this.equatorialGrid = false;
+		this.showSphericalGrid = false;
+		this.showXyzRefCoord = false;
+		this.showEquatorialGrid = false;
 		
 		// below this value we switch from AllSky to HEALPix geometry/texture
 		this.allskyFovLimit = 50.0;
@@ -766,14 +766,14 @@ class HiPS extends AbstractSkyEntity{
 			}
 			
 		}
-		if (this.sphericalGrid) {
+		if (this.showSphericalGrid) {
 			this.sphericalGrid.draw(this.shaderProgram);
 	    }
-	    if (this.equatorialGrid) {
+	    if (this.showEquatorialGrid) {
 	    	this.drawEquatorialGrid();
 	    }
 	    
-	    if (this.xyzRefCoord){
+	    if (this.showXyzRefCoord){
 	    	this.xyzRefSystem.draw(this.shaderProgram);	
 		}
 

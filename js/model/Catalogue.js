@@ -13,22 +13,23 @@ class Catalogue{
 	#gl;
 	#vertexCataloguePositionBuffer;
 	#vertexSelectionCataloguePositionBuffer;
-//	#vertexIndexBuffer;
 	#sources = [];
 	#oldMouseCoords;
 	#vertexCataloguePosition;
 	#attribLocations = {};
-//	#oldSelectedSourceIdxs;
 	#selectionIndexes;
+	#descriptor;
 	
 	
-	constructor(in_name, in_metadata, in_raIdx, in_decIdx, in_nameIdx){
+	constructor(in_name, in_metadata, in_raIdx, in_decIdx, in_nameIdx, in_descriptor){
 
 		this.#name = in_name;
 		this.#metadata = in_metadata;
 		this.#raIdx = in_raIdx;
 		this.#decIdx = in_decIdx;
 		this.#nameIdx = in_nameIdx;
+		this.#descriptor = in_descriptor;
+		
 		this.#gl = global.gl;
 		this.#shaderProgram = this.#gl.createProgram();
 		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
@@ -36,7 +37,6 @@ class Catalogue{
 		
 		this.#vertexCataloguePosition = [];
 		
-//		this.#oldSelectedSourceIdxs = [];
 		this.#selectionIndexes = [];
 		
 		this.#oldMouseCoords = null;
@@ -44,14 +44,10 @@ class Catalogue{
 		this.#attribLocations = {
 				position: 0,
 				selected: 1,
-				pointSize: 2
+				pointSize: 2,
+				color: [0.0, 1.0, 0.0, 1.0]
 		};
 		
-//		this.#vertexIndexBuffer = {
-//				"itemSize": 3,
-//				"numItems": 0
-//		};
-			
 		this.initShaders();
 		
 	}
@@ -177,7 +173,7 @@ class Catalogue{
 	initBuffer () {
 
 		var gl = this.#gl;
-//		var vertexCataloguePositionBuffer = this.#vertexCataloguePositionBuffer;
+
 		var sources = this.#sources;
 			
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.#vertexCataloguePositionBuffer);
@@ -185,18 +181,33 @@ class Catalogue{
 
 		this.#vertexCataloguePosition = new Float32Array( nSources * Catalogue.ELEM_SIZE );
 		var positionIndex = 0;
-		var epsilon = 0.0;
+		
+		var R = 1.0001
 		for(var j = 0; j < nSources; j++){
 			
-			this.#vertexCataloguePosition[positionIndex] = sources[j].point.x + epsilon;
-			this.#vertexCataloguePosition[positionIndex+1] = sources[j].point.y + epsilon;
-			this.#vertexCataloguePosition[positionIndex+2] = sources[j].point.z + epsilon;
+			let xyz = [sources[j].point.x, sources[j].point.y, sources[j].point.z];
+			let phiTheta = Utils.cartesianToSpherical(xyz);
+			let finalXYZ = Utils.sphericalToCartesian(phiTheta.phi, phiTheta.theta, R);
+//			console.log(finalXYZ);
+			this.#vertexCataloguePosition[positionIndex] = finalXYZ[0];
+			this.#vertexCataloguePosition[positionIndex+1] = finalXYZ[1];
+			this.#vertexCataloguePosition[positionIndex+2] = finalXYZ[2];
+			
+//			this.#vertexCataloguePosition[positionIndex] = sources[j].point.x;
+//			this.#vertexCataloguePosition[positionIndex+1] = sources[j].point.y;
+//			this.#vertexCataloguePosition[positionIndex+2] = sources[j].point.z;
 			this.#vertexCataloguePosition[positionIndex+3] = 0.0;
-			this.#vertexCataloguePosition[positionIndex+4] = 3.0;
+			this.#vertexCataloguePosition[positionIndex+4] = 8.0;
 			
 			positionIndex += Catalogue.ELEM_SIZE;
 			
 		}
+		
+		/* 
+		 * check https://stackoverflow.com/questions/27714014/3d-point-on-circumference-of-a-circle-with-a-center-radius-and-normal-vector
+		 * for a strategy to create circle on the surface of the sphere instead of creating the circle-point in the fragment shader. This 
+		 * should solve the issue of having the circles always parallel to the screen
+		 */ 
 
 	}
 	
@@ -212,10 +223,7 @@ class Catalogue{
 			let sourcexyz = [sources[j].point.x , sources[j].point.y , sources[j].point.z];
 			
 			let dist = Math.sqrt( (sourcexyz[0] - in_mouseCoords[0] )*(sourcexyz[0] - in_mouseCoords[0] ) + (sourcexyz[1] - in_mouseCoords[1] )*(sourcexyz[1] - in_mouseCoords[1] ) + (sourcexyz[2] - in_mouseCoords[2] )*(sourcexyz[2] - in_mouseCoords[2] ) );
-			if (dist <= 0.002){
-				
-//				console.log("Source found");
-//				console.log(sources[j]);
+			if (dist <= 0.004){
 				
 				selectionIndexes.push(j);
 					
@@ -229,7 +237,6 @@ class Catalogue{
 
 	
 	enableShader(in_mMatrix){
-		var shaderProgram = this.#shaderProgram;
 
 		this.#shaderProgram.catUniformMVMatrixLoc = this.#gl.getUniformLocation(this.#shaderProgram, "uMVMatrix");
 		this.#shaderProgram.catUniformProjMatrixLoc = this.#gl.getUniformLocation(this.#shaderProgram, "uPMatrix");
@@ -238,8 +245,10 @@ class Catalogue{
 		
 		this.#attribLocations.selected  = this.#gl.getAttribLocation(this.#shaderProgram, 'a_selected');
 
-		this.#attribLocations.pointSize = this.#gl.getAttribLocation(this.#shaderProgram, 'a_PointSize');
-				  
+		this.#attribLocations.pointSize = this.#gl.getAttribLocation(this.#shaderProgram, 'a_pointsize');
+
+		this.#attribLocations.color = this.#gl.getUniformLocation(this.#shaderProgram,'u_fragcolor');
+		
 		var mvMatrix = mat4.create();
 		mvMatrix = mat4.multiply(global.camera.getCameraMatrix(), in_mMatrix, mvMatrix);
 		this.#gl.uniformMatrix4fv(this.#shaderProgram.catUniformMVMatrixLoc, false, mvMatrix);
@@ -255,40 +264,44 @@ class Catalogue{
 
 		this.#gl.useProgram(this.#shaderProgram);
 		
-		
-//		this.#vertexCataloguePositionBuffer = this.#gl.createBuffer();
-		
 		this.enableShader(in_mMatrix);
 		
 		this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, this.#vertexCataloguePositionBuffer);
 		
+		// setting source position
 		this.#gl.vertexAttribPointer(this.#attribLocations.position, 3, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, 0);
 		this.#gl.enableVertexAttribArray(this.#attribLocations.position);
 
+		// setting selected sources
 		this.#gl.vertexAttribPointer(this.#attribLocations.selected, 1, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, Catalogue.BYTES_X_ELEM * 3);
 		this.#gl.enableVertexAttribArray(this.#attribLocations.selected);
 
-		this.#gl.vertexAttribPointer(this.#shaderProgram.pointSize, 1, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, Catalogue.BYTES_X_ELEM * 4);
-		this.#gl.enableVertexAttribArray(this.#shaderProgram.pointSize);
-
+		// TODO not needed overloading. The size can be set with uniform. setting point size 
+		this.#gl.vertexAttribPointer(this.#attribLocations.pointSize, 1, this.#gl.FLOAT, false, Catalogue.BYTES_X_ELEM * Catalogue.ELEM_SIZE, Catalogue.BYTES_X_ELEM * 4);
+		this.#gl.enableVertexAttribArray(this.#attribLocations.pointSize);
 		
+		
+		// setting source shape color 
+		var rgb = Utils.colorHex2RGB(this.#descriptor.shapeColor);
+		var alpha = 1.0;
+		rgb[3] = alpha;
+		this.#gl.uniform4f(this.#attribLocations.color, rgb[0], rgb[1], rgb[2], rgb[3]);
 		
 		if (in_mouseCoords != null && in_mouseCoords != this.#oldMouseCoords){
 			
-			console.log("before ->"+this.#vertexCataloguePosition.length);
 			for (var k = 0; k < this.#selectionIndexes.length; k++){
 				this.#vertexCataloguePosition[ (this.#selectionIndexes[k] * Catalogue.ELEM_SIZE) + 3] = 0.0;
+				this.#vertexCataloguePosition[ (this.#selectionIndexes[k] * Catalogue.ELEM_SIZE) + 4] = 8.0;
 			}	
 			
 			
 
 			this.#selectionIndexes = this.checkSelection(in_mouseCoords);
-			console.log("after ->"+this.#vertexCataloguePosition.length);
+
 			let selectedSources = [];
 			for (var i = 0; i < this.#selectionIndexes.length; i++){
 				selectedSources.push(this.#sources[this.#selectionIndexes[i]]);
 			}
-//			this.#oldSelectedSourceIdxs = selectionIndexes;
 			
 			if (this.#selectionIndexes.length > 0){
 				const event = new CustomEvent('sourceSelected', { detail: selectedSources });
@@ -298,13 +311,10 @@ class Catalogue{
 			for (var i = 0; i < this.#selectionIndexes.length; i++) {
 				
 				this.#vertexCataloguePosition[ (this.#selectionIndexes[i] * Catalogue.ELEM_SIZE) + 3] = 1.0;
+				this.#vertexCataloguePosition[ (this.#selectionIndexes[i] * Catalogue.ELEM_SIZE) + 4] = 10.0;
 				
 			}
-			
-			
-			
-			
-			
+
 		}
 		this.#gl.bufferData(this.#gl.ARRAY_BUFFER, this.#vertexCataloguePosition, this.#gl.STATIC_DRAW);
 		

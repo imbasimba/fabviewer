@@ -68,7 +68,7 @@ class CatalogueRepo{
 		
 		var fovPolyCartesian = FoVUtils.getFoVPolygon (global.pMatrix, global.camera, global.gl.canvas, global.model, global.rayPicker);
 		var fovPolyAstro = FoVUtils.getAstroFoVPolygon(fovPolyCartesian);
-		var adqlQuery = "select top 4000 * " +
+		var adqlQuery = "select top 1000 * " +
 				"from "+tapTable+" where " +
 				"1=CONTAINS(POINT('ICRS',"+tapRaDeg+", "+tapDecDeg+"), " +
 				"POLYGON('ICRS', "+fovPolyAstro+"))";
@@ -82,8 +82,7 @@ class CatalogueRepo{
 			if (status === 200) {
 				var metadata = xhr.response.metadata;
 				var data = xhr.response.data;
-//				console.log(xhr.response);
-//				alert(JSON.stringify(xhr.response));
+
 				console.log(metadata);
 				console.log(data);
 				
@@ -94,7 +93,6 @@ class CatalogueRepo{
 				k = 0;
 				
 				for (i = 0; i < metadata.length; i++){
-//					console.log("name: "+metadata[i].name+", datatype: "+metadata[i].datatype);
 					if (metadata[i].name == tapRaDeg){
 						raIdx = i;
 						k += 1;
@@ -111,27 +109,10 @@ class CatalogueRepo{
 					}
 				}
 				
-				var catalogue = new Catalogue(name, metadata, raIdx, decIdx, nameIdx);
+				var catalogue = new Catalogue(name, metadata, raIdx, decIdx, nameIdx, descriptor);
 				
 				catalogue.addSources(data);
-				
-//				var j,
-//				source,
-//				point;
-//				
-//				for ( j = 0; j < data.length; j++){
-//					
-//					point = new Point({
-//						raDeg: data[raIdx],
-//						decDeg: data[decIdx]
-//					}, CoordsType.ASTRO);
-//					
-//					source = new Source(point, data[nameIdx], data[j]);
-//					catalogue.addSource(source);
-//				} 
-				
 				CatalogueRepo.addCatalogue(catalogue);
-				
 				
 				
 				

@@ -41,6 +41,25 @@ function cartesianToSpherical(xyz){
 }
 
 
+Utils.colorHex2RGB = function(hexColor){
+
+//	console.log(hexColor);
+	var hex1 = hexColor.substring(1,3);
+	var hex2 = hexColor.substring(3,5);
+	var hex3 = hexColor.substring(5,7);
+	
+	var dec1 = parseInt(hex1, 16);
+	var dec2 = parseInt(hex2, 16);
+	var dec3 = parseInt(hex3, 16);
+	
+	var rgb1 = (dec1 / 255).toFixed(2);
+	var rgb2 = (dec2 / 255).toFixed(2);
+	var rgb3 = (dec3 / 255).toFixed(2);
+	
+	return [parseFloat(rgb1), parseFloat(rgb2), parseFloat(rgb3)];
+
+}
+
 Utils.cartesianToSpherical = function(xyz){
 	
 	var dotXYZ = vec3.dot(xyz, xyz);
