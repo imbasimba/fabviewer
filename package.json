@@ -1,0 +1,46 @@
+{
+  "name": "fabviewer",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack-dev-server --mode development --config webpack.config.js",
+    "start": "webpack-dev-server --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imbasimba/fabviewer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imbasimba/fabviewer/issues"
+  },
+  "homepage": "https://github.com/imbasimba/fabviewer#readme",
+  "devDependencies": {
+    "@babel/core": "^7.11.4",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-private-methods": "^7.10.4",
+    "@babel/preset-env": "^7.11.0",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^4.2.2",
+    "file-loader": "^6.1.0",
+    "html-webpack-plugin": "^4.4.1",
+    "style-loader": "^1.2.1",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.3.0",
+    "healpix": "file:../healpix",
+    "jquery": "^3.5.1",
+    "loadash": "^1.0.0"
+  }
+}
