@@ -2,6 +2,9 @@
 /**
  * @author Fabrizio Giordano (Fab77)
  */
+import RayPickingUtils from '../utils/RayPickingUtils';
+import {radToDeg} from '../utils/Utils';
+import {vec3, mat4} from 'gl-matrix';
 class FoV{
 	
 	#fovX_deg;
@@ -70,9 +73,9 @@ class FoV{
 			
 			var vMatrixInverse = mat4.create();
 			mat4.identity(vMatrixInverse);
-			mat4.inverse(camera.getCameraMatrix(), vMatrixInverse);
+			mat4.invert(vMatrixInverse, camera.getCameraMatrix());
 			
-			mat4.multiplyVec3(vMatrixInverse, b, b);
+			// mat4.multiplyVec3(vMatrixInverse, b, b);
 			
 			
 			
@@ -105,6 +108,8 @@ class FoV{
 	}
 	
 }
+
+export default FoV;
 
 //function FoV(in_gl, in_canvas, in_model){
 //	

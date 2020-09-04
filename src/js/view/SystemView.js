@@ -3,14 +3,34 @@
  */
 "use strict";
 
-function SystemView() {
+import $ from "jquery";
 
-	var html;
-	var i = 0;
+class SystemView {
 
-	function init() {
+	constructor(){
+		this.init();
+
+		var _public = {
+
+			getHtml : () => {
+				return this.html;
+			},
+			setModel : function(model) {
+				$("#fpsvalue").html(model.getFps());
+				$("#avgfpsvalue").html(model.getAvgFps());
+			},
+			addFovPolyHandler : function(handler) {
+				console.log("addFovPolyHandler ");
+				$("#getFovPoly").click(handler);
+			}
+		}
+	
+		return _public;
+	}
+
+	init() {
 //		console.log("SystemView.init()");
-		html = $("<div id='fps'>"
+		this.html = $("<div id='fps'>"
 				+ "<table style='width: 100%; text-align: center;'>" 
 				+ "	<tr>"
 				+ "	<th>FPS</th>"
@@ -23,21 +43,7 @@ function SystemView() {
 				+ "<div id='getFovPoly' class='button' >getFovPoly</div>");
 	}
 
-	var _public = {
 
-		getHtml : function() {
-			return html;
-		},
-		setModel : function(model) {
-			$("#fpsvalue").html(model.getFps());
-			$("#avgfpsvalue").html(model.getAvgFps());
-		},
-		addFovPolyHandler : function(handler) {
-			console.log("addFovPolyHandler ");
-			$("#getFovPoly").click(handler);
-		}
-	}
-
-	init();
-	return _public;
 }
+
+export default SystemView;

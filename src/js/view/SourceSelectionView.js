@@ -3,6 +3,7 @@
  */
 "use strict";
 
+import $ from "jquery";
 class SourceSelectionView {
 	
 	#html;
@@ -29,3 +30,5 @@ class SourceSelectionView {
 	}
 	
 }
+
+export default SourceSelectionView;

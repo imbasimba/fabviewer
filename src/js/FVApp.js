@@ -1,13 +1,21 @@
 /**
  * @author Fabrizio Giordano (Fab77)
  */
-function FVApp(){
-	if (DEBUG){
-		console.log("[FVApp::FVApp]");
+import FVView from './FVView';
+import FVPresenter from './FVPresenter';
+
+
+class FVApp{
+	constructor(){
+		if (DEBUG){
+			console.log("[FVApp::FVApp]");
+		}
+		this.init();
+		this.initListeners();
 	}
-	var currentObj = this;
+
 	
-	this.init = function(){
+	init(){
 		if (DEBUG){
 			console.log("[FVApp::init]");
 		}
@@ -19,102 +27,103 @@ function FVApp(){
 				console.log(canvas);
 			}
 			
-//			currentObj.gl = canvas.getContext("experimental-webgl");
-			currentObj.gl = canvas.getContext("webgl");
+//			this.gl = canvas.getContext("experimental-webgl");
+			this.gl = canvas.getContext("webgl");
 			
 			console.log("before");
 			
 			let params = new URLSearchParams(location.search);
 			if (params.get('debug') != null){
 				console.warn("WebGL DEBUG MODE ON");
-				currentObj.gl = WebGLDebugUtils.makeDebugContext(currentObj.gl);	
+				this.gl = WebGLDebugUtils.makeDebugContext(this.gl);	
 			}
 			
-			currentObj.gl.viewportWidth = canvas.width;
-			currentObj.gl.viewportHeight = canvas.height;
-			currentObj.gl.clearColor(0.412, 0.412, 0.412, 1.0);
+			this.gl.viewportWidth = canvas.width;
+			this.gl.viewportHeight = canvas.height;
+			this.gl.clearColor(0.412, 0.412, 0.412, 1.0);
 			
-			currentObj.gl.enable(currentObj.gl.DEPTH_TEST);
+			this.gl.enable(this.gl.DEPTH_TEST);
 			
 		} catch (e) {
 			console.log("Error instansiating WebGL context");
 		}
-		if (!currentObj.gl) {
+		if (!this.gl) {
 			alert("Could not initialise WebGL, sorry :-(");
 		}
 		
-		currentObj.view = new FVView(canvas);
+		this.view = new FVView(canvas);
 		
-		global.gl = currentObj.gl;
-		currentObj.presenter = new FVPresenter(currentObj.view, currentObj.gl);
+		global.gl = this.gl;
+		this.presenter = new FVPresenter(this.view, this.gl);
 		
-		currentObj.fabVReqID = '';
+		this.fabVReqID = '';
 		
 		
 	};
 	
-	this.initListeners = function(){
+	initListeners(){
 		
-		function resizeCanvas() {
+		var resizeCanvas = () => {
 			if (DEBUG){
 				console.log("[FVPresenter::addEventListeners->resizeCanvas]");
 			}
-		   	currentObj.view.resize(currentObj.gl);
-		   	currentObj.presenter.draw();
+		   	this.view.resize(this.gl);
+		   	this.presenter.draw();
 		}
 		
 		function handleContextLost(event){
 			console.log("[handleContextLost]");
 			event.preventDefault();
-			cancelRequestAnimFrame(currentObj.fabVReqID);
+			cancelRequestAnimFrame(this.fabVReqID);
 		}
 
-		function handleContextRestored(event){
+		var handleContextRestored = (event) => {
 			console.log("[handleContextRestored]");
-			currentObj.gl.viewportWidth = canvas.width;
-			currentObj.gl.viewportHeight = canvas.height;
-			currentObj.gl.clearColorrgbrgb(0.86, 0.86, 0.86, 1.0);
+			var canvas = document.getElementById("fabviewer");
+			this.gl.viewportWidth = canvas.width;
+			this.gl.viewportHeight = canvas.height;
+			this.gl.clearColorrgbrgb(0.86, 0.86, 0.86, 1.0);
 			
-			currentObj.gl.enable(currentObj.gl.DEPTH_TEST);
+			this.gl.enable(this.gl.DEPTH_TEST);
 			
-			currentObj.fabVReqID = requestAnimFrame(currentObj.tick, canvas);
+			this.fabVReqID = requestAnimFrame(this.tick, canvas);
 		}
 		
 		
 		window.addEventListener('resize', resizeCanvas);
-		currentObj.view.canvas.addEventListener('webglcontextlost', handleContextLost, false);
-		currentObj.view.canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+		this.view.canvas.addEventListener('webglcontextlost', handleContextLost, false);
+		this.view.canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
 		resizeCanvas();
 	};
 	
-	this.run = function(){
+	run(){
 		if (DEBUG){
 			console.log("[FVApp::run]");
 		}
-		currentObj.tick();
+		// this.tick();
 	};
 	
-	this.tick = function () {
+// 	this.tick = function () {
 		
-		currentObj.drawScene();
-		var error = currentObj.gl.getError();
-		if (error != currentObj.gl.NO_ERROR && error != currentObj.gl.CONTEXT_LOST_WEBGL) {
-//			alert("GL error: "+error);
-			console.log("GL error: "+error);
-		}
+// 		this.drawScene();
+// 		var error = this.gl.getError();
+// 		if (error != this.gl.NO_ERROR && error != this.gl.CONTEXT_LOST_WEBGL) {
+// //			alert("GL error: "+error);
+// 			console.log("GL error: "+error);
+// 		}
 
-		currentObj.fabVReqID = requestAnimFrame(currentObj.tick);
+// 		this.fabVReqID = requestAnimFrame(this.tick);
 		
-	}
+// 	}
 
 	
 	
-	this.drawScene = function(){
+// 	this.drawScene = function(){
 		
-		currentObj.presenter.draw();
-	};
+// 		this.presenter.draw();
+// 	};
 	
-	this.init();
-	this.initListeners();
 	
 }
+
+export default FVApp;

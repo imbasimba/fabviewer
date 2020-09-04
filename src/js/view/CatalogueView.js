@@ -1,29 +1,31 @@
-function CatalogueView(){
- 
-    var html;
- 
-    function init(){
-    	html = $("<li><input type='checkbox'/><label></label><br></li>");
-    }
- 
-    var _public = {
 
-    	getHtml: function(){
-            return html;
-        },
-        setModel: function(model){
-        	
-        	html.find("input").attr('id', model.name);
-        	
-            html.find("label").attr('for', model.name);
-            html.find("label").html(model.name);
+import $ from 'jquery';
 
-        },
-        addCheckedHandler: function(handler){
-            html.find("input").click(handler);
+class CatalogueView{
+ 
+    constructor(){
+        this.init();
+        var _public = {
+    
+            getHtml: ()=>{
+                return this.html;
+            },
+            setModel: (model)=>{
+                this.html.find("input").attr('id', model.name);
+                this.html.find("label").attr('for', model.name);
+                this.html.find("label").html(model.name);
+    
+            },
+            addCheckedHandler: (handler)=>{
+                this.html.find("input").click(handler);
+            }
         }
+        return _public;
     }
  
-    init();
-    return _public;
+    init(){
+    	this.html = $("<li><input type='checkbox'/><label></label><br></li>");
+    }
 }
+
+export default CatalogueView;

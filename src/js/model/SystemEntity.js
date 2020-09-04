@@ -3,33 +3,25 @@
  */
 "use strict";
 
-function SystemEntity(){
- 
-	var fps;
-	var avgfps;
-	
-    function init(){
-//    	console.log("SystemEntity.init()");
+class SystemEntity{
+    constructor(){
+        this.fps = 0;
+        this.avgfps = 0;
     }
- 
-    var _public = {
-    		getFps: function(){
-                return fps;
-            },
-    
-		    getAvgFps: function(){
-		        return avgfps;
-		    },
-		    
-		    setFps: function(_fps){
-                fps = _fps.toFixed(1);
-            },
-    
-		    setAvgFps: function(_avgfps){
-		        avgfps = _avgfps.toFixed(1);
-		    }
+    getFps(){
+        return this.fps;
     }
- 
-    init();
-    return _public;
+
+    getAvgFps(){
+        return this.avgfps;
+    }
+    
+    setFps(_fps){
+        this.fps = _fps.toFixed(1);
+    }
+
+    setAvgFps(_avgfps){
+        this.avgfps = _avgfps.toFixed(1);
+    }
 }
+export default SystemEntity;

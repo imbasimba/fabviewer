@@ -6,6 +6,13 @@
  * @param in_position - array of double e.g. [0.0, 0.0, -7]
  */
 
+import AbstractSkyEntity from './AbstractSkyEntity';
+import SphericalGrid from './SphericalGrid';
+import XYZSystem from './XYZSystem';
+import Pointing from './Pointing';
+import RayPickingUtils from '../utils/RayPickingUtils';
+import Healpix from 'healpix';
+import {Vec3} from 'healpix';
 
 
 class HiPS extends AbstractSkyEntity{
@@ -33,7 +40,7 @@ class HiPS extends AbstractSkyEntity{
 		this.healpix = new Healpix(nside);
 		this.maxNPix = this.healpix.getNPix();
 		
-		this.URL = "http://skies.esac.esa.int/DSSColor/";
+		this.URL = "https://skies.esac.esa.int/DSSColor/";
 		this.maxOrder = 9;
 		
 		this.showSphericalGrid = false;
@@ -906,3 +913,5 @@ class HiPS extends AbstractSkyEntity{
 	}
 	
 }
+
+export default HiPS;

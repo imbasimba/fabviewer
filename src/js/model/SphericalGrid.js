@@ -1,49 +1,51 @@
-function SphericalGrid(in_radius, in_gl){
+import {degToRad} from '../utils/Utils';
+class SphericalGrid{
+	constructor(in_radius, in_gl){
+		this.in_gl = in_gl;
+		this.localInit(in_radius);
+		this.initBuffer();
+	}
 	
-	
-	var currentObj = this;
-//	console.log(currentObj);
-
-	this.localInit = function(){
+	localInit(in_radius){
 		
 		var phiStep = 10;
 		var thetaStep = 10;
 		
-		currentObj.radius = in_radius;
+		this.radius = in_radius;
 		
-		currentObj.thetaStep = thetaStep;
-		currentObj.phiStep = phiStep;
-		currentObj.phiArray = [];
-		currentObj.thetaArray = [];
+		this.thetaStep = thetaStep;
+		this.phiStep = phiStep;
+		this.phiArray = [];
+		this.thetaArray = [];
 		
-		currentObj.phiVertexPositionBuffer = in_gl.createBuffer();
-		currentObj.thetaVertexPositionBuffer = in_gl.createBuffer();
+		this.phiVertexPositionBuffer = this.in_gl.createBuffer();
+		this.thetaVertexPositionBuffer = this.in_gl.createBuffer();
 			
 	};
 	
-	this.initShaders = function () {
+	initShaders() {
 		// not needed
 	};
 	
-	this.setUniformLocation = function(){
+	setUniformLocation(){
 		// not needed
 	};
 	
-	this.initBuffer = function(){
+	initBuffer(){
 		
 		var x, y, z;
 		var phiVertexPosition, thetaVertexPosition;
 		var thetaRad, phiRad;
 		
-		var r = currentObj.radius;
+		var r = this.radius;
 		
-		for (var theta = 0; theta < 180; theta += currentObj.thetaStep){
+		for (var theta = 0; theta < 180; theta += this.thetaStep){
 			
-			phiVertexPosition = new Float32Array(360/currentObj.phiStep * 3);
+			phiVertexPosition = new Float32Array(360/this.phiStep * 3);
 			
 			thetaRad = degToRad(theta);
 
-			for (var phi = 0; phi <360; phi += currentObj.phiStep){
+			for (var phi = 0; phi <360; phi += this.phiStep){
 				
 				phiRad = degToRad(phi);
 				
@@ -51,23 +53,23 @@ function SphericalGrid(in_radius, in_gl){
 				y = r * Math.sin(thetaRad) * Math.sin(phiRad);
 				z = r * Math.cos(thetaRad);
 				
-				phiVertexPosition[ 3 * (phi/currentObj.phiStep)] = x; 
-				phiVertexPosition[ 3 * (phi/currentObj.phiStep) + 1] = y;
-				phiVertexPosition[ 3 * (phi/currentObj.phiStep) + 2] = z;
+				phiVertexPosition[ 3 * (phi/this.phiStep)] = x; 
+				phiVertexPosition[ 3 * (phi/this.phiStep) + 1] = y;
+				phiVertexPosition[ 3 * (phi/this.phiStep) + 2] = z;
 				
 			}
 			
-			currentObj.phiArray.push(phiVertexPosition);
+			this.phiArray.push(phiVertexPosition);
 
 		}
 		
-		for (var phi = 0; phi <360; phi += currentObj.phiStep){
+		for (var phi = 0; phi <360; phi += this.phiStep){
 						
-			thetaVertexPosition = new Float32Array(360/currentObj.thetaStep * 3);
+			thetaVertexPosition = new Float32Array(360/this.thetaStep * 3);
 			
 			phiRad = degToRad(phi);
 			
-			for (var theta = 0; theta <360; theta += currentObj.thetaStep){
+			for (var theta = 0; theta <360; theta += this.thetaStep){
 				
 				thetaRad = degToRad(theta);
 				
@@ -76,55 +78,53 @@ function SphericalGrid(in_radius, in_gl){
 				z = r * Math.cos(thetaRad);
 				
 				
-				thetaVertexPosition[ 3 * (theta/currentObj.thetaStep)] = x; 
-				thetaVertexPosition[ 3 * (theta/currentObj.thetaStep) + 1] = y;
-				thetaVertexPosition[ 3 * (theta/currentObj.thetaStep) + 2] = z;
+				thetaVertexPosition[ 3 * (theta/this.thetaStep)] = x; 
+				thetaVertexPosition[ 3 * (theta/this.thetaStep) + 1] = y;
+				thetaVertexPosition[ 3 * (theta/this.thetaStep) + 2] = z;
 	
 			}
 			
-			currentObj.thetaArray.push(thetaVertexPosition);
+			this.thetaArray.push(thetaVertexPosition);
 			
 		}
 		
 	};
 	
 	
-	this.enableBuffer = function(shaderProgram){
+	enableBuffer(shaderProgram){
 		
-		shaderProgram.sphericalGridEnabledUniform = in_gl.getUniformLocation(shaderProgram, "uSphericalGrid");
+		shaderProgram.sphericalGridEnabledUniform = this.in_gl.getUniformLocation(shaderProgram, "uSphericalGrid");
 		
-		in_gl.uniform1f(shaderProgram.sphericalGridEnabledUniform, 1.0);
+		this.in_gl.uniform1f(shaderProgram.sphericalGridEnabledUniform, 1.0);
 		
-		for (var i = 0; i < currentObj.phiArray.length; i++){
+		for (var i = 0; i < this.phiArray.length; i++){
 			
-			in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.phiVertexPositionBuffer);
-			in_gl.bufferData(in_gl.ARRAY_BUFFER, currentObj.phiArray[i], in_gl.STATIC_DRAW);
-			in_gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
-			in_gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-			in_gl.drawArrays(in_gl.LINE_LOOP, 0, 360/currentObj.phiStep);
+			this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.phiVertexPositionBuffer);
+			this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, this.phiArray[i], this.in_gl.STATIC_DRAW);
+			this.in_gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, this.in_gl.FLOAT, false, 0, 0);
+			this.in_gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+			this.in_gl.drawArrays(this.in_gl.LINE_LOOP, 0, 360/this.phiStep);
 			
 		}
 		
-		for (var j = 0; j < currentObj.thetaArray.length; j++){
+		for (var j = 0; j < this.thetaArray.length; j++){
 		
-			in_gl.bindBuffer(in_gl.ARRAY_BUFFER, currentObj.thetaVertexPositionBuffer);
-			in_gl.bufferData(in_gl.ARRAY_BUFFER, currentObj.thetaArray[j], in_gl.STATIC_DRAW);
-			in_gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, in_gl.FLOAT, false, 0, 0);
-			in_gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-			in_gl.drawArrays(in_gl.LINE_LOOP, 0, 360/currentObj.thetaStep);
+			this.in_gl.bindBuffer(this.in_gl.ARRAY_BUFFER, this.thetaVertexPositionBuffer);
+			this.in_gl.bufferData(this.in_gl.ARRAY_BUFFER, this.thetaArray[j], this.in_gl.STATIC_DRAW);
+			this.in_gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, this.in_gl.FLOAT, false, 0, 0);
+			this.in_gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+			this.in_gl.drawArrays(this.in_gl.LINE_LOOP, 0, 360/this.thetaStep);
 			
 		}
 		
 	};
 	
-	this.draw = function(shaderProgram){
+	draw(shaderProgram){
 		
-		currentObj.enableBuffer(shaderProgram);
+		this.enableBuffer(shaderProgram);
 		
 	};
-	
-	this.localInit();
-	this.initBuffer();
-	
 	
 }
+
+export default SphericalGrid;

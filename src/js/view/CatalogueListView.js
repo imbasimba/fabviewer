@@ -1,23 +1,29 @@
-function CatalogueListView(){
+
+import $ from "jquery";
+class CatalogueListView{
  
-    var html;
+    constructor(){
+        this.html;
+        this.init();
+        var _public = {
+            getHtml: ()=>{
+                return this.html;
+            },
+            addCatalogue: (catalogueView)=>{
+                this.html.find("#catalogueList").append(catalogueView.getHtml());
+            }
+        }
+     
+        return _public;
+    }
  
-    function init(){
-        html = $("<div ><ul id='catalogueList'></ul></div>");
-        html.css("height","150px");
-        html.css("overflow", "scroll");
+    init(){
+        this.html = $("<div ><ul id='catalogueList'></ul></div>");
+        this.html.css("height","150px");
+        this.html.css("overflow", "scroll");
         
     }
  
-    var _public = {
-        getHtml: function(){
-            return html;
-        },
-        addCatalogue: function(catalogueView){
-            html.find("#catalogueList").append(catalogueView.getHtml());
-        }
-    }
- 
-    init();
-    return _public;
 }
+
+export default CatalogueListView;

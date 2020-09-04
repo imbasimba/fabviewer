@@ -1,5 +1,6 @@
 "use strict";
 
+
 class CatalogueRepo{
 	
 	#descriptorURL = null;
@@ -137,3 +138,4 @@ class CatalogueRepo{
 	}
 }
 
+export default CatalogueRepo;

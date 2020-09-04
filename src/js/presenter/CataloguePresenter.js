@@ -7,7 +7,6 @@ class CataloguePresenter{
 	constructor(in_view){
 		this._view = in_view;
 
-		
 		var self = this;
 		
 		this._view.addCheckedHandler(function(){
@@ -19,9 +18,6 @@ class CataloguePresenter{
 			}else{
 				CatalogueRepo.removeCatalogue(self._model.name);
 			}
-        	
-
-
         });
 		
 		this._model = null;
@@ -37,3 +33,4 @@ class CataloguePresenter{
     }
 
 }
+export default CataloguePresenter;

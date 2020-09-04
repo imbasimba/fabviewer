@@ -3,6 +3,8 @@
  * @author Fabrizio Giordano (Fab)
  */
 
+import {vec3, vec4, mat4} from 'gl-matrix';
+
 class RayPickingUtils{
 	
 	// N.B. ECMAScript 6 private field definition. Not recognized by Eclipse at the moment 
@@ -36,17 +38,28 @@ class RayPickingUtils{
 		// eye space
 		var pMatrixInverse = mat4.create();
 		mat4.identity(pMatrixInverse);
-		mat4.inverse(pMatrix, pMatrixInverse);
-		var rayEye = [];
-		mat4.multiplyVec4(pMatrixInverse, rayClip, rayEye);
+		mat4.invert(pMatrixInverse, pMatrix);
+		var rayEye = vec4.create();
+		vec4.set(rayEye, rayClip[0], rayClip[1], rayClip[2], rayClip[3]); //TODO double check gl-matrix upgrade https://stackoverflow.com/questions/52901576/migrating-to-from-glmatrix-1-to-glmatrix-2
+		// mat4.multiplyVec4(pMatrixInverse, rayClip, rayEye);
+		
+		vec4.transformMat4(rayEye, rayEye, pMatrixInverse);
+
+
 		rayEye = [rayEye[0], rayEye[1], -1.0, 0.0];
 		
 		// world space
-		var rayWorld = [];
+		var rayWorld = vec4.create();
+		//TODO double check gl-matrix upgrade https://stackoverflow.com/questions/52901576/migrating-to-from-glmatrix-1-to-glmatrix-
+		vec4.set(rayWorld, rayEye[0], rayEye[1], rayEye[2], rayEye[3]);
 		var vMatrixInverse = mat4.create();
 		mat4.identity(vMatrixInverse);
-		mat4.inverse(vMatrix, vMatrixInverse);
-		mat4.multiplyVec4(vMatrixInverse, rayEye, rayWorld);
+		mat4.invert(vMatrixInverse, vMatrixInverse);
+		vec4.transformMat4(rayWorld, rayWorld, vMatrixInverse);
+		// mat4.multiplyVec4(vMatrixInverse, rayEye, rayWorld);
+
+
+
 				
 		vec3.normalize(rayWorld, rayWorld);
 		
@@ -134,9 +147,8 @@ class RayPickingUtils{
 		
 		var intersectionDistance = RayPickingUtils.raySphere(camera.getCameraPosition(), rayWorld, in_modelObj);
 		
-		var intersectionPoint = [],
-		intersectionModelPoint = [];
-		var intersectionPoint4d;
+		var intersectionPoint = [];
+		var intersectionModelPoint = vec4.create();
 		var pickedObject = in_modelObj; //TODO check if this is needed
 		
 		if (intersectionDistance >= 0){
@@ -145,10 +157,9 @@ class RayPickingUtils{
 			vec3.scale(rayWorld, intersectionDistance, intersectionPoint);
 			vec3.add(camera.getCameraPosition(), intersectionPoint, intersectionPoint);
 
-			intersectionPoint4d = [intersectionPoint[0], intersectionPoint[1], intersectionPoint[2], 1.0];
-			mat4.multiplyVec4(in_modelObj.getModelMatrixInverse(), intersectionPoint4d, intersectionModelPoint);
-			
-			
+			vec4.set(intersectionModelPoint, intersectionPoint[0], intersectionPoint[1], intersectionPoint[2], 1.0);
+			vec4.transformMat4(intersectionModelPoint, intersectionModelPoint, in_modelObj.getModelMatrixInverse());
+
 		}
 		
 		return {
@@ -231,7 +242,6 @@ class RayPickingUtils{
 	
 	
 }
-
-
+export default RayPickingUtils;
 
 

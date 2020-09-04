@@ -4,8 +4,8 @@
  * @param in_gl - GL context
  * @param in_position - array of double e.g. [0.0, 0.0, -7]
  */
-
-
+import FoV from './FoV';
+import {vec3, mat4} from 'gl-matrix';
 class AbstractSkyEntity{
 	
 	constructor(in_radius, in_gl, in_canvas, in_position, in_xRad, in_yRad, in_name, in_fovUtils){
@@ -49,14 +49,14 @@ class AbstractSkyEntity{
 	
 	
 	translate(in_translation){
-		mat4.translate(this.T, this.center);
+		mat4.translate(this.T, this.T, this.center);
 		this.refreshModelMatrix();
 	}
 	
 	rotate(rad1, rad2){
 
-	    mat4.rotate(this.R, rad2, [0, 0, 1]);
-		mat4.rotate(this.R, rad1, [1, 0, 0]);
+	    mat4.rotate(this.R, this.R, rad2, [0, 0, 1]);
+		mat4.rotate(this.R, this.R, rad1, [1, 0, 0]);
 	    
 		this.refreshModelMatrix();
 
@@ -75,7 +75,7 @@ class AbstractSkyEntity{
 		
 		var R_inverse = mat4.create();
 		mat4.identity(R_inverse);
-		mat4.inverse(this.R, R_inverse);
+		mat4.invert(R_inverse, this.R);
 		mat4.multiply(this.T, R_inverse, this.modelMatrix);
 		
 	}
@@ -83,7 +83,7 @@ class AbstractSkyEntity{
 	getModelMatrixInverse(){
 		
 		mat4.identity(this.inverseModelMatrix);
-		mat4.inverse(this.modelMatrix, this.inverseModelMatrix);
+		mat4.invert(this.inverseModelMatrix, this.modelMatrix);
 		return this.inverseModelMatrix;
 		
 	}
@@ -184,3 +184,5 @@ class AbstractSkyEntity{
 	
 	
 }
+
+export default AbstractSkyEntity;

@@ -1,5 +1,8 @@
 "use strict";
 
+import CatalogueDescriptor from '../model/CatalogueDescriptor';
+import CataloguePresenter from './CataloguePresenter';
+import CatalogueView from '../view/CatalogueView';
 
 class CatalogueListPresenter{
 	
@@ -30,3 +33,4 @@ class CatalogueListPresenter{
 	
 	
 }
+export default CatalogueListPresenter;

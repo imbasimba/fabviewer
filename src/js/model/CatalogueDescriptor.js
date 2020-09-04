@@ -56,3 +56,5 @@ class CatalogueDescriptor{
     }
 	
 }
+
+export default CatalogueDescriptor;

@@ -26,3 +26,5 @@ class SourceSelectionPresenter {
 	}
 	
 }
+
+export default SourceSelectionPresenter;

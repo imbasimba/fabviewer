@@ -1,15 +1,19 @@
 /**
  * @author Fabrizio Giordano (Fab)
  */
-function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
+import HiPS from '../model/HiPS';
+
+class ModelRepo{
 	
-	var currentObj = this;
+	constructor(in_gl, in_canvas, in_catalogueCallback){
+		this.init(in_gl, in_canvas, in_catalogueCallback);
+	}
 	
-	this.init = function (){
-		currentObj.objModels = [];
-//		currentObj.catalogues = [];
+	init(in_gl, in_canvas, in_catalogueCallback){
+		this.objModels = [];
+//		this.catalogues = [];
 		
-//		currentObj.objModels[0] = new Moon(2, in_gl, in_canvas, [0.0, 0.0, -7.0], 0, 0, "Moon");
+//		this.objModels[0] = new Moon(2, in_gl, in_canvas, [0.0, 0.0, -7.0], 0, 0, "Moon");
 				
 		var sphericalPhiThetaRad = {
 				phi: 0.0,
@@ -17,7 +21,7 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 		};
 		
 
-		currentObj.objModels[0] = new HiPS(1, in_gl, in_canvas, [0.0, 0.0, 0.0], 
+		this.objModels[0] = new HiPS(1, in_gl, in_canvas, [0.0, 0.0, 0.0], 
 				Math.PI / 2, 
 				Math.PI / 2, "HiPS");
 				
@@ -39,7 +43,7 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 //			s:Number(decDMS[2])
 //			});
 		
-//		currentObj.getJSON("https://sky.esa.int/esasky-tap/catalogs", currentObj.loadCatalogues);
+//		this.getJSON("https://sky.esa.int/esasky-tap/catalogs", this.loadCatalogues);
 		
 	};
 	
@@ -49,7 +53,7 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 //		} else {
 //			console.log("Catalogue descriptors loaded");
 //			console.log(data);
-//			currentObj.catalogues = data;
+//			this.catalogues = data;
 //			in_catalogueCallback(data);
 //		}
 //		
@@ -72,5 +76,7 @@ function ModelRepo(in_gl, in_canvas, in_catalogueCallback){
 //	    xhr.send();
 //	};
 	
-	this.init();
+	
 }
+
+export default ModelRepo;

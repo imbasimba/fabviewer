@@ -82,11 +82,11 @@ Utils.cartesianToSpherical = function(xyz){
 	};
 };
 
-function degToRad(degrees) {
+export function degToRad(degrees) {
 	return degrees * Math.PI / 180;
 }
 
-function radToDeg(radians) {
+export function radToDeg(radians) {
 	return radians * 180 / Math.PI;
 }
 
