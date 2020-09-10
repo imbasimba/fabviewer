@@ -14,6 +14,9 @@ import SourceSelectionPresenter from './presenter/SourceSelectionPresenter';
 import CatalogueRepo from './repos/CatalogueRepo';
 import ModelRepo from './repos/ModelRepo';
 import {mat4, vec3} from 'gl-matrix';
+import {cartesianToSpherical, sphericalToAstroDeg, raDegToHMS, decDegToDMS} from './utils/Utils';
+import FoVUtils from './utils/FoVUtils';
+import global from './Global';
 
 class FVPresenter{
 	constructor(in_view, in_gl){
@@ -52,7 +55,6 @@ class FVPresenter{
 		
 		// projection matrix
 		this.pMatrix = mat4.create();
-		mat4.identity(this.pMatrix);
 		
 		this.mouseDown = false;
 		this.lastMouseX = null;
@@ -97,7 +99,7 @@ class FVPresenter{
 		var systemView = new SystemView();
 		this.systemPresenter = new SystemPresenter(systemView);
 		this.view.appendChild(systemView.getHtml());
-		this.systemPresenter.addFovPolyHandler(this.getFovPoly);
+		this.systemPresenter.addFovPolyHandler(()=>{this.getFovPoly()});
 		
 		var catalogueListView = new CatalogueListView();
 		this.catalogueListPresenter = new CatalogueListPresenter(catalogueListView);
@@ -196,6 +198,7 @@ class FVPresenter{
 				
 		     	this.inertiaX += 0.1 * deltaX;
 				this.inertiaY += 0.1 * deltaY;
+
 				
 			}else{
 				
@@ -265,7 +268,7 @@ class FVPresenter{
 			
 			var code = event.keyCode;
 
-			var move = vec3.create([0, 0, 0]);
+			var move = vec3.clone([0, 0, 0]);
 			var rotStep = 0.01;
 			var pan = false;
 			switch (code) {

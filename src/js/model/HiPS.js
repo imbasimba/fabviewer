@@ -9,10 +9,9 @@
 import AbstractSkyEntity from './AbstractSkyEntity';
 import SphericalGrid from './SphericalGrid';
 import XYZSystem from './XYZSystem';
-import Pointing from './Pointing';
 import RayPickingUtils from '../utils/RayPickingUtils';
 import Healpix from 'healpix';
-import {Vec3} from 'healpix';
+import {Vec3, Pointing} from 'healpix';
 import global from '../Global';
 
 

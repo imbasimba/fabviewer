@@ -3,6 +3,7 @@
  */
 import FVView from './FVView';
 import FVPresenter from './FVPresenter';
+import global from './Global';
 
 
 class FVApp{
@@ -100,28 +101,26 @@ class FVApp{
 		if (DEBUG){
 			console.log("[FVApp::run]");
 		}
-		// this.tick();
+		this.tick();
 	};
 	
-// 	this.tick = function () {
+	tick() {
 		
-// 		this.drawScene();
-// 		var error = this.gl.getError();
-// 		if (error != this.gl.NO_ERROR && error != this.gl.CONTEXT_LOST_WEBGL) {
-// //			alert("GL error: "+error);
-// 			console.log("GL error: "+error);
-// 		}
+		this.drawScene();
+		var error = this.gl.getError();
+		if (error != this.gl.NO_ERROR && error != this.gl.CONTEXT_LOST_WEBGL) {
+//			alert("GL error: "+error);
+			console.log("GL error: "+error);
+		}
 
-// 		this.fabVReqID = requestAnimFrame(this.tick);
+		this.fabVReqID = requestAnimationFrame(()=>this.tick());
 		
-// 	}
+	}
 
 	
-	
-// 	this.drawScene = function(){
-		
-// 		this.presenter.draw();
-// 	};
+	drawScene(){
+		this.presenter.draw();
+	};
 	
 	
 }

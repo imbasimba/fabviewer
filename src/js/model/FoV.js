@@ -5,47 +5,32 @@
 import RayPickingUtils from '../utils/RayPickingUtils';
 import {radToDeg} from '../utils/Utils';
 import {vec3, mat4} from 'gl-matrix';
+import global from '../Global';
 class FoV{
-	
-	#fovX_deg;
-	#fovY_deg;
-	#minFoV;
-	#prevMinFoV;
-	#model;
-	
+	#minFoV = 180;
 	constructor(in_model){
-		this.#fovX_deg = 180;
-		this.#fovY_deg = 180;
-		this.#minFoV = 180;
-		this.#prevMinFoV = 180;
-		this.#model = in_model;
+		this.fovXDeg = 180;
+		this.fovYDeg = 180;
+		this.prevMinFoV = 180;
+		this.model = in_model;
 	}
 	
 	getFoV(){
-		
-		
 		var gl = global.gl;
 		
-		this.#prevMinFoV = this.#minFoV;
+		this.prevMinFoV = this.minFoV;
 		
 		// horizontal FoV 
-		this.#fovX_deg = this.computeAngle(0, gl.canvas.height / 2);
+		this.fovXDeg = this.computeAngle(0, gl.canvas.height / 2);
 		// vertical FoV 
-		this.#fovY_deg = this.computeAngle(gl.canvas.width / 2, 0);
+		this.fovYDeg = this.computeAngle(gl.canvas.width / 2, 0);
 
 		this.#minFoV = this.minFoV;
 		
 		return this;
 	}
 	
-	get fovXDeg(){
-		return this.#fovX_deg;
-	}
-	
-	get fovYDeg(){
-		return this.#fovY_deg;
-	}
-	
+
 	computeAngle(canvasX, canvasY){
 		
 		var pMatrix = global.pMatrix;
@@ -54,33 +39,37 @@ class FoV{
 		
 		var rayWorld = RayPickingUtils.getRayFromMouse(canvasX, canvasY);
 		
-		var intersectionDistance = RayPickingUtils.raySphere(camera.getCameraPosition(), rayWorld, this.#model);
+		var intersectionDistance = RayPickingUtils.raySphere(camera.getCameraPosition(), rayWorld, this.model);
 		
 		if (intersectionDistance > 0){
 			var intersectionPoint = vec3.create();
-			vec3.scale(rayWorld, intersectionDistance, intersectionPoint);
-			vec3.add(camera.getCameraPosition(), intersectionPoint, intersectionPoint);
+			vec3.scale(intersectionPoint, rayWorld, intersectionDistance);
+			vec3.add(intersectionPoint, camera.getCameraPosition(), intersectionPoint);
 			
-			var center = this.#model.center;
+			var center = this.model.center;
 			
 			var intersectionPoint_center_vector = vec3.create();
-			vec3.subtract(intersectionPoint, center, intersectionPoint_center_vector);
+			vec3.subtract(intersectionPoint_center_vector, intersectionPoint, center);
 			
 			
 			// error found!!!!! when the camera is rotated, the following vector should be rotated as well
 			// because the z-axis of the world doesn't coincide with the z-axis of the camera anymore 
-			var b = vec3.create( [this.#model.center[0], this.#model.center[1], this.#model.center[2] + this.#model.radius] );
+			var b = vec3.clone( [this.model.center[0], this.model.center[1], this.model.center[2] + this.model.radius] );
 			
 			var vMatrixInverse = mat4.create();
 			mat4.identity(vMatrixInverse);
 			mat4.invert(vMatrixInverse, camera.getCameraMatrix());
 			
+			//gl-matrix 0.x
 			// mat4.multiplyVec3(vMatrixInverse, b, b);
+			
+			//gl-matrix 3.x
+			this.mat4multiplyVec3(vMatrixInverse, b, b);
 			
 			
 			
 			var b_center_vector = vec3.create();
-			vec3.subtract(b, center, b_center_vector);
+			vec3.subtract(b_center_vector, b, center);
 			
 			var scal_prod = vec3.create();
 			scal_prod = vec3.dot(intersectionPoint_center_vector, b_center_vector);
@@ -103,9 +92,20 @@ class FoV{
 	}
 	
 	get minFoV(){
-		this.#minFoV = (this.#fovY_deg <= this.#fovX_deg) ? this.#fovY_deg : this.#fovX_deg;
+		this.#minFoV = (this.fovYDeg <= this.fovXDeg) ? this.fovYDeg : this.fovXDeg;
 		return this.#minFoV;
 	}
+
+	mat4multiplyVec3 = function(a, b, c) {
+		c || (c = b);
+		var d = b[0],
+			e = b[1];
+		b = b[2];
+		c[0] = a[0] * d + a[4] * e + a[8] * b + a[12];
+		c[1] = a[1] * d + a[5] * e + a[9] * b + a[13];
+		c[2] = a[2] * d + a[6] * e + a[10] * b + a[14];
+		return c
+	};
 	
 }
 
@@ -116,8 +116,8 @@ export default FoV;
 //	var currentObj = this;
 //	
 //	this.init = function(){
-//		currentObj.fovX_deg = 180;
-//		currentObj.fovY_deg = 180;
+//		currentObj.fovXDeg = 180;
+//		currentObj.fovYDeg = 180;
 //		currentObj.minFoV = 180;
 //	};
 //	
@@ -181,9 +181,9 @@ export default FoV;
 //		currentObj.prevMinFoV = currentObj.minFoV;
 //		
 //		// horizontal FoV 
-//		currentObj.fovX_deg = computeAngle(0, in_canvas.height / 2, in_pMatrix, in_camera);
+//		currentObj.fovXDeg = computeAngle(0, in_canvas.height / 2, in_pMatrix, in_camera);
 //		// vertical FoV 
-//		currentObj.fovY_deg = computeAngle(in_canvas.width / 2, 0, in_pMatrix, in_camera);
+//		currentObj.fovYDeg = computeAngle(in_canvas.width / 2, 0, in_pMatrix, in_camera);
 //
 //		currentObj.minFoV = currentObj.getMinFoV();
 //		
@@ -192,7 +192,7 @@ export default FoV;
 //	};
 //	
 //	this.getMinFoV = function(){
-//		currentObj.minFoV = (currentObj.fovY_deg <= currentObj.fovX_deg) ? currentObj.fovY_deg : currentObj.fovX_deg;
+//		currentObj.minFoV = (currentObj.fovYDeg <= currentObj.fovXDeg) ? currentObj.fovYDeg : currentObj.fovXDeg;
 //		return currentObj.minFoV;
 //	};
 //	

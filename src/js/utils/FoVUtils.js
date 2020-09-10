@@ -3,6 +3,11 @@
  * @author Fabrizio Giordano (Fab)
  */
 
+import Point from './Point';
+import RayPickingUtils from './RayPickingUtils';
+import CoordsType from './CoordsType';
+import {vec3, mat4} from 'gl-matrix';
+
 class FoVUtils {
 	
 	constructor(in_fovX = 180, in_fovY = 180){
@@ -37,16 +42,16 @@ class FoVUtils {
 		
 		if (intersectionDistance > 0){
 			
-			vec3.scale(rayWorld, intersectionDistance, intersectionPoint);
-			vec3.add(in_camera.getCameraPosition(), intersectionPoint, intersectionPoint);
+			vec3.scale(intersectionPoint, rayWorld, intersectionDistance);
+			vec3.add(intersectionPoint, in_camera.getCameraPosition(), intersectionPoint);
 			
 			center = in_model.center;
 			
-			vec3.subtract(intersectionPoint, center, intersectionPoint_center_vector);
+			vec3.subtract(intersectionPoint_center_vector, intersectionPoint, center);
 			
 			b = vec3.create( [in_model.center[0], in_model.center[1], in_model.center[2] + in_model.radius] );
 			
-			vec3.subtract(b, center, b_center_vector);
+			vec3.subtract(b_center_vector, b, center);
 			
 			
 			scal_prod = vec3.dot(intersectionPoint_center_vector, b_center_vector);
@@ -154,8 +159,8 @@ class FoVUtils {
 			middleRightBottom = [],
 			middleBottomLeft = [];
 			
-			M = mat4.multiply(in_vMatrix, in_mMatrix, M);
-			M = mat4.multiply(in_pMatrix, M, M);
+			M = mat4.multiply(M, in_vMatrix, in_mMatrix);
+			M = mat4.multiply(M, in_pMatrix, M);
 			
 			// top plane normal
 			
@@ -604,6 +609,8 @@ class FoVUtils {
 	}
 	
 }
+
+export default FoVUtils;
 
 
 

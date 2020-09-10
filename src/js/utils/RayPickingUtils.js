@@ -4,11 +4,11 @@
  */
 
 import {vec3, vec4, mat4} from 'gl-matrix';
+import global from '../Global';
 
 class RayPickingUtils{
 	
-	// N.B. ECMAScript 6 private field definition. Not recognized by Eclipse at the moment 
-	static #nearestVisibleObjectIdx = -1;
+	static lastNearestVisibleObjectIdx = -1;
 	
 	
 	constructor(){}
@@ -30,36 +30,24 @@ class RayPickingUtils{
 		var z = 1.0;
 
 		// normalized device space
-		var rayNds = vec3.create([x, y, z]);
+		var rayNds = vec3.clone([x, y, z]);
 		
 		// homogeneous clip space
 		var rayClip = [rayNds[0], rayNds[1], -1.0, 1.0];
 		
 		// eye space
 		var pMatrixInverse = mat4.create();
-		mat4.identity(pMatrixInverse);
 		mat4.invert(pMatrixInverse, pMatrix);
-		var rayEye = vec4.create();
-		vec4.set(rayEye, rayClip[0], rayClip[1], rayClip[2], rayClip[3]); //TODO double check gl-matrix upgrade https://stackoverflow.com/questions/52901576/migrating-to-from-glmatrix-1-to-glmatrix-2
-		// mat4.multiplyVec4(pMatrixInverse, rayClip, rayEye);
-		
-		vec4.transformMat4(rayEye, rayEye, pMatrixInverse);
 
-
+		var rayEye = [];
+		RayPickingUtils.mat4MultiplyVec4(pMatrixInverse, rayClip, rayEye);
 		rayEye = [rayEye[0], rayEye[1], -1.0, 0.0];
 		
 		// world space
-		var rayWorld = vec4.create();
-		//TODO double check gl-matrix upgrade https://stackoverflow.com/questions/52901576/migrating-to-from-glmatrix-1-to-glmatrix-
-		vec4.set(rayWorld, rayEye[0], rayEye[1], rayEye[2], rayEye[3]);
+		var rayWorld = [];
 		var vMatrixInverse = mat4.create();
-		mat4.identity(vMatrixInverse);
-		mat4.invert(vMatrixInverse, vMatrixInverse);
-		vec4.transformMat4(rayWorld, rayWorld, vMatrixInverse);
-		// mat4.multiplyVec4(vMatrixInverse, rayEye, rayWorld);
-
-
-
+		mat4.invert(vMatrixInverse, vMatrix);
+		RayPickingUtils.mat4MultiplyVec4(vMatrixInverse, rayEye, rayWorld);
 				
 		vec3.normalize(rayWorld, rayWorld);
 		
@@ -67,6 +55,18 @@ class RayPickingUtils{
 		
 	}
 	
+	static mat4MultiplyVec4 = function(a, b, c) {
+		c || (c = b);
+		var d = b[0],
+			e = b[1],
+			g = b[2];
+		b = b[3];
+		c[0] = a[0] * d + a[4] * e + a[8] * g + a[12] * b;
+		c[1] = a[1] * d + a[5] * e + a[9] * g + a[13] * b;
+		c[2] = a[2] * d + a[6] * e + a[10] * g + a[14] * b;
+		c[3] = a[3] * d + a[7] * e + a[11] * g + a[15] * b;
+		return c
+	};
 	
 	/*
 	 * antongerdelan.net/opengl/raycasting.html
@@ -82,7 +82,7 @@ class RayPickingUtils{
 		
 		var intersectionDistance = -1;
 		var distToMoldel = vec3.create();
-		vec3.subtract(rayOrigWorld, in_model.center, distToMoldel);
+		vec3.subtract(distToMoldel, rayOrigWorld, in_model.center);
 		
 		var b = vec3.dot(rayDirectionWorld, distToMoldel);
 		
@@ -118,7 +118,7 @@ class RayPickingUtils{
 	
 	static getNearestVisibleObjectIdx(){
 		
-		return 	this.#nearestVisibleObjectIdx;
+		return 	this.lastNearestVisibleObjectIdx;
 		
 	}
 	
@@ -147,19 +147,21 @@ class RayPickingUtils{
 		
 		var intersectionDistance = RayPickingUtils.raySphere(camera.getCameraPosition(), rayWorld, in_modelObj);
 		
-		var intersectionPoint = [];
-		var intersectionModelPoint = vec4.create();
+		var intersectionPoint = [],
+		intersectionModelPoint = [];
+		var intersectionPoint4d;
 		var pickedObject = in_modelObj; //TODO check if this is needed
 		
 		if (intersectionDistance >= 0){
 			
 			intersectionPoint = vec3.create();
-			vec3.scale(rayWorld, intersectionDistance, intersectionPoint);
-			vec3.add(camera.getCameraPosition(), intersectionPoint, intersectionPoint);
+			vec3.scale(intersectionPoint, rayWorld, intersectionDistance);
+			vec3.add(intersectionPoint, camera.getCameraPosition(), intersectionPoint);
 
-			vec4.set(intersectionModelPoint, intersectionPoint[0], intersectionPoint[1], intersectionPoint[2], 1.0);
-			vec4.transformMat4(intersectionModelPoint, intersectionModelPoint, in_modelObj.getModelMatrixInverse());
-
+			intersectionPoint4d = [intersectionPoint[0], intersectionPoint[1], intersectionPoint[2], 1.0];
+			RayPickingUtils.mat4MultiplyVec4(in_modelObj.getModelMatrixInverse(), intersectionPoint4d, intersectionModelPoint);
+			
+			
 		}
 		
 		return {
@@ -169,16 +171,13 @@ class RayPickingUtils{
 		
 	}
 
+
 	
 	
 	static getIntersectionPointWithModel(in_mouseX, in_mouseY, in_modelRepoObj){
 
 		
 		var nearestObj = RayPickingUtils.getNearestObjectOnRay(in_mouseX, in_mouseY, in_modelRepoObj);
-		
-		if (DEBUG){
-			console.log("[RayPickingUtils::getIntersectionPointWithModel] nearestVisibleIntersectionDistance " + nearestVisibleIntersectionDistance);
-		}
 		
 		var intersectionModelPoint = [];
 		var pickedObject;
@@ -232,7 +231,7 @@ class RayPickingUtils{
 				
 			}
 		}
-		this.#nearestVisibleObjectIdx = nearestVisibleObjectIdx;
+		this.lastNearestVisibleObjectIdx = nearestVisibleObjectIdx;
 		
 		return {
 			"idx": nearestVisibleObjectIdx,

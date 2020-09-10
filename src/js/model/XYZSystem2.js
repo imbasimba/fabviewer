@@ -30,7 +30,7 @@ function XYZSystem(in_gl, x, y){
 		mat4.inverse(currentObj.R, R_inverse);
 		
 		
-		mat4.multiply(T_inverse, R_inverse,  currentObj.vMatrix);
+		mat4.multiply(currentObj.vMatrix, T_inverse, R_inverse);
 		
 		
 		mat4.translate(currentObj.T, [x, y, z])

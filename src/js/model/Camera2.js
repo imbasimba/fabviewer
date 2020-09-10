@@ -9,7 +9,7 @@ class Camera2{
 	}
 	
 	init(in_position){
-		this.cam_pos = vec3.create(in_position); // initial camera position
+		this.cam_pos = vec3.clone(in_position); // initial camera position
 		this.cam_speed = 3.0;
 		
 		this.vMatrix = mat4.create();
@@ -60,14 +60,14 @@ class Camera2{
 		
 		
 		
-		mat4.multiply(T_inverse, R_inverse,  this.vMatrix);
+		mat4.multiply(this.vMatrix, T_inverse, R_inverse);
 		
 		// I need a vector 4
-		this.fwd = vec3.create([0.0, 0.0, -1.0]); 
-		this.rgt = vec3.create([1.0, 0.0, 0.0]);
-		this.up = vec3.create([0.0, 1.0, 0.0]);
+		this.fwd = vec3.clone([0.0, 0.0, -1.0]); 
+		this.rgt = vec3.clone([1.0, 0.0, 0.0]);
+		this.up = vec3.clone([0.0, 1.0, 0.0]);
 		 
-		this.move = vec3.create([0, 0, 0]);
+		this.move = vec3.clone([0, 0, 0]);
 		
 		/* 
 		 * angle on from z (on the xz plane). from 0 to 180 deg
@@ -98,7 +98,7 @@ class Camera2{
 //		console.log("[Camera2::zoomIn] factor "+factor);
 //		factor = 0.01;
 //		console.log("FACTOR "+factor);
-		this.move = vec3.create([0, 0, 0]);
+		this.move = vec3.clone([0, 0, 0]);
 		this.move[2] -= (this.cam_speed * factor);
 				
 		this.cam_pos[2] += this.move[2];
@@ -106,7 +106,7 @@ class Camera2{
 		
 		var identity = mat4.create();
 		mat4.identity(identity);
-		mat4.translate(identity, this.cam_pos, this.T);
+		mat4.translate(this.T, identity, this.cam_pos);
 		
 		this.refreshViewMatrix();
 		
@@ -116,26 +116,26 @@ class Camera2{
 		
 //		factor = 0.01;
 
-		this.move = vec3.create([0, 0, 0]);
+		this.move = vec3.clone([0, 0, 0]);
 		this.move[2] += this.cam_speed * factor;
 		
 		this.cam_pos[2] += this.move[2];
 		
 		var identity = mat4.create();
 		mat4.identity(identity);
-		mat4.translate(identity, this.cam_pos, this.T);
+		mat4.translate(this.T, identity, this.cam_pos);
 				
 		this.refreshViewMatrix();
 		
 	};
 	
 	rotateZ(sign){
-		factorRad = sign * 0.01;
+		let factorRad = sign * 0.01;
 		this.phi += factorRad;
 		
 		var identity = mat4.create();
 		mat4.identity(identity);
-		mat4.rotate(this.R, factorRad, [0, 0, 1], this.R);
+		mat4.rotate(this.R, this.R, factorRad, [0, 0, 1]);
 		
 
 //		console.log("[Camera2::rotateY] END ---------- ");
@@ -145,12 +145,12 @@ class Camera2{
 	};
 	
 	rotateY(sign){
-		factorRad = sign * 0.01;
+		let factorRad = sign * 0.01;
 		this.phi += factorRad;
 		
 		var identity = mat4.create();
 		mat4.identity(identity);
-		mat4.rotate(this.R, factorRad, [0, 1, 0], this.R);
+		mat4.rotate(this.R, this.R, factorRad, [0, 1, 0]);
 
 //		console.log("[Camera2::rotateY] END ---------- ");
 		
@@ -162,13 +162,13 @@ class Camera2{
 //		factorRad = sign * 0.01;
 		
 		
-		factorRad = sign * 0.01;
+		let factorRad = sign * 0.01;
 		
 		this.theta += factorRad;
 //		console.log("THETA "+this.theta);
 		var identity = mat4.create();
 		mat4.identity(identity);
-		mat4.rotate(this.R, factorRad, [1, 0, 0], this.R);
+		mat4.rotate(this.R, this.R, factorRad, [1, 0, 0]);
 		
 	    
 //		console.log("[Camera2::rotateY] END ---------- ");
@@ -183,15 +183,16 @@ class Camera2{
 		
 		
 		var totRot = Math.sqrt(phi*phi + theta*theta);
+		if(totRot == 0) {return;}
 
-		pos = this.getCameraPosition();
-		dist2Center = Math.sqrt(vec3.dot(pos, pos));
-		usedRot = totRot * (dist2Center - 1) / 3.0;
+		const pos = this.getCameraPosition();
+		const dist2Center = Math.sqrt(vec3.dot(pos, pos));
+		const usedRot = totRot * (dist2Center - 1) / 3.0;
 
-		mat4.rotate(this.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
+		mat4.rotate(this.R, this.R, -(usedRot), [theta/totRot, phi/totRot, 0]);
 		
-//		console.log("totRotation "+ totRot);
-//	    console.log("Camera rotation matrix "+ this.R);
+		// console.log("totRotation "+ totRot);
+	    // console.log("Camera rotation matrix "+ this.R);
 	    this.refreshViewMatrix();
 	    
 	};
@@ -217,7 +218,7 @@ class Camera2{
 //		console.log("[Camera::refreshViewMatrix] this.T_inverse "+ T_inverse);
 		
 		
-		mat4.multiply(T_inverse, R_inverse, this.vMatrix);
+		mat4.multiply(this.vMatrix, T_inverse, R_inverse);
 		
 //		console.log("[Camera2::refreshViewMatrix] END   -------");
 	};
