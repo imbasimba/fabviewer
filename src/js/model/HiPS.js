@@ -13,6 +13,7 @@ import Pointing from './Pointing';
 import RayPickingUtils from '../utils/RayPickingUtils';
 import Healpix from 'healpix';
 import {Vec3} from 'healpix';
+import global from '../Global';
 
 
 class HiPS extends AbstractSkyEntity{

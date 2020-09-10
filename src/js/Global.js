@@ -68,3 +68,5 @@ class Global{
 }
 
 var global = new Global();
+
+export default global;
