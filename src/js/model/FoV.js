@@ -57,7 +57,6 @@ class FoV{
 			var b = vec3.clone( [this.model.center[0], this.model.center[1], this.model.center[2] + this.model.radius] );
 			
 			var vMatrixInverse = mat4.create();
-			mat4.identity(vMatrixInverse);
 			mat4.invert(vMatrixInverse, camera.getCameraMatrix());
 			
 			//gl-matrix 0.x
@@ -148,7 +147,6 @@ export default FoV;
 //				var b = vec3.create( [in_model.center[0], in_model.center[1], in_model.center[2] + in_model.radius] );
 //				
 //				var vMatrixInverse = mat4.create();
-//				mat4.identity(vMatrixInverse);
 //				mat4.inverse(in_camera.getCameraMatrix(), vMatrixInverse);
 //				
 //				mat4.multiplyVec3(vMatrixInverse, b, b);

@@ -21,7 +21,6 @@ function XYZSystem(in_gl, x, y){
 		var z = 1.0;
 		
 		currentObj.T = mat4.create();
-		mat4.identity(currentObj.T);
 		
 		var T_inverse = mat4.create();
 		mat4.inverse(currentObj.T, T_inverse);
@@ -36,7 +35,6 @@ function XYZSystem(in_gl, x, y){
 		mat4.translate(currentObj.T, [x, y, z])
 		
 		currentObj.R = mat4.create();
-		mat4.identity(currentObj.R);
 		
 	};
 	

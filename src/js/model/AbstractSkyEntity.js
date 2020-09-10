@@ -29,16 +29,12 @@ class AbstractSkyEntity{
 		
 		// Matrices related
 		this.T = mat4.create();
-		mat4.identity(this.T);
 		
 		this.R = mat4.create();
-		mat4.identity(this.R);
 		
 		this.modelMatrix = mat4.create();
-		mat4.identity(this.modelMatrix);
 		
 		this.inverseModelMatrix = mat4.create();
-		mat4.identity(this.inverseModelMatrix);
 		
 		// Initial position
 		this.translate(this.center);
@@ -74,7 +70,6 @@ class AbstractSkyEntity{
 	refreshModelMatrix(){
 		
 		var R_inverse = mat4.create();
-		mat4.identity(R_inverse);
 		mat4.invert(R_inverse, this.R);
 		mat4.multiply(this.modelMatrix, this.T, R_inverse);
 		

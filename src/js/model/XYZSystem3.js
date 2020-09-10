@@ -13,7 +13,6 @@ function XYZSystem3(in_gl, in_cameraPosition){
 		currentObj.shaderProgram = in_gl.createProgram();
 		
 		currentObj.modelMatrix = mat4.create();
-		mat4.identity(currentObj.modelMatrix);
 		
 	};
 	

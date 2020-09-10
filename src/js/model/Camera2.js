@@ -12,14 +12,9 @@ class Camera2{
 		this.cam_pos = vec3.clone(in_position); // initial camera position
 		this.cam_speed = 3.0;
 		
-		this.vMatrix = mat4.create();
-		this.T = mat4.create();
-		this.R = mat4.create();
-		
-		mat4.identity(this.vMatrix); // view matrix
-		mat4.identity(this.T); // translation matrix
-		mat4.identity(this.R); // rotation matrix
-		
+		this.vMatrix = mat4.create(); // view matrix
+		this.T = mat4.create(); // translation matrix
+		this.R = mat4.create(); // rotation matrix
 		
 //		mat4.translate(this.T, 
 //				[-1.0 * this.cam_pos[0],
@@ -105,7 +100,6 @@ class Camera2{
 		
 		
 		var identity = mat4.create();
-		mat4.identity(identity);
 		mat4.translate(this.T, identity, this.cam_pos);
 		
 		this.refreshViewMatrix();
@@ -122,7 +116,6 @@ class Camera2{
 		this.cam_pos[2] += this.move[2];
 		
 		var identity = mat4.create();
-		mat4.identity(identity);
 		mat4.translate(this.T, identity, this.cam_pos);
 				
 		this.refreshViewMatrix();
@@ -134,7 +127,6 @@ class Camera2{
 		this.phi += factorRad;
 		
 		var identity = mat4.create();
-		mat4.identity(identity);
 		mat4.rotate(this.R, this.R, factorRad, [0, 0, 1]);
 		
 
@@ -149,7 +141,6 @@ class Camera2{
 		this.phi += factorRad;
 		
 		var identity = mat4.create();
-		mat4.identity(identity);
 		mat4.rotate(this.R, this.R, factorRad, [0, 1, 0]);
 
 //		console.log("[Camera2::rotateY] END ---------- ");
@@ -167,7 +158,6 @@ class Camera2{
 		this.theta += factorRad;
 //		console.log("THETA "+this.theta);
 		var identity = mat4.create();
-		mat4.identity(identity);
 		mat4.rotate(this.R, this.R, factorRad, [1, 0, 0]);
 		
 	    
@@ -207,8 +197,6 @@ class Camera2{
 		
 		var T_inverse = mat4.create();
 		var R_inverse = mat4.create();
-		mat4.identity(T_inverse);
-		mat4.identity(R_inverse);
 		
 		mat4.invert(T_inverse, this.T);
 		
@@ -239,7 +227,6 @@ class Camera2{
 	getCameraPosition (){
 		// to be initiated into the init 
 		var vMatrix_inverse = mat4.create();
-		mat4.identity(vMatrix_inverse);
 		mat4.invert(vMatrix_inverse, this.vMatrix);
 		return [vMatrix_inverse[12], vMatrix_inverse[13], vMatrix_inverse[14]];
 	};
