@@ -1,12 +1,14 @@
 "use strict";
 
+import FoVUtils from '../utils/FoVUtils';
+import Catalogue from '../model/Catalogue';
+import global from '../Global';
 
 class CatalogueRepo{
 	
 	#descriptorURL = null;
 	#catalogueDescriptors = [];
 	static #catalogues = [];
-	self;
 	
 	
 	/** 
@@ -16,7 +18,6 @@ class CatalogueRepo{
 	constructor(in_descriptorURL, in_addCataloguesCallback){
 		
 		this.#descriptorURL = in_descriptorURL;
-		self = this;
 		this.getDescriptorJSON(in_addCataloguesCallback);
 	}
 	
@@ -27,9 +28,9 @@ class CatalogueRepo{
 		xhr.onload = () =>  {
 			var status = xhr.status;
 			if (status === 200) {
-				self.loadCatalogues(in_addCataloguesCallback, null, xhr.response);
+				this.loadCatalogues(in_addCataloguesCallback, null, xhr.response);
 			} else {
-				self.loadCatalogues(in_addCataloguesCallback, status, xhr.response);
+				this.loadCatalogues(in_addCataloguesCallback, status, xhr.response);
 			}
 		};
 		xhr.send();

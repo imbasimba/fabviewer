@@ -9,10 +9,10 @@ class SourceSelectionPresenter {
 	
 	constructor (in_view) {
 		this.#view = in_view;
-		var self = this;
+		var _self = this;
 		window.addEventListener('sourceSelected', function (e) {
 //			console.log(e);
-			self.refreshModel(e.detail);
+			_self.refreshModel(e.detail);
 			}, false);
 	}
 	

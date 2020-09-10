@@ -2,21 +2,24 @@
 /**
  * @author Fabrizio Giordano (Fab77)
  */
+
+ import CatalogueRepo from '../repos/CatalogueRepo';
+ 
 class CataloguePresenter{
 	
 	constructor(in_view){
 		this._view = in_view;
 
-		var self = this;
+		var _self = this;
 		
 		this._view.addCheckedHandler(function(){
 
 			var checkbox = this;
 
 			if (checkbox.checked){
-				CatalogueRepo.retriveByFoV("https://sky.esa.int/", self._model, null);	
+				CatalogueRepo.retriveByFoV("https://sky.esa.int/", _self._model, null);	
 			}else{
-				CatalogueRepo.removeCatalogue(self._model.name);
+				CatalogueRepo.removeCatalogue(_self._model.name);
 			}
         });
 		

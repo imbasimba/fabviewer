@@ -1,4 +1,13 @@
 "use strict";
+
+import {cartesianToSpherical, sphericalToCartesian, colorHex2RGB} from '../utils/Utils';
+import {mat4} from 'gl-matrix';
+import global from '../Global';
+import Point from '../utils/Point';
+import CoordsType from '../utils/CoordsType';
+import Source from './Source';
+
+
 class Catalogue{
 	
 	static ELEM_SIZE = 5;
@@ -57,7 +66,7 @@ class Catalogue{
 	
 	initShaders(){
 		
-		var self = this;
+		var _self = this;
 		var gl = this.#gl;
 		var shaderProgram = this.#shaderProgram;
 		
@@ -186,8 +195,8 @@ class Catalogue{
 		for(var j = 0; j < nSources; j++){
 			
 			let xyz = [sources[j].point.x, sources[j].point.y, sources[j].point.z];
-			let phiTheta = Utils.cartesianToSpherical(xyz);
-			let finalXYZ = Utils.sphericalToCartesian(phiTheta.phi, phiTheta.theta, R);
+			let phiTheta = cartesianToSpherical(xyz);
+			let finalXYZ = sphericalToCartesian(phiTheta.phi, phiTheta.theta, R);
 //			console.log(finalXYZ);
 			this.#vertexCataloguePosition[positionIndex] = finalXYZ[0];
 			this.#vertexCataloguePosition[positionIndex+1] = finalXYZ[1];
@@ -250,7 +259,7 @@ class Catalogue{
 		this.#attribLocations.color = this.#gl.getUniformLocation(this.#shaderProgram,'u_fragcolor');
 		
 		var mvMatrix = mat4.create();
-		mvMatrix = mat4.multiply(global.camera.getCameraMatrix(), in_mMatrix, mvMatrix);
+		mvMatrix = mat4.multiply(mvMatrix, global.camera.getCameraMatrix(), in_mMatrix);
 		this.#gl.uniformMatrix4fv(this.#shaderProgram.catUniformMVMatrixLoc, false, mvMatrix);
 		this.#gl.uniformMatrix4fv(this.#shaderProgram.catUniformProjMatrixLoc, false, global.pMatrix);
 
@@ -282,7 +291,7 @@ class Catalogue{
 		
 		
 		// setting source shape color 
-		var rgb = Utils.colorHex2RGB(this.#descriptor.shapeColor);
+		var rgb = colorHex2RGB(this.#descriptor.shapeColor);
 		var alpha = 1.0;
 		rgb[3] = alpha;
 		this.#gl.uniform4f(this.#attribLocations.color, rgb[0], rgb[1], rgb[2], rgb[3]);
@@ -330,3 +339,6 @@ class Catalogue{
 
 	
 }
+
+
+export default Catalogue;
