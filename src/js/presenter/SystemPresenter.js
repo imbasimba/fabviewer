@@ -13,8 +13,8 @@ class SystemPresenter{
                 this.constructor(in_view);
             },
 
-            getView: function(){
-                return view;
+            getView: ()=>{
+                return this.view;
             },
     //        setModel: function(_model){	// of type SystemEntity
     //            model = _model;
@@ -26,7 +26,7 @@ class SystemPresenter{
                 this.view.setModel(this.model);
                 
             },
-            getElapsedTime: function(){
+            getElapsedTime: ()=>{
                 return this.elapsedTime;
             },
             getFovPoly: function(){
