@@ -1,47 +1,30 @@
 /**
  * @author Fabrizio Giordano (Fab)
  */
-
+import {vec3} from 'gl-matrix';
 
 function Utils(){
 	
 }
 
-function cartesianToSpherical(xyz){
+export function cartesianToSpherical(xyz){
 	var dotXYZ = vec3.dot(xyz, xyz);
-
-	var r = Math.sqrt(dotXYZ);
-
-	
-//	console.log("################");
-//	console.log("xyz "+xyz);
-//	console.log("r "+r);
-//	console.log("dotXYZ "+dotXYZ);
-	
-	
+	var r = Math.sqrt(dotXYZ);	
 	var theta = Math.acos(xyz[2]/r);
-//	console.log("theta "+theta);
 	theta = radToDeg(theta);
-	
 	// NB: in atan(y/x) is written with params switched atan2(x, y)
 	var phi = Math.atan2(xyz[1],xyz[0]);
-//	console.log("phi "+phi);
 	phi = radToDeg(phi);
 	if (phi < 0){
 		phi += 360;
 	}
-//	console.log("phideg "+phi+" thetadeg"+ theta);
-//	console.log("################");
-	
 	return {
 		phi: phi, 
 		theta: theta
 	};
-	
-}
+};
 
-
-Utils.colorHex2RGB = function(hexColor){
+export function colorHex2RGB(hexColor){
 
 //	console.log(hexColor);
 	var hex1 = hexColor.substring(1,3);
@@ -60,27 +43,7 @@ Utils.colorHex2RGB = function(hexColor){
 
 }
 
-Utils.cartesianToSpherical = function(xyz){
-	
-	var dotXYZ = vec3.dot(xyz, xyz);
 
-	var r = Math.sqrt(dotXYZ);	
-	
-	var theta = Math.acos(xyz[2]/r);
-	theta = radToDeg(theta);
-	
-	// NB: in atan(y/x) is written with params switched atan2(x, y)
-	var phi = Math.atan2(xyz[1],xyz[0]);
-	phi = radToDeg(phi);
-	if (phi < 0){
-		phi += 360;
-	}
-
-	return {
-		phi: phi, 
-		theta: theta
-	};
-};
 
 export function degToRad(degrees) {
 	return degrees * Math.PI / 180;
@@ -90,10 +53,8 @@ export function radToDeg(radians) {
 	return radians * 180 / Math.PI;
 }
 
-function sphericalToAstroDeg(phiDeg, thetaDeg){
-	
+export function sphericalToAstroDeg(phiDeg, thetaDeg){
 	var raDeg, decDeg;
-//	raDeg = 90 - phiDeg;
 	raDeg = phiDeg;
 	if (raDeg < 0){
 		raDeg += 360;
@@ -107,43 +68,7 @@ function sphericalToAstroDeg(phiDeg, thetaDeg){
 	};
 }
 
-
-Utils.sphericalToAstroDeg = function(phiDeg, thetaDeg){
-	var raDeg, decDeg;
-//	raDeg = 90 - phiDeg;
-	raDeg = phiDeg;
-	if (raDeg < 0){
-		raDeg += 360;
-	}
-	
-	decDeg = 90 - thetaDeg;
-	
-	return {
-		ra: raDeg,
-		dec: decDeg
-	};
-
-};
-
-Utils.astroDegToSpherical = function(raDeg, decDeg){
-	var phiDeg, thetaDeg;
-//	phiDeg = 90 - raDeg;
-	phiDeg = raDeg;
-	if (phiDeg < 0){
-		phiDeg += 360;
-	}
-	
-	thetaDeg = 90 - decDeg;
-	
-	return {
-		phi: phiDeg,
-		theta: thetaDeg
-	};
-};
-
-Utils.sphericalToCartesian = function(phiDeg, thetaDeg, r){
-	
-	
+export function sphericalToCartesian(phiDeg, thetaDeg, r){
 	var x = r * Math.sin(degToRad(thetaDeg)) * Math.cos(degToRad(phiDeg));
 	var y = r * Math.sin(degToRad(phiDeg)) * Math.sin(degToRad(thetaDeg));
 	var z = r * Math.cos(degToRad(thetaDeg));
@@ -151,7 +76,7 @@ Utils.sphericalToCartesian = function(phiDeg, thetaDeg, r){
 };
 
 
-function astroDegToSpherical(raDeg, decDeg){
+export function astroDegToSpherical(raDeg, decDeg){
 	
 	var phiDeg, thetaDeg;
 //	phiDeg = 90 - raDeg;
@@ -171,7 +96,7 @@ function astroDegToSpherical(raDeg, decDeg){
 
 
 
-function raDegToHMS(raDeg){
+export function raDegToHMS(raDeg){
 	
 	var h = Math.floor(raDeg/15);
 	var m = Math.floor((raDeg/15 - h) * 60);
@@ -184,9 +109,7 @@ function raDegToHMS(raDeg){
 	};
 }
 
-function decDegToDMS(decDeg){
-	
-	
+export function decDegToDMS(decDeg){
 	var sign = 1;
 	if (decDeg < 0){
 		sign = -1;

@@ -2,6 +2,10 @@
 /**
  * @author Fabrizio Giordano (Fab77)
  */
+
+import {cartesianToSpherical, sphericalToCartesian, sphericalToAstroDeg, astroDegToSpherical} from './Utils';
+import CoordsType from './CoordsType';
+
 class Point{
 	
 	#x;
@@ -50,15 +54,15 @@ class Point{
 	}
 
 	computeAstroCoords(){
-    	var phiThetaDeg = Utils.cartesianToSpherical([this.#xyz[0], this.#xyz[1], this.#xyz[2]]);
-		var raDecDeg = Utils.sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
+    	var phiThetaDeg = cartesianToSpherical([this.#xyz[0], this.#xyz[1], this.#xyz[2]]);
+		var raDecDeg = sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
 		var raDecDeg = [raDecDeg.ra, raDecDeg.dec];
 		return raDecDeg;
     }
 	
 	computeCartesianCoords(){
-		var phiThetaDeg = Utils.astroDegToSpherical(this.#raDeg, this.#decDeg);
-		var xyz = Utils.sphericalToCartesian(phiThetaDeg.phi, phiThetaDeg.theta, 1);
+		var phiThetaDeg = astroDegToSpherical(this.#raDeg, this.#decDeg);
+		var xyz = sphericalToCartesian(phiThetaDeg.phi, phiThetaDeg.theta, 1);
 		return xyz;
 	}
 
@@ -115,3 +119,4 @@ class Point{
     }
 }
 
+export default Point;

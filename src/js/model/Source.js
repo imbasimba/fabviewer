@@ -24,3 +24,5 @@ class Source{
 		return this.#name;
 	}
 }
+
+export default Source;

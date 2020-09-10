@@ -9,3 +9,5 @@ const CoordsType = Object.freeze({
   SPHERICAL:  "spherical",
   ASTRO: "astro"
 });
+
+export default CoordsType;
