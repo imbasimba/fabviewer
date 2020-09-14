@@ -306,6 +306,17 @@ class FVPresenter{
 			this.keyPressed = true;
 
 		}
+
+		var handleMouseWheel = (event) => {
+			if (event.deltaY < 0) {
+				// Zoom in
+				this.mouseWheelZoomIn = true;
+			  }
+			  else {
+				// Zoom out
+				this.mouseWheelZoomOut = true;
+			  }
+		}
 		
 
 
@@ -315,6 +326,7 @@ class FVPresenter{
 		this.view.canvas.onpointerdown = handleMouseDown;
 		this.view.canvas.onpointerup = handleMouseUp;
 		this.view.canvas.onpointermove = handleMouseMove;
+		this.view.canvas.onwheel = handleMouseWheel;
 		
 	};
 	
@@ -375,6 +387,15 @@ class FVPresenter{
 			this.inertiaX = 0;
 		}
 		
+		if(this.mouseWheelZoomIn){
+			this.mouseWheelZoomIn = false;
+			this.camera.zoomIn(elapsedTime * 0.7);
+			this.refreshViewAndModel(false);
+		} else if(this.mouseWheelZoomOut){
+			this.mouseWheelZoomOut = false;
+			this.camera.zoomOut(elapsedTime * 0.7);
+			this.refreshViewAndModel(false);
+		}
 
 		if(this.keyPressed){
 			if(this.zoomIn){
