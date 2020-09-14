@@ -144,6 +144,7 @@ class FVPresenter{
 		}
 
 		var handleMouseDown = (event) => {
+			this.view.canvas.setPointerCapture(event.pointerId);
 			this.mouseDown = true;
 			
 			this.lastMouseX = event.pageX;
@@ -154,7 +155,7 @@ class FVPresenter{
 		}
 		
 		var handleMouseUp = (event) => {
-			
+			this.view.canvas.releasePointerCapture(event.pointerId);
 			this.mouseDown = false;
 			document.getElementsByTagName("body")[0].style.cursor = "auto";
 			this.lastMouseX = event.clientX;
@@ -185,7 +186,6 @@ class FVPresenter{
 		
 
 		var handleMouseMove = (event) => {
-
 			var newX = event.clientX;
 			var newY = event.clientY;
 
@@ -312,9 +312,9 @@ class FVPresenter{
 		window.addEventListener('keydown', handleKeyPress);
 		window.addEventListener('keyup', handleKeyUp);
 		
-		this.view.canvas.onmousedown = handleMouseDown;
-		this.view.canvas.onmouseup = handleMouseUp;
-		this.view.canvas.onmousemove = handleMouseMove;
+		this.view.canvas.onpointerdown = handleMouseDown;
+		this.view.canvas.onpointerup = handleMouseUp;
+		this.view.canvas.onpointermove = handleMouseMove;
 		
 	};
 	
