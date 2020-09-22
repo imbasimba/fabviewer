@@ -138,7 +138,7 @@ class AbstractSkyEntity{
 		return this.fovObj.minFoV;
 	}
 	
-	// Method overwritten by sons having hierarchical geometry (e.g. HiPS)
+	// Method overwritten by children having hierarchical geometry (e.g. HiPS)
 	setGeometryNeedsToBeRefreshed (){
 		this.refreshGeometryOnFoVChanged = false;
 	};
