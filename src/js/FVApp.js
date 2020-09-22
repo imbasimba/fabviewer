@@ -28,7 +28,6 @@ class FVApp{
 				console.log(canvas);
 			}
 			
-//			this.gl = canvas.getContext("experimental-webgl");
 			this.gl = canvas.getContext("webgl");
 			
 			console.log("before");
@@ -109,7 +108,6 @@ class FVApp{
 		this.drawScene();
 		var error = this.gl.getError();
 		if (error != this.gl.NO_ERROR && error != this.gl.CONTEXT_LOST_WEBGL) {
-//			alert("GL error: "+error);
 			console.log("GL error: "+error);
 		}
 
