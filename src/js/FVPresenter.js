@@ -50,8 +50,8 @@ class FVPresenter{
 		
 		this.aspectRatio;
 		this.fovDeg = 45;
-		this.nearPlane = 0.1;
-		this.farPlane = 10.0;
+		this.nearPlane = 0.001;
+		this.farPlane = 3.0;
 		
 		// projection matrix
 		this.pMatrix = mat4.create();
@@ -113,7 +113,7 @@ class FVPresenter{
 	};
 	
 	getFovPoly(){
-		
+
 		console.log("this.getFovPoly");
 		
 		var raDecDeg = FoVUtils.getFoVPolygon(
