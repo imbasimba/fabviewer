@@ -20,6 +20,8 @@ class NOrder {
         this.pixels = [];
         this.pixelsCache = [];
 		this.opacity = 1.00 * 100.0/100.0;
+		this.isFullyLoaded = false;
+		this.numberOfLoadedImages = 0;
 	}
 
 	/* 
@@ -206,6 +208,8 @@ class NOrder {
 	};
 
 	initTexture (texturesNeedRefresh) {
+		this.numberOfLoadedImages = 0;
+		this.isFullyLoaded = false;
 		if (texturesNeedRefresh){
 			console.log("[HiPS::initTexture] refreshing texture below AllSkyLimit");
 			for (var d=0; d < this.textures.images.length; d++){
@@ -229,6 +233,7 @@ class NOrder {
 					this.textures.images[n].tex = this.textures.cache[texCacheIdx].tex;
 					this.textures.images[n].image = this.textures.cache[texCacheIdx].image;	
 				}
+				this.numberOfLoadedImages++;
 			}else{
 				this.textures.images[n] = {
 						tex: this.gl.createTexture(),
@@ -257,6 +262,8 @@ class NOrder {
 
 	addOnLoad(image, n){
 		image.image.onload = ()=> {
+			this.numberOfLoadedImages++;
+			this.isFullyLoaded = this.numberOfLoadedImages == this.pixels.length;
 			if(!image.isDeleted){
 				this.handleLoadedTexture(image, 0, n);
 			}

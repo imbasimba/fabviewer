@@ -29,7 +29,7 @@ class HiPS extends AbstractSkyEntity{
 		this.norders = [];
 		this.prevNorder = 0;
 		// below this value we switch from AllSky to HEALPix geometry/texture
-		this.allskyFovLimit = 50.0;
+		this.allskyFovLimit = 32.0;
 		this.URL = "https://skies.esac.esa.int/DSSColor/";
 		this.norders[this.norder] = new AllSky(this.gl, this.shaderProgram, this.norder, this.URL, this.radius);
 		this.maxOrder = 9;
@@ -203,17 +203,28 @@ class HiPS extends AbstractSkyEntity{
 		this.gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, 0.0);
 	}
 	
+	drawNorder(norder){
+		if(this.norder <= 3 || this.norders[norder].isFullyLoaded){
+			// if(this.norder <= 3 || this.norders[norder].isFullyLoaded){
+			this.norders[norder].draw();
+			if(norder == this.norder){
+				console.log("Preferred layer " + norder + " fully loaded - Not drawing above layer");
+			} else {
+				console.log("Drawing above layer: " + norder);
+			}
+		} else {
+			this.drawNorder(norder-1);
+			this.norders[norder].draw();
+			console.log("Drawing incomplete layer: " + norder);
+		}
+	}
+	
 	draw(pMatrix, vMatrix){
 		this.enableShader(pMatrix, vMatrix);
-
-		if(this.norder > 3){
-			this.gl.enable(this.gl.BLEND);
-			this.norders[this.norder -1].draw();
-			this.norders[this.norder].draw();
-			this.gl.disable(this.gl.BLEND);
-		} else {
-			this.norders[this.norder].draw();
-		}
+		
+		this.gl.enable(this.gl.BLEND);
+		this.drawNorder(this.norder);
+		this.gl.disable(this.gl.BLEND);
 
 		if (this.showSphericalGrid) {
 			this.sphericalGrid.draw(this.shaderProgram);

@@ -166,6 +166,7 @@ class AllSky {
 
 	addOnLoad(image, n){
 		image.image.onload = ()=> {
+			this.isFullyLoaded = true;
 			if(!image.isDeleted){
 				this.handleLoadedTexture(image, 0, n);
 			}
