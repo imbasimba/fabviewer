@@ -95,8 +95,17 @@ class Camera2{
 //		console.log("FACTOR "+factor);
 		this.move = vec3.clone([0, 0, 0]);
 		this.move[2] -= (this.cam_speed * factor);
-				
-		this.cam_pos[2] += this.move[2];
+		if(this.cam_pos[2] < 1.01){
+			return;
+		} else if(this.cam_pos[2] < 1.05){
+			this.cam_pos[2] -= 0.005;
+		} else if(this.cam_pos[2] < 1.2){
+			this.cam_pos[2] -= 0.01;
+		} else if(this.cam_pos[2] < 2){
+			this.cam_pos[2] -= 0.03;
+		} else {
+			this.cam_pos[2] += this.move[2];
+		}
 		
 		
 		var identity = mat4.create();
@@ -113,7 +122,15 @@ class Camera2{
 		this.move = vec3.clone([0, 0, 0]);
 		this.move[2] += this.cam_speed * factor;
 		
-		this.cam_pos[2] += this.move[2];
+		if(this.cam_pos[2] > 2){
+			this.cam_pos[2] += this.move[2];
+		} else if(this.cam_pos[2] > 1.2){
+			this.cam_pos[2] += 0.03;
+		} else if(this.cam_pos[2] > 1.05){
+			this.cam_pos[2] += 0.01;
+		} else {
+			this.cam_pos[2] += 0.005;
+		}
 		
 		var identity = mat4.create();
 		mat4.translate(this.T, identity, this.cam_pos);
@@ -231,8 +248,8 @@ class Camera2{
 		return [vMatrix_inverse[12], vMatrix_inverse[13], vMatrix_inverse[14]];
 	};
 		
-	
-	
+
+
 	
 }
 
