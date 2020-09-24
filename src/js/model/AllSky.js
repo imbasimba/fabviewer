@@ -15,13 +15,18 @@ class AllSky {
         this.maxNPix = this.healpix.getNPix();
         this.textures = [];
 		this.textures.images = [];
-		this.textures.cache = [];
         this.pixels = [];
-        this.pixelsCache = [];
 		this.opacity = 1.00 * 100.0/100.0;
+
+		this.isInitialized = false;
+		this.updateVisiblePixels();
+		this.initBuffer();
+		this.initTexture();
+		this.isInitialized = true;
 	}
 	
-	updateVisiblePixels (hips){
+	updateVisiblePixels (){
+		if(this.isInitialized) {return;}
 		this.pixels.splice(0, this.pixels.length);
 		for (var i=0; i < this.maxNPix;i++){
 			this.pixels.push(i);
@@ -29,6 +34,7 @@ class AllSky {
 	}
 
 	initBuffer () {
+		if(this.isInitialized) {return;}
 		var nPixels = this.pixels.length;
 		var vertexPosition = new Float32Array(12*nPixels);
 
@@ -149,15 +155,15 @@ class AllSky {
 		this.vertexIndexBuffer.numItems = vertexIndices.length;
 	};
 
-	initTexture (texturesNeedRefresh) {
-		this.textures.cache.splice(0, this.textures.cache.length);
-		
+	initTexture () {
+		if(this.isInitialized) {return;}
 		this.textures.images[0] = {
 				tex: this.gl.createTexture(),
 				image: new Image()
 		};
 		
 		this.textures.images[0].image = new Image();
+		//TODO remove cross origin attribute for maps on the same domain as it slightly degrades loading time
 		this.textures.images[0].image.setAttribute('crossorigin', 'anonymous');
 		this.textures.images[0].image.src = this.URL+"/Norder3/Allsky.jpg";
 		
