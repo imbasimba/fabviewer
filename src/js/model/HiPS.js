@@ -208,14 +208,14 @@ class HiPS extends AbstractSkyEntity{
 			// if(this.norder <= 3 || this.norders[norder].isFullyLoaded){
 			this.norders[norder].draw();
 			if(norder == this.norder){
-				console.log("Preferred layer " + norder + " fully loaded - Not drawing above layer");
+				// console.log("Preferred layer " + norder + " fully loaded - Not drawing above layer");
 			} else {
-				console.log("Drawing above layer: " + norder);
+				// console.log("Drawing above layer: " + norder);
 			}
 		} else {
 			this.drawNorder(norder-1);
 			this.norders[norder].draw();
-			console.log("Drawing incomplete layer: " + norder);
+			// console.log("Drawing incomplete layer: " + norder);
 		}
 	}
 	

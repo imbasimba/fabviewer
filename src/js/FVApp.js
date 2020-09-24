@@ -106,10 +106,10 @@ class FVApp{
 	tick() {
 		
 		this.drawScene();
-		var error = this.gl.getError();
-		if (error != this.gl.NO_ERROR && error != this.gl.CONTEXT_LOST_WEBGL) {
-			console.log("GL error: "+error);
-		}
+		// var error = this.gl.getError();
+		// if (error != this.gl.NO_ERROR && error != this.gl.CONTEXT_LOST_WEBGL) {
+		// 	console.log("GL error: "+error);
+		// }
 
 		this.fabVReqID = requestAnimationFrame(()=>this.tick());
 		

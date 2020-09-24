@@ -4,8 +4,11 @@ import Healpix from 'healpix';
 import RayPickingUtils from '../utils/RayPickingUtils';
 import {Vec3, Pointing} from 'healpix';
 
+const N_TILES_PER_TEXTURE = 16;
+const N_PIXELS_PER_HIPS = 512;
+
 class NOrder {
-	
+
     constructor(in_gl, shaderProgram, norder, URL, radius){
         this.gl = in_gl;
         this.shaderProgram = shaderProgram;
@@ -22,6 +25,8 @@ class NOrder {
 		this.opacity = 1.00 * 100.0/100.0;
 		this.isFullyLoaded = false;
 		this.numberOfLoadedImages = 0;
+		this.tex = null;
+		this.shaderSkyIndex = this.norder - 3;
 	}
 
 	/* 
@@ -160,17 +165,19 @@ class NOrder {
 		}
 		
 		var textureCoordinates = new Float32Array(8*nPixels);
-		
+		let size = 1.0 / N_TILES_PER_TEXTURE;
 		for (var i=0; i < nPixels; i++){
 			// UV mapping: 1, 0],[1, 1],[0, 1],[0, 0]
-			textureCoordinates[8*i] = 1.0;
-			textureCoordinates[8*i+1] = 0.0;
-			textureCoordinates[8*i+2] = 1.0;
-			textureCoordinates[8*i+3] = 1.0;
-			textureCoordinates[8*i+4] = 0.0;
-			textureCoordinates[8*i+5] = 1.0;
-			textureCoordinates[8*i+6] = 0.0;
-			textureCoordinates[8*i+7] = 0.0;
+			let ix = i % N_TILES_PER_TEXTURE;
+			let iy = Math.floor(i / N_TILES_PER_TEXTURE)
+			textureCoordinates[8*i] = (ix + 1.0) * size;
+			textureCoordinates[8*i+1] = iy*size;
+			textureCoordinates[8*i+2] = (ix + 1.0) * size;
+			textureCoordinates[8*i+3] = (iy + 1.0) * size;
+			textureCoordinates[8*i+4] = ix*size;
+			textureCoordinates[8*i+5] = (iy + 1.0) * size;
+			textureCoordinates[8*i+6] = ix*size;
+			textureCoordinates[8*i+7] = iy*size;
 		}
 	    
 	    var vertexIndices = new Uint16Array(6*nPixels);
@@ -221,7 +228,12 @@ class NOrder {
 			this.textures.cache.splice(0, this.textures.cache.length);
 			texturesNeedRefresh = false;
 		}
-		
+		this.tex = this.gl.createTexture();
+
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex);
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, N_TILES_PER_TEXTURE * N_PIXELS_PER_HIPS, N_TILES_PER_TEXTURE * N_PIXELS_PER_HIPS,
+			 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, new Uint8Array(4 * N_TILES_PER_TEXTURE * N_TILES_PER_TEXTURE * N_PIXELS_PER_HIPS * N_PIXELS_PER_HIPS));
+
 		for (var n=0; n < this.pixels.length;n++){
 			var texCacheIdx = this.pixelsCache.indexOf(this.pixels[n]);
 			if (texCacheIdx !== -1 && this.textures.cache.length > 0){
@@ -241,8 +253,8 @@ class NOrder {
 				};
 
 				// binding fake black image until the real image has been loaded (https://stackoverflow.com/questions/19722247/webgl-wait-for-texture-to-load/19748905#19748905) 
-				this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures.images[n].tex);
-				this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+				// this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures.images[n].tex);
+				// this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
 
 				var dirNumber = Math.floor(this.pixels[n] / 10000) * 10000;
 				
@@ -265,18 +277,20 @@ class NOrder {
 			this.numberOfLoadedImages++;
 			this.isFullyLoaded = this.numberOfLoadedImages == this.pixels.length;
 			if(!image.isDeleted){
-				this.handleLoadedTexture(image, 0, n);
+				this.handleLoadedTexture(image, this.shaderSkyIndex, n);
 			}
 		};
 	}
 
 	handleLoadedTexture (textureObj, shaderSkyIndex, idx){
-		this.gl.activeTexture(this.gl.TEXTURE0 + shaderSkyIndex);
-		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
-		this.gl.bindTexture(this.gl.TEXTURE_2D, textureObj.tex);
+		 this.gl.activeTexture(this.gl.TEXTURE0 + shaderSkyIndex);
+		 this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+		// this.gl.bindTexture(this.gl.TEXTURE_2D, textureObj.tex);
 
 		try{
-			this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, textureObj.image);
+			let x = idx % N_TILES_PER_TEXTURE ;
+			let y = Math.floor(idx / N_TILES_PER_TEXTURE);
+			this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, x * N_PIXELS_PER_HIPS, y * N_PIXELS_PER_HIPS,  this.gl.RGBA, this.gl.UNSIGNED_BYTE, textureObj.image);
 		}catch(error){
 			console.error("ERROR");
 			console.error(error);
@@ -294,33 +308,36 @@ class NOrder {
 		// TODO REVIEW uniformSamplerLoc[shaderSkyIndex] !!!
 		this.gl.uniform1i(this.shaderProgram.samplerUniform, shaderSkyIndex);
 
-		if (!this.gl.isTexture(textureObj.tex)){
-			console.log("error in texture");
-		}
+		// if (!this.gl.isTexture(textureObj.tex)){
+		// 	console.log("error in texture");
+		// }
 		console.debug("Norder " + this.norder + " shaderSkyIndex "+ shaderSkyIndex + " src: " + textureObj.image.src + " idx: "+idx+" pixels[idx] "+this.pixels[idx]);
 		
-		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+		// this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 	}
 
 	draw(uniformVertexTextureFactorLoc){
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-		this.gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.vertexPositionBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
-		
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexTextureCoordBuffer);
-		this.gl.vertexAttribPointer(this.shaderProgram.textureCoordAttribute, this.vertexTextureCoordBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
-		
-		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
-		
-	    this.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
-		this.gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
-		for (var i=0;i<this.pixels.length;i++){
-			this.gl.activeTexture(this.gl.TEXTURE0);
-			this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures.images[i].tex);
-			this.gl.uniform1f(uniformVertexTextureFactorLoc, this.opacity);
+
+		this.gl.activeTexture(this.gl.TEXTURE0 + this.shaderSkyIndex);
+
+		if(this.old != this.vertexPositionBuffer){
+			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+			this.gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.vertexPositionBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
+			
+			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexTextureCoordBuffer);
+			this.gl.vertexAttribPointer(this.shaderProgram.textureCoordAttribute, this.vertexTextureCoordBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
+			
+			this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
 				
-			this.gl.drawElements(this.gl.TRIANGLES, 6, 
-					this.gl.UNSIGNED_SHORT, 12*i);
+			this.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
+			this.gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
 		}
-    }
+		this.gl.uniform1f(uniformVertexTextureFactorLoc, this.opacity);
+					
+		this.gl.drawElements(this.gl.TRIANGLES, 6 * this.pixels.length, 
+				this.gl.UNSIGNED_SHORT, 0);
+
+		this.old = this.vertexPositionBuffer;
+	}
 }
 export default NOrder;
