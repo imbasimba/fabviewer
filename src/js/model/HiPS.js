@@ -168,7 +168,7 @@ class HiPS extends AbstractSkyEntity{
 				}
 				this.norders[this.norder].updateVisiblePixels(this);
 				this.norders[this.norder].initBuffer();
-				this.norders[this.norder].initTexture(true);
+				this.norders[this.norder].initTexture();
 				// if(this.norder != 3){
 				// 	this.norders[3].updateVisiblePixels(this);
 				// 	this.norders[3].initBuffer();
