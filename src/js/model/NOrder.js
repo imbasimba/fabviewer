@@ -277,14 +277,14 @@ class NOrder {
 			this.numberOfLoadedImages++;
 			this.isFullyLoaded = this.numberOfLoadedImages == this.pixels.length;
 			if(!image.isDeleted){
-				this.handleLoadedTexture(image, this.shaderSkyIndex, n);
+				this.handleLoadedTexture(image, 0, n);
 			}
 		};
 	}
 
 	handleLoadedTexture (textureObj, shaderSkyIndex, idx){
 		 this.gl.activeTexture(this.gl.TEXTURE0 + shaderSkyIndex);
-		 this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+		//  this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 		// this.gl.bindTexture(this.gl.TEXTURE_2D, textureObj.tex);
 
 		try{
@@ -318,7 +318,7 @@ class NOrder {
 
 	draw(uniformVertexTextureFactorLoc){
 
-		this.gl.activeTexture(this.gl.TEXTURE0 + this.shaderSkyIndex);
+		// this.gl.activeTexture(this.gl.TEXTURE0 + this.shaderSkyIndex);
 
 		if(this.old != this.vertexPositionBuffer){
 			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexPositionBuffer);
