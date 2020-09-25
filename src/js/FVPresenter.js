@@ -381,7 +381,7 @@ class FVPresenter{
 			this.inertiaX *= 0.95;
 			this.inertiaY *= 0.95;	
 			this.camera.rotate(PHI, THETA);
-//			refreshViewAndModel(false);
+			this.refreshViewAndModel(true);
 		}else{
 			this.inertiaY = 0;
 			this.inertiaX = 0;

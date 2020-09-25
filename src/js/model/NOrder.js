@@ -19,7 +19,7 @@ class NOrder {
 		this.opacity = 1.00 * 100.0/100.0;
 		this.isFullyLoaded = false;
 		this.numberOfLoadedImages = 0;
-		this.numberOfVisiblePixels = 0;
+		this.numberOfVisibleTiles = 0;
 	}
 
 	/*
@@ -76,31 +76,32 @@ class NOrder {
 					currPixNo = this.healpix.ang2pix(currP);
 					if (currPixNo >= 0){
 						this.visibleTiles[currPixNo] = this.previousVisibleTiles[currPixNo] 
-							? this.previousVisibleTiles[currPixNo] : {imageLoaded:false, npix: currPixNo, textureLoaded: false};
+							? this.previousVisibleTiles[currPixNo] : {imageLoaded:false, ipix: currPixNo, textureLoaded: false};
 						neighbours = this.healpix.neighbours(currPixNo);
 						for (let k = 0; k < neighbours.length; k++){
 							if(neighbours[k] >= 0){
 								this.visibleTiles[neighbours[k]] = this.previousVisibleTiles[neighbours[k]] 
-									? this.previousVisibleTiles[neighbours[k]] : {imageLoaded:false, npix: neighbours[k], textureLoaded: false};
+									? this.previousVisibleTiles[neighbours[k]] : {imageLoaded:false, ipix: neighbours[k], textureLoaded: false};
 							}
 						}
 					}
 				}
 			}
 		}
+
 		this.keys = Object.keys(this.visibleTiles);
-		this.numberOfVisiblePixels = this.keys.length;
+		this.numberOfVisibleTiles = this.keys.length;
 	}
 
 	initBuffer () {
-		let vertexPosition = new Float32Array(12*this.numberOfVisiblePixels);
+		let vertexPosition = new Float32Array(12*this.numberOfVisibleTiles);
 
 		let facesVec3Array;
 
 		let theta0, theta1, theta2, theta3;
 		let phi0, phi1, phi2, phi3;
 
-		for (let i = 0; i < this.numberOfVisiblePixels; i++){
+		for (let i = 0; i < this.numberOfVisibleTiles; i++){
 			facesVec3Array = new Array();
 			facesVec3Array = this.healpix.getBoundaries(parseInt(this.keys[i]));
 			if (this.radius != 1){
@@ -153,9 +154,9 @@ class NOrder {
 			}
 		}
 		
-		var textureCoordinates = new Float32Array(8*this.numberOfVisiblePixels);
+		var textureCoordinates = new Float32Array(8*this.numberOfVisibleTiles);
 		
-		for (var i=0; i < this.numberOfVisiblePixels; i++){
+		for (var i=0; i < this.numberOfVisibleTiles; i++){
 			// UV mapping: 1, 0],[1, 1],[0, 1],[0, 0]
 			textureCoordinates[8*i] = 1.0;
 			textureCoordinates[8*i+1] = 0.0;
@@ -167,9 +168,9 @@ class NOrder {
 			textureCoordinates[8*i+7] = 0.0;
 		}
 
-	    var vertexIndices = new Uint16Array(6*this.numberOfVisiblePixels);
+	    var vertexIndices = new Uint16Array(6*this.numberOfVisibleTiles);
 	    var baseFaceIndex = 0;
-	    for (var j=0; j< this.numberOfVisiblePixels; j++){
+	    for (var j=0; j< this.numberOfVisibleTiles; j++){
 	    	vertexIndices[6*j] = baseFaceIndex;
 	    	vertexIndices[6*j+1] = baseFaceIndex + 1;
 	    	vertexIndices[6*j+2] = baseFaceIndex + 2;
@@ -206,10 +207,13 @@ class NOrder {
 		this.isFullyLoaded = false;
 		
 		for (const [key, value] of Object.entries(this.visibleTiles)){
-			if(value.textureLoaded){
-				console.log("Cached texture");
-				this.numberOfLoadedImages++;
-				this.isFullyLoaded = this.numberOfLoadedImages == this.numberOfVisiblePixels;
+			if(value.image){ // Image is currently loading or has been loaded previously
+				if(value.textureLoaded){
+					this.numberOfLoadedImages++;
+					this.isFullyLoaded = this.numberOfLoadedImages == this.numberOfVisibleTiles;
+				} else if(value.imageLoaded){
+					this.handleLoadedTexture(value, 0);
+				}
 				continue;
 			}
 			value.tex = this.gl.createTexture();
@@ -219,26 +223,29 @@ class NOrder {
 			this.gl.bindTexture(this.gl.TEXTURE_2D, value.tex);
 			this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
 
-			var dirNumber = Math.floor(value.npix / 10000) * 10000;
+			var dirNumber = Math.floor(value.ipix / 10000) * 10000;
 
 			this.addOnLoad(value);
 
 			//TODO remove cross origin attribute for maps on the same domain as it slightly degrades loading time
 			value.image.setAttribute('crossorigin', 'anonymous');
-			value.image.src = this.URL+"/Norder"+this.norder+"/Dir"+dirNumber+"/Npix"+value.npix+".jpg";
+			value.image.src = this.URL+"/Norder"+this.norder+"/Dir"+dirNumber+"/Npix"+value.ipix+".jpg";
 		}
 	}
 
 	addOnLoad(tile){
 		tile.image.onload = ()=> {
-			this.numberOfLoadedImages++;
-			this.isFullyLoaded = this.numberOfLoadedImages == this.numberOfVisiblePixels;
-			this.handleLoadedTexture(tile, 0);
-			tile.textureLoaded = true;
+			tile.imageLoaded = true;
+			if(this.visibleTiles[tile.ipix] != undefined){
+				this.handleLoadedTexture(tile, 0);
+			}
 		};
 	}
-
+	
 	handleLoadedTexture (tile, shaderSkyIndex){
+		tile.textureLoaded = true;
+		this.numberOfLoadedImages++;
+		this.isFullyLoaded = this.numberOfLoadedImages == this.numberOfVisibleTiles;
 		this.gl.activeTexture(this.gl.TEXTURE0 + shaderSkyIndex);
 		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 		this.gl.bindTexture(this.gl.TEXTURE_2D, tile.tex);
@@ -248,7 +255,7 @@ class NOrder {
 		}catch(error){
 			console.error("ERROR");
 			console.error(error);
-			console.error("npix: " + tile.npix);
+			console.error("ipix: " + tile.ipix);
 		}
 
 
@@ -261,10 +268,10 @@ class NOrder {
 		// TODO REVIEW uniformSamplerLoc[shaderSkyIndex] !!!
 		this.gl.uniform1i(this.shaderProgram.samplerUniform, shaderSkyIndex);
 
-		if (!this.gl.isTexture(tile.tex)){
-			console.log("error in texture");
-		}
-		console.debug("Norder " + this.norder + " shaderSkyIndex "+ shaderSkyIndex + " src: " + tile.image.src + " npix: " + tile.npix);
+		// if (!this.gl.isTexture(tile.tex)){
+		// 	console.log("error in texture");
+		// }
+		// console.debug("Norder " + this.norder + " shaderSkyIndex "+ shaderSkyIndex + " src: " + tile.image.src + " ipix: " + tile.ipix);
 
 		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 	}
@@ -281,7 +288,7 @@ class NOrder {
 	    this.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 		this.gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
 
-		for (var i = 0; i < this.numberOfVisiblePixels; i++){
+		for (var i = 0; i < this.numberOfVisibleTiles; i++){
 			this.gl.activeTexture(this.gl.TEXTURE0);
 			this.gl.bindTexture(this.gl.TEXTURE_2D, this.visibleTiles[this.keys[i]].tex);
 			this.gl.uniform1f(uniformVertexTextureFactorLoc, this.opacity);
