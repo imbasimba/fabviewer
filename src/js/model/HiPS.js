@@ -10,8 +10,12 @@ import AbstractSkyEntity from './AbstractSkyEntity';
 import SphericalGrid from './SphericalGrid';
 import XYZSystem from './XYZSystem';
 import global from '../Global';
-import NOrder from './NOrder';
 import AllSky from './AllSky';
+import RayPickingUtils from '../utils/RayPickingUtils';
+import {Vec3, Pointing} from 'healpix';
+import {tileBufferSingleton} from './TileBuffer';
+import {healpixGridTileDrawerSingleton} from './HealpixGridTileDrawer';
+import {tileDrawerSingleton} from './TileDrawer';
 
 class HiPS extends AbstractSkyEntity{
 
@@ -25,14 +29,15 @@ class HiPS extends AbstractSkyEntity{
 
 		this.updateOnFoV = true;
 
-		this.norder = 3;
-		this.norders = [];
-		this.prevNorder = 0;
+		this.order = 3;
+		this.prevOrder = 0;
+
 		// below this value we switch from AllSky to HEALPix geometry/texture
 		this.allskyFovLimit = 32.0;
 		this.URL = "https://skies.esac.esa.int/DSSColor/";
-		this.norders[this.norder] = new AllSky(this.gl, this.shaderProgram, this.norder, this.URL, this.radius);
+		// this.orders[this.order] = new AllSky(this.gl, this.shaderProgram, this.order, this.URL, this.radius);
 		this.maxOrder = 9;
+		this.visibleTiles = {};
 
 		this.showSphericalGrid = false;
 		this.showXyzRefCoord = false;
@@ -43,6 +48,9 @@ class HiPS extends AbstractSkyEntity{
 		this.xyzRefSystem = new XYZSystem(this.gl);
 
 		this.initShaders();
+		healpixGridTileDrawerSingleton.init();
+		tileDrawerSingleton.init();
+		this.tiles = [];
 	}
 
 	initShaders () {
@@ -53,6 +61,7 @@ class HiPS extends AbstractSkyEntity{
 		this.gl.attachShader(this.shaderProgram, vertexShader);
 		this.gl.attachShader(this.shaderProgram, fragmentShader);
 		this.gl.linkProgram(this.shaderProgram);
+		this.gl.program = this.shaderProgram;
 
 		if (!this.gl.getProgramParameter(this.shaderProgram, this.gl.LINK_STATUS)) {
 			alert("Could not initialise shaders");
@@ -117,60 +126,127 @@ class HiPS extends AbstractSkyEntity{
 
 	refreshModel (in_fov, in_pan){
 		if (in_pan && in_fov < this.allskyFovLimit){
-			this.norders[this.norder].updateVisiblePixels(this);
-			this.norders[this.norder].initBuffer();
-			this.norders[this.norder].initTexture();
+			// this.orders[this.order].updateVisiblePixels(this);
+			// this.orders[this.order].initBuffer();
+			// this.orders[this.order].initTexture();
 		}else{
 			if ( in_fov >= this.allskyFovLimit){
-				this.norder = 3;
+				this.order = 3;
 			}else if ( in_fov >= 32){
-				this.norder = 3;
+				this.order = 3;
 			}else if (in_fov >= 16){
-				this.norder = 4;
+				this.order = 4;
 			}else if (in_fov >= 8){
-				this.norder = 5;
+				this.order = 5;
 			}else if (in_fov >= 4){
-				this.norder = 6;
+				this.order = 6;
 			}else if (in_fov >= 2){
-				this.norder = 7;
+				this.order = 7;
 			}else if (in_fov >= 1){
-				this.norder = 8;
+				this.order = 8;
 			}else if (in_fov >= 0.5){
-				this.norder = 9;
+				this.order = 9;
 			}else if (in_fov >= 0.25){
-				this.norder = 10;
+				this.order = 10;
 			}else if (in_fov >= 0.125){
-				this.norder = 11;
+				this.order = 11;
 			}else{
-				this.norder = 12;
+				this.order = 12;
 			}
-			this.norder = Math.min(this.norder, this.maxOrder);
-
-			var needsRefresh = (this.norder != this.prevNorder) ||
+			this.order = Math.min(this.order, this.maxOrder);
+			global.order = this.order;
+			var needsRefresh = (this.order != this.prevOrder) ||
 					(in_fov < this.allskyFovLimit && this.prevFoV >= this.allskyFovLimit) ||
 					(in_fov > this.allskyFovLimit && this.prevFoV <= this.allskyFovLimit);
 
 			if ( needsRefresh ){
 				console.log("[HiPS::refreshModel] needsRefresh "+needsRefresh);
 
-				this.prevNorder = this.norder;
+				this.prevOrder = this.order;
 
 				// TODO refresh geometry
-				console.log("norder = "+ this.norder);
-				if(this.norders[this.norder] == undefined){
-					this.norders[this.norder] = new NOrder(this.gl, this.shaderProgram, this.norder, this.URL, this.radius);
-				}
-				this.norders[this.norder].updateVisiblePixels(this);
-				this.norders[this.norder].initBuffer();
-				this.norders[this.norder].initTexture();
-				// if(this.norder != 3){
-				// 	this.norders[3].updateVisiblePixels(this);
-				// 	this.norders[3].initBuffer();
-				// 	this.norders[3].initTexture(true);
-				// }
+				console.log("order = "+ this.order);
 			}
 		}
 		this.prevFoV = in_fov;
+		this.updateVisiblePixels();
+	}
+
+	updateVisiblePixels (){
+		this.previouslyVisibleTiles = this.visibleTiles;
+		let previouslyVisibleKeys = Object.keys(this.previouslyVisibleTiles);
+		let tilesRemoved = this.visibleTiles;
+		let tilesAdded = {};
+
+		this.visibleTiles = {};
+		this.tiles = [];
+
+		var maxX = this.gl.canvas.width;
+		var maxY = this.gl.canvas.height;
+
+		var xy = [];
+		var neighbours = [];
+		var intersectionWithModel = {
+				"intersectionPoint": null,
+				"pickedObject": null
+			};
+		var intersectionPoint = null;
+		var currP, currPixNo;
+
+		// TODO probably it would be better to use query_disc_inclusive from HEALPix
+		// against a polygon. Check my FHIPSWebGL2 project (BufferManager.js -> updateVisiblePixels)
+		var i = 0;
+		for (i =0; i <= maxX; i+=maxX/20){
+			var j = 0;
+			for (j =0; j <= maxY; j+=maxY/20){
+				intersectionWithModel = {
+						"intersectionPoint": null,
+						"pickedObject": null
+					};
+
+				xy = [i,j];
+				
+				intersectionWithModel = RayPickingUtils.getIntersectionPointWithSingleModel(xy[0], xy[1], this);
+				intersectionPoint = intersectionWithModel.intersectionPoint;
+
+				if (intersectionPoint.length > 0){
+					currP = new Pointing(new Vec3(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]));
+
+					currPixNo = global.getHealpix(this.order).ang2pix(currP);
+					if (currPixNo >= 0){
+						let tile = tileBufferSingleton.getTile(this.order, currPixNo);
+						this.tiles.push(tile);
+						this.visibleTiles[this.order + "/" + currPixNo] = tile;
+						if(previouslyVisibleKeys.includes(this.order + "/" + currPixNo)){
+							delete tilesRemoved[this.order + "/" + currPixNo];
+						} else {
+							tilesAdded[this.order + "/" + currPixNo] = tile;
+						}
+						neighbours = global.getHealpix(this.order).neighbours(currPixNo);
+						for (let k = 0; k < neighbours.length; k++){
+							if(neighbours[k] >= 0 && this.visibleTiles[neighbours[k]] == undefined){
+								let tile = tileBufferSingleton.getTile(this.order, neighbours[k]);
+								this.tiles.push(tile);
+								this.visibleTiles[this.order + "/" + neighbours[k]] = tile; 
+
+								if(previouslyVisibleKeys.includes(this.order + "/" + neighbours[k])){
+									delete tilesRemoved[this.order + "/" + neighbours[k]];
+								} else {
+									tilesAdded[this.order + "/" + neighbours[k]] = tile;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		Object.keys(tilesRemoved).forEach(key => {
+			tilesRemoved[key].removeFromView();
+		});
+		Object.keys(tilesAdded).forEach(key => {
+			tilesAdded[key].addToView();
+		});
 	}
 
 
@@ -197,29 +273,15 @@ class HiPS extends AbstractSkyEntity{
 		this.gl.uniform1f(this.shaderProgram.sphericalGridEnabledUniform, 0.0);
 	}
 
-	drawNorder(norder){
-		if(this.norder <= 3 || this.norders[norder].isFullyLoaded){
-			// if(this.norder <= 3 || this.norders[norder].isFullyLoaded){
-			this.norders[norder].draw();
-			// if(norder == this.norder){
-			// 	console.log("Preferred layer " + norder + " fully loaded - Not drawing above layer");
-			// } else {
-			// 	console.log("Drawing above layer: " + norder);
-			// }
-		} else {
-			this.drawNorder(norder-1);
-			this.norders[norder].draw();
-			// console.log("Drawing incomplete layer: " + norder);
-		}
-	}
 
 	draw(pMatrix, vMatrix){
-		this.enableShader(pMatrix, vMatrix);
-
 		this.gl.enable(this.gl.BLEND);
-		this.drawNorder(this.norder);
+		tileDrawerSingleton.draw(pMatrix, vMatrix, this.modelMatrix);
 		this.gl.disable(this.gl.BLEND);
-
+		
+		healpixGridTileDrawerSingleton.draw(pMatrix, vMatrix, this.modelMatrix);
+		
+		this.enableShader(pMatrix, vMatrix);
 		if (this.showSphericalGrid) {
 			this.sphericalGrid.draw(this.shaderProgram);
 	    }
