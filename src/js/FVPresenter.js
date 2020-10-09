@@ -17,6 +17,7 @@ import {mat4, vec3} from 'gl-matrix';
 import {cartesianToSpherical, sphericalToAstroDeg, raDegToHMS, decDegToDMS} from './utils/Utils';
 import FoVUtils from './utils/FoVUtils';
 import global from './Global';
+import {Vec3, Pointing} from 'healpix';
 
 class FVPresenter{
 	constructor(in_view, in_gl){
@@ -51,7 +52,7 @@ class FVPresenter{
 		this.aspectRatio;
 		this.fovDeg = 45;
 		this.nearPlane = 0.001;
-		this.farPlane = 3.0;
+		this.farPlane = 4.5;
 		
 		// projection matrix
 		this.pMatrix = mat4.create();
@@ -178,7 +179,7 @@ class FVPresenter{
 				this.view.setPickedObjectName(intersectionWithModel.pickedObject.name);
 				
 			}else{
-				console.log("no intersection");
+				// console.log("no intersection");
 			}	
 			this.nearestVisibleObjectIdx = intersectionWithModel.idx;
 
@@ -218,6 +219,13 @@ class FVPresenter{
 					
 					if (mousePoint.length > 0){
 						
+						let currP = new Pointing(new Vec3(mousePoint[0], mousePoint[1], mousePoint[2]));
+
+						for(let i = 0; i < 6; i++){
+							let currPixNo = global.getHealpix(i).ang2pix(currP);
+							this.view.setHoverIpix(i, currPixNo);
+						}
+
 						var phiThetaDeg = cartesianToSpherical(mousePoint);
 						var raDecDeg = sphericalToAstroDeg(phiThetaDeg.phi, phiThetaDeg.theta);
 						var raHMS = raDegToHMS(raDecDeg.ra);
@@ -229,7 +237,7 @@ class FVPresenter{
 						
 					}else{
 						this.mouseCoords = null;
-						console.log("no intersection");
+						// console.log("no intersection");
 					}	
 					
 				}

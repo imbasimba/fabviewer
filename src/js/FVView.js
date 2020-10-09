@@ -37,6 +37,14 @@ class FVView{
 		this.coords_rahms_dom = document.getElementById('RA_hms');
 		this.coords_decdms_dom = document.getElementById('Dec_dms');
 		
+		this.order0 = document.getElementById('order0');
+		this.order1 = document.getElementById('order1');
+		this.order2 = document.getElementById('order2');
+		this.order3 = document.getElementById('order3');
+		this.order4 = document.getElementById('order4');
+		this.order5 = document.getElementById('order5');
+
+
 //		this.fpsvalue_dom = document.getElementById('fpsvalue');
 //		this.avgfpsvalue_dom = document.getElementById('avgfpsvalue');
 		
@@ -146,7 +154,22 @@ class FVView{
 	setPickedObjectName(name){
 		this.pickedobjvalue_dom.innerHTML = name;
 	};
-	
+
+	setHoverIpix(order, ipix){
+		if(order == 0){
+			this.order0.innerHTML = "0/" + ipix; 
+		} else if (order == 1){
+			this.order1.innerHTML = "1/" + ipix;
+		} else if (order == 2){
+			this.order2.innerHTML = "2/" + ipix;
+		} else if (order == 3){
+			this.order3.innerHTML = "3/" + ipix;
+		} else if (order == 4){
+			this.order4.innerHTML = "4/" + ipix;
+		} else if (order == 5){
+			this.order5.innerHTML = "5/" + ipix;
+		}
+	};
 	
 
 	
