@@ -106,7 +106,7 @@
 	uniform mat4 uPMatrix;
 	
 	//varying float vSphericalGrid;
-  	varying vec2 vTextureCoord;
+	  varying vec2 vTextureCoord;
 
 	void main() {
 		gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
@@ -118,7 +118,6 @@
 <script id="hips-shader-fs" type="x-shader/x-fragment">
   	precision mediump float;
 
-	
 	varying vec2 vTextureCoord;
 	uniform sampler2D uSampler0;
 	uniform float uFactor0;
@@ -141,6 +140,27 @@
 		}
 		
 		
+  	} 
+</script>
+
+
+<script id="healpix-grid-shader-vs" type="x-shader/x-vertex">
+	attribute vec3 aVertexPosition;
+	
+	uniform mat4 uMMatrix;
+	uniform mat4 uVMatrix;
+	uniform mat4 uPMatrix;
+	
+	void main() {
+		gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+	}
+</script>
+
+<script id="healpix-grid-shader-fs" type="x-shader/x-fragment">
+  	precision mediump float;
+	
+  	void main() {
+		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   	} 
 </script>
 
@@ -256,6 +276,12 @@
 			<br> <span id="RA_deg"></span>&nbsp; &nbsp;<span id="Dec_deg"></span>
 			<br> <span>RA(hms)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Dec(dms)</span>
 			<br> <span id="RA_hms"></span>&nbsp; &nbsp;<span id="Dec_dms"></span>
+			<br> <span id="order0"></span>
+			<br> <span id="order1"></span>
+			<br> <span id="order2"></span>
+			<br> <span id="order3"></span>
+			<br> <span id="order4"></span>
+			<br> <span id="order5"></span>
 		</div>
 
 	</div>
