@@ -10,7 +10,7 @@ class HealpixGridTileBuffer {
 	getTile(order, ipix){
 		let tileKey = order + "/" + ipix;
 		if(this.tiles[tileKey] == undefined){
-			this.tiles[tileKey] = new HealpixGridTile(order, ipix, parent);
+			this.tiles[tileKey] = new HealpixGridTile(order, ipix);
 		}
 		return this.tiles[tileKey];
 	}
