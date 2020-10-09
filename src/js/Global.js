@@ -1,4 +1,7 @@
 "use strict";
+
+import Healpix from "../../../healpix/src/Healpix";
+
 class Global{
 	
 	#pMatrix = null;	// projection matrix (perspective)
@@ -15,6 +18,15 @@ class Global{
 		this._camera = null;
 		this._gl = null;
 		this._rayPicker = null;
+		this._healpix = [];
+		this._order = 3;
+	}
+
+	getHealpix (order){
+		if(this._healpix[order] == undefined){
+			this._healpix[order] = new Healpix(Math.pow(2, order));
+		}
+		return this._healpix[order];
 	}
 	
 	get pMatrix(){
@@ -63,6 +75,15 @@ class Global{
 	// TODO
 	set rayPicker(in_rayPicker){
 		this.#rayPicker = in_rayPicker;
+	}
+
+
+	set order(in_order){
+		this._order = in_order;
+	}
+	
+	get order(){
+		return this._order;
 	}
 	
 }
