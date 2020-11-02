@@ -10,7 +10,6 @@ import AbstractSkyEntity from './AbstractSkyEntity';
 import SphericalGrid from './SphericalGrid';
 import XYZSystem from './XYZSystem';
 import global from '../Global';
-import AllSky from './AllSky';
 import RayPickingUtils from '../utils/RayPickingUtils';
 import {Vec3, Pointing} from 'healpix';
 import {tileBufferSingleton} from './TileBuffer';
@@ -29,18 +28,11 @@ class HiPS extends AbstractSkyEntity{
     this.fitsEnabled = false;
 		this.fitsReader = null;
 
-		this.updateOnFoV = true;
-
 		this.order = 3;
-		this.prevOrder = 0;
-
-		// below this value we switch from AllSky to HEALPix geometry/texture
-		this.allskyFovLimit = 32.0;
 
     this.URL = "http://skies.esac.esa.int//Herschel/normalized/hips250_pnorm_allsky/";
     this.imgFormat = "png";
 		//this.URL = "https://skies.esac.esa.int/DSSColor/";
-		// this.orders[this.order] = new AllSky(this.gl, this.shaderProgram, this.order, this.URL, this.radius);
 		this.maxOrder = 7;
 		this.visibleTiles = {};
 
@@ -55,7 +47,7 @@ class HiPS extends AbstractSkyEntity{
 		this.initShaders();
 		healpixGridTileDrawerSingleton.init();
 		tileDrawerSingleton.init();
-		this.tiles = [];
+		setInterval(()=> {this.updateVisiblePixels();}, 100);
 	}
 
 	initShaders () {
@@ -130,61 +122,51 @@ class HiPS extends AbstractSkyEntity{
 	}
 
 	refreshModel (in_fov, in_pan){
-		if (in_pan && in_fov < this.allskyFovLimit){
-			// this.orders[this.order].updateVisiblePixels(this);
-			// this.orders[this.order].initBuffer();
-			// this.orders[this.order].initTexture();
+		if ( in_fov >= 175){
+			this.order = 0;
+		}else if ( in_fov >= 100){
+			this.order = 1;
+		}else if ( in_fov >= 60){
+			this.order = 2;
+		}else if ( in_fov >= 20){
+			this.order = 3;
+		}else if (in_fov >= 12){
+			this.order = 4;
+		}else if (in_fov >= 6){
+			this.order = 5;
+		}else if (in_fov >= 3){
+			this.order = 6;
+		}else if (in_fov >= 1.5){
+			this.order = 7;
+		}else if (in_fov >= 0.8){
+			this.order = 8;
+		}else if (in_fov >= 0.5){
+			this.order = 9;
+		}else if (in_fov >= 0.25){
+			this.order = 10;
+		}else if (in_fov >= 0.125){
+			this.order = 11;
 		}else{
-			if ( in_fov >= this.allskyFovLimit){
-				this.order = 3;
-			}else if ( in_fov >= 32){
-				this.order = 3;
-			}else if (in_fov >= 16){
-				this.order = 4;
-			}else if (in_fov >= 8){
-				this.order = 5;
-			}else if (in_fov >= 4){
-				this.order = 6;
-			}else if (in_fov >= 2){
-				this.order = 7;
-			}else if (in_fov >= 1){
-				this.order = 8;
-			}else if (in_fov >= 0.5){
-				this.order = 9;
-			}else if (in_fov >= 0.25){
-				this.order = 10;
-			}else if (in_fov >= 0.125){
-				this.order = 11;
-			}else{
-				this.order = 12;
-			}
-			this.order = Math.min(this.order, this.maxOrder);
-			global.order = this.order;
-			var needsRefresh = (this.order != this.prevOrder) ||
-					(in_fov < this.allskyFovLimit && this.prevFoV >= this.allskyFovLimit) ||
-					(in_fov > this.allskyFovLimit && this.prevFoV <= this.allskyFovLimit);
-
-			if ( needsRefresh ){
-				console.log("[HiPS::refreshModel] needsRefresh "+needsRefresh);
-
-				this.prevOrder = this.order;
-
-				// TODO refresh geometry
-				console.log("order = "+ this.order);
-			}
+			this.order = 12;
 		}
-		this.prevFoV = in_fov;
-		this.updateVisiblePixels();
+		this.order = Math.min(this.order, this.maxOrder);
+		
+		if ( global.order != this.order && DEBUG){
+			console.log("Changed order = "+ this.order);
+		}
+		global.order = this.order;
+
+		this.changedModel = true;
 	}
 
 	updateVisiblePixels (){
-		this.previouslyVisibleTiles = this.visibleTiles;
-		let previouslyVisibleKeys = Object.keys(this.previouslyVisibleTiles);
+		if(!this.changedModel){return;}
+		this.changedModel = false;
+		let previouslyVisibleKeys = Object.keys(this.visibleTiles);
 		let tilesRemoved = this.visibleTiles;
 		let tilesAdded = {};
 
 		this.visibleTiles = {};
-		this.tiles = [];
 
 		var maxX = this.gl.canvas.width;
 		var maxY = this.gl.canvas.height;
@@ -201,9 +183,9 @@ class HiPS extends AbstractSkyEntity{
 		// TODO probably it would be better to use query_disc_inclusive from HEALPix
 		// against a polygon. Check my FHIPSWebGL2 project (BufferManager.js -> updateVisiblePixels)
 		var i = 0;
-		for (i =0; i <= maxX; i+=maxX/20){
+		for (i =0; i <= maxX; i+=maxX/7){
 			var j = 0;
-			for (j =0; j <= maxY; j+=maxY/20){
+			for (j =0; j <= maxY; j+=maxY/7){
 				intersectionWithModel = {
 						"intersectionPoint": null,
 						"pickedObject": null
@@ -220,7 +202,6 @@ class HiPS extends AbstractSkyEntity{
 					currPixNo = global.getHealpix(this.order).ang2pix(currP);
 					if (currPixNo >= 0){
 						let tile = tileBufferSingleton.getTile(this.order, currPixNo);
-						this.tiles.push(tile);
 						this.visibleTiles[this.order + "/" + currPixNo] = tile;
 						if(previouslyVisibleKeys.includes(this.order + "/" + currPixNo)){
 							delete tilesRemoved[this.order + "/" + currPixNo];
@@ -231,7 +212,6 @@ class HiPS extends AbstractSkyEntity{
 						for (let k = 0; k < neighbours.length; k++){
 							if(neighbours[k] >= 0 && this.visibleTiles[neighbours[k]] == undefined){
 								let tile = tileBufferSingleton.getTile(this.order, neighbours[k]);
-								this.tiles.push(tile);
 								this.visibleTiles[this.order + "/" + neighbours[k]] = tile; 
 
 								if(previouslyVisibleKeys.includes(this.order + "/" + neighbours[k])){
