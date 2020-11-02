@@ -395,10 +395,10 @@ class FVPresenter{
 		
 		var THETA, PHI;
 		if (this.mouseDown || Math.abs(this.inertiaX) > 0.02 || Math.abs(this.inertiaY) > 0.02) {
-			THETA = 0.3 * this.inertiaY;
-			PHI = 0.3 * this.inertiaX;
+			THETA = 0.9 * this.inertiaY;
+			PHI = 0.9 * this.inertiaX;
 			this.inertiaX *= 0.95;
-			this.inertiaY *= 0.95;	
+			this.inertiaY *= 0.95;
 			this.camera.rotate(PHI, THETA);
 			this.refreshViewAndModel(true);
 		}else{
