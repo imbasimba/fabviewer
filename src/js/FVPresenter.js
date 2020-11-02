@@ -448,7 +448,6 @@ class FVPresenter{
 		mat4.perspective(this.pMatrix, this.fovDeg, this.aspectRatio, this.nearPlane, this.farPlane);
 
 		if (global.pMatrix == null){
-			console.log("Initializing view and model");
 			global.pMatrix = this.pMatrix;
 			this.refreshViewAndModel();
 
