@@ -181,7 +181,7 @@ class TileDrawer {
 				let tileKeyToOverwrite = this.indiciesToReuse.shift();
 				let tileToRemove = this.tilesWaitingToBeRemoved[tileKeyToOverwrite];
 				tile.index = tileToRemove.index;
-				tileToRemove.textureLoaded = false;
+				tileToRemove.destruct();
 				this.numberOfVisibleTiles--;
 
 				delete this.tilesWaitingToBeRemoved[tileKeyToOverwrite];

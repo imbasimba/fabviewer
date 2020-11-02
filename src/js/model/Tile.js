@@ -15,19 +15,13 @@ class Tile {
 		this.key = order + "/" + ipix;
 		this.radius = radius != undefined ? radius : 1;
 
-		if(this.order > 0 && this.parent == undefined){
-			this.parent = tileBufferSingleton.getTile(this.order - 1, Math.floor(this.ipix/4));
-			this.parent.setChild(this);
-		}
 		this.imageLoaded = false;
 		this.textureLoaded = false;
 		this._isInView = false;
 		this.numberOfVisibleChildrenReadyToDraw = 0;
-		this.childrenReady = false;
 
 		this.initBuffer();
 		this.initImage();
-		this.children = [];
 	}
 
 	initBuffer () {
@@ -97,9 +91,10 @@ class Tile {
 	addOnLoad(){
 		this.image.onload = ()=> {
 			this.imageLoaded = true;
-			tileDrawerSingleton.tileLoaded(this);
-			if(this.parent){
-				this.parent.childReady();
+			tileDrawerSingleton.tileLoaded(this);	
+			let parent = this.getParent();
+			if(parent){
+				parent.childReady();
 			}
 		};
 	}
@@ -124,18 +119,12 @@ class Tile {
 		return this._isInView;
 	}
 
-	setChild(child){
-		if(!this.children.includes(child)){
-			this.children.push(child);
-			this.childAddedToView();
-		}
-	}
-
 	addToView(){
 		if(this._isInView) {return}
 		this._isInView = true;
-		if(this.parent){
-			this.parent.childAddedToView();
+		let parent = this.getParent();
+		if(parent){
+			parent.childAddedToView();
 		}
 		tileDrawerSingleton.add(this);
 		healpixGridTileDrawerSingleton.add(healpixGridTileBufferSingleton.getTile(this.order, this.ipix));
@@ -147,15 +136,15 @@ class Tile {
 
 		tileDrawerSingleton.remove(this);
 		healpixGridTileDrawerSingleton.remove(healpixGridTileBufferSingleton.getTile(this.order, this.ipix));
-		if(this.parent){
-			this.parent.childRemovedFromView();
+		let parent = this.getParent();
+		if(parent){
+			parent.childRemovedFromView();
 		}
 	}
 
 	childReady(){
 		this.numberOfVisibleChildrenReadyToDraw++;
 		if(this.numberOfVisibleChildrenReadyToDraw == 4 && global.order > this.order){
-			this.childrenReady = true;
 			this.removeFromDrawAsChildrenAreReady();
 		}
 	}
@@ -163,14 +152,15 @@ class Tile {
 	removeFromDrawAsChildrenAreReady(){
 		tileDrawerSingleton.remove(this);
 		healpixGridTileDrawerSingleton.remove(healpixGridTileBufferSingleton.getTile(this.order, this.ipix));
-		if(this.parent){
-			this.parent.childRemovedSinceItsChildrenDrawnInstead();
+		let parent = this.getParent();
+		if(parent){
+			parent.childRemovedSinceItsChildrenDrawnInstead();
 		}
 	}
 
 	childRemovedSinceItsChildrenDrawnInstead(){
 		let drawnChildren = 0;
-		this.children.forEach(child => {
+		this.getExistingChildren().forEach(child => {
 			if((child._isInView && child.imageLoaded && global.order > this.order) 
 				|| (child.childrenReady && global.order > child.order) 
 				){
@@ -185,7 +175,7 @@ class Tile {
 	childAddedToView(){
 		let numberOfVisibleChildren = 0;
 		let numberOfChildrenInViewWithLoadedTextures = 0;
-		this.children.forEach(child => {
+		this.getExistingChildren().forEach(child => {
 			if(child.isInView()){ 
 				numberOfVisibleChildren++;
 			}
@@ -205,7 +195,7 @@ class Tile {
 	childRemovedFromView(){
 		let numberOfVisibleChildren = 0;
 		let numberOfChildrenInViewWithLoadedTextures = 0;
-		this.children.forEach(child => {
+		this.getExistingChildren().forEach(child => {
 			if(child.isInView()){ 
 				numberOfVisibleChildren++;
 			}
@@ -221,6 +211,52 @@ class Tile {
 		} else{
 			this.addToView();
 		}
+	}
+
+	getParent(){
+		if(this.parent == null && this.order > 0){
+			this.parent = tileBufferSingleton.getTile(this.order - 1, Math.floor(this.ipix / 4));
+		}
+		return this.parent;
+	}
+
+	getExistingChildren(){
+		let children = [];
+		for(let i = 0; i < 4; i++){
+			let child = tileBufferSingleton.getIfAlreadyExist(this.order + 1, this.ipix * 4 + i);
+			if(child){
+				children.push(child);
+			}
+		}
+		return children;
+	}
+
+	parentDestructed(){
+		this.parent = null;
+	}
+
+	childDestructed(child){
+		if(child.textureLoaded){
+			this.numberOfVisibleChildrenReadyToDraw--;
+		}
+	}
+
+	destruct(){
+		if(this.parent != null){
+			this.parent.childDestructed(this);
+		}
+		this.getExistingChildren().forEach(child => {
+			child.parentDestructed();
+		});
+
+		this.image = null;
+		this.imageLoaded = false;
+		this.textureLoaded = false;
+
+		this.parent = null;
+		this.vertexPosition = null;
+
+		tileBufferSingleton.removeTile(this.order, this.ipix);
 	}
 }
 export default Tile;
