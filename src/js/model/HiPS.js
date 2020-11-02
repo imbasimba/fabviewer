@@ -124,13 +124,13 @@ class HiPS extends AbstractSkyEntity{
 	refreshModel (in_fov, in_pan){
 		if ( in_fov >= 175){
 			this.order = 0;
-		}else if ( in_fov >= 100){
+		}else if ( in_fov >= 150){
 			this.order = 1;
-		}else if ( in_fov >= 60){
+		}else if ( in_fov >= 25){
 			this.order = 2;
-		}else if ( in_fov >= 20){
+		}else if ( in_fov >= 15){
 			this.order = 3;
-		}else if (in_fov >= 12){
+		}else if (in_fov >= 10){
 			this.order = 4;
 		}else if (in_fov >= 6){
 			this.order = 5;
