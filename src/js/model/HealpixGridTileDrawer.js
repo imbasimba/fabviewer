@@ -100,6 +100,7 @@ class HealpixGridTileDrawer {
 
 	remove(tile){
 		delete this.tiles[tile.key];
+		tile.destruct();
 	}
 
 	clear(){

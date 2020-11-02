@@ -1,12 +1,12 @@
 "use strict";
 
 import global from '../Global';
+import {healpixGridTileBufferSingleton} from './HealpixGridTileBuffer';
 
 class HealpixGridTile {
 
 	constructor(order, ipix, radius) {
 		this.gl = global.gl;
-        this.shaderProgram = this.gl.gridShaderProgram;
 		this.order = order;
 		this.ipix = ipix;
 		this.key = order + "/" + ipix;
@@ -70,6 +70,12 @@ class HealpixGridTile {
 	    this.vertexPositionBuffer = this.gl.createBuffer();
 		this.vertexPositionBuffer.itemSize = 3;
 		this.vertexPositionBuffer.numItems = vertexPosition.length;
-	};
+	}
+
+	destruct(){
+		this.vertexPosition = null;
+		this.gl.deleteBuffer(this.vertexPositionBuffer);
+		healpixGridTileBufferSingleton.removeTile(this.order, this.ipix);
+	}
 }
 export default HealpixGridTile;
