@@ -12,6 +12,7 @@ class Tile {
 		this.gl = global.gl;
 		this.order = order;
 		this.ipix = ipix;
+		this.key = order + "/" + ipix;
 		this.radius = radius != undefined ? radius : 1;
 
 		if(this.order > 0 && this.parent == undefined){

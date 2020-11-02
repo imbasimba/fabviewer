@@ -142,40 +142,36 @@ class TileDrawer {
 	}
 
 	add(tile){
-		let tileKey = tile.order + "/" + tile.ipix;
-		if(!this.tiles[tileKey]){
-			this.tiles[tileKey] = tile;
+		if(!this.tiles[tile.key]){
+			this.tiles[tile.key] = tile;
 			if(!tile.imageLoaded){
 				tile.startLoadingImage();
 			} else if(!tile.textureLoaded){
 				this.tileLoaded(tile);
 			} else {
 				//Still in buffer
-				let tileKey = tile.order + "/" + tile.ipix;
 				if(DEBUG){
-					console.log("Tile not fully removed yet - Using same index - Removing " + tileKey);
+					console.log("Tile not fully removed yet - Using same index - Removing " + tile.key);
 				}
-				delete this.tilesWaitingToBeRemoved[tileKey];
-				this.indiciesToReuse = this.indiciesToReuse.filter(item => item !== tileKey);
+				delete this.tilesWaitingToBeRemoved[tile.key];
+				this.indiciesToReuse = this.indiciesToReuse.filter(item => item !== tile.key);
 			}
 		}
 	}
 
 	remove(tile){
-		let tileKey = tile.order + "/" + tile.ipix;
-
-		if(this.tiles[tileKey]){
+		if(this.tiles[tile.key]){
 			if(!tile.imageLoaded){
 				tile.stopLoadingImage();
-			} else if(tile.textureLoaded && !this.tilesWaitingToBeRemoved[tileKey]) {
-				this.indiciesToReuse.push(tileKey);
+			} else if(tile.textureLoaded && !this.tilesWaitingToBeRemoved[tile.key]) {
+				this.indiciesToReuse.push(tile.key);
 				tile.inListToBeRemoved = true;
-				this.tilesWaitingToBeRemoved[tileKey] = tile;
+				this.tilesWaitingToBeRemoved[tile.key] = tile;
 				if(DEBUG){
 					console.log("Removing tile - Adding index " + tile.index + " to indiciesToReuse");
 				}
 			}
-			delete this.tiles[tileKey];
+			delete this.tiles[tile.key];
 		}
 	}
 
@@ -209,8 +205,7 @@ class TileDrawer {
 	}
 
 	tileLoaded(tile){
-		let tileKey = tile.order + "/" + tile.ipix;
-		if(!this.tiles[tileKey]){
+		if(!this.tiles[tile.key]){
 			return;
 		}
 		this.setTileIndex(tile);

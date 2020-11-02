@@ -95,13 +95,11 @@ class HealpixGridTileDrawer {
 	}
 
 	add(tile){
-		let tileKey = tile.order + "/" + tile.ipix;
-		this.tiles[tileKey] = tile; 
+		this.tiles[tile.key] = tile; 
 	}
 
 	remove(tile){
-		let tileKey = tile.order + "/" + tile.ipix;
-		delete this.tiles[tileKey];
+		delete this.tiles[tile.key];
 	}
 
 	clear(){

@@ -9,6 +9,7 @@ class HealpixGridTile {
         this.shaderProgram = this.gl.gridShaderProgram;
 		this.order = order;
 		this.ipix = ipix;
+		this.key = order + "/" + ipix;
 		this.radius = radius != undefined ? radius : 1;
 		this.initBuffer();
 	}
