@@ -69,8 +69,6 @@ class HealpixGridTile {
 	    this.vertexPositionBuffer = this.gl.createBuffer();
 		this.vertexPositionBuffer.itemSize = 3;
 		this.vertexPositionBuffer.numItems = vertexPosition.length;
-		
-		this.vertexPositionAttribute = this.gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
 	};
 }
 export default HealpixGridTile;
