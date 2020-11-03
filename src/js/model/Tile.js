@@ -141,7 +141,6 @@ class Tile {
 		this._isInView = false;
 
 		tileDrawerSingleton.remove(this);
-		healpixGridTileDrawerSingleton.remove(healpixGridTileBufferSingleton.getTile(this.order, this.ipix));
 		let parent = this.getParent();
 		if(parent){
 			parent.childRemovedFromView();
@@ -157,7 +156,6 @@ class Tile {
 
 	removeFromDrawAsChildrenAreReady(){
 		tileDrawerSingleton.remove(this);
-		healpixGridTileDrawerSingleton.remove(healpixGridTileBufferSingleton.getTile(this.order, this.ipix));
 		let parent = this.getParent();
 		if(parent){
 			parent.childRemovedSinceItsChildrenDrawnInstead();
@@ -254,6 +252,7 @@ class Tile {
 		this.getExistingChildren().forEach(child => {
 			child.parentDestructed();
 		});
+		healpixGridTileDrawerSingleton.remove(healpixGridTileBufferSingleton.getTile(this.order, this.ipix));
 
 		this.image = null;
 		this.imageLoaded = false;
