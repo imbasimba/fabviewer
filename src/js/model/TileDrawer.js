@@ -7,7 +7,7 @@ import BatchOfTiles from './BatchOfTiles';
 // console.log("gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS); " + this.gl.getParameter(this.gl.MAX_TEXTURE_IMAGE_UNITS));
 // console.log("gl.getParameter(gl.MAX_VIEWPORT_DIMS); " + this.gl.getParameter(this.gl.MAX_VIEWPORT_DIMS));
 // console.log("gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS); " + this.gl.getParameter(this.gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS));
-const N_TILES_PER_ROW = 4;
+const N_TILES_PER_ROW = 1;
 const N_TILES_PER_TEXTURE = N_TILES_PER_ROW * N_TILES_PER_ROW;
 const N_MAX_POSSIBLE_TEXTURES = Math.ceil(200 / N_TILES_PER_TEXTURE);
 const N_MAX_POSSIBLE_TILES_IN_MEMORY = N_MAX_POSSIBLE_TEXTURES * N_TILES_PER_TEXTURE;
@@ -201,7 +201,6 @@ class TileDrawer {
 				this.numberOfVisibleTiles--;
 
 				delete this.tilesWaitingToBeRemoved[tileKeyToOverwrite];
-				//TODO get previous tile with that index and fully destruct it
 				if(DEBUG){
 					console.log("Reusing old index " + tile.index);
 				}
