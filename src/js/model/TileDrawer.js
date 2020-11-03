@@ -11,6 +11,7 @@ const N_TILES_PER_ROW = 4;
 const N_TILES_PER_TEXTURE = N_TILES_PER_ROW * N_TILES_PER_ROW;
 const N_MAX_POSSIBLE_TEXTURES = Math.ceil(200 / N_TILES_PER_TEXTURE);
 const N_MAX_POSSIBLE_TILES_IN_MEMORY = N_MAX_POSSIBLE_TEXTURES * N_TILES_PER_TEXTURE;
+const USE_MIPMAP = true;
 
 class TileDrawer {
 
@@ -25,6 +26,9 @@ class TileDrawer {
 		this.batchOfTiles = [];
 		this.indiciesToReuse = [];
 		this.numberOfVisibleTiles = 0;
+		this.numberOfTilesRequired = 0;
+		this.numberOfTilesRequiredMax = 0;
+		this.orderWithMaxRequiredTiles = 0;
 	}
 
 	initShaders () {
@@ -120,7 +124,7 @@ class TileDrawer {
 		this.vertexTextureCoordBuffer = this.gl.createBuffer();
 		this.vertexIndexBuffer = this.gl.createBuffer();
 
-		this.batchOfTiles.push(new BatchOfTiles(N_TILES_PER_ROW, 0, this.vertexPositionBuffer, this.vertexTextureCoordBuffer, this.vertexIndexBuffer));
+		this.batchOfTiles.push(new BatchOfTiles(N_TILES_PER_ROW, 0, this.vertexPositionBuffer, this.vertexTextureCoordBuffer, this.vertexIndexBuffer, USE_MIPMAP));
 		this.gl.activeTexture(this.gl.TEXTURE0);
 			
 		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -143,6 +147,15 @@ class TileDrawer {
 
 	add(tile){
 		if(!this.tiles[tile.key]){
+			if(DEBUG){
+				this.numberOfTilesRequired++;
+				if(this.numberOfTilesRequired > this.numberOfTilesRequiredMax){
+					this.orderWithMaxRequiredTiles = global.order;
+					this.numberOfTilesRequiredMax = this.numberOfTilesRequired;
+				}
+				console.log("Number of required tiles " + this.numberOfTilesRequired + " Max: " 
+					+ this.numberOfTilesRequiredMax + " order " + this.orderWithMaxRequiredTiles);
+			}
 			this.tiles[tile.key] = tile;
 			if(!tile.imageLoaded){
 				tile.startLoadingImage();
@@ -161,6 +174,9 @@ class TileDrawer {
 
 	remove(tile){
 		if(this.tiles[tile.key]){
+			if(DEBUG){
+				this.numberOfTilesRequired--;
+			}
 			if(!tile.imageLoaded){
 				tile.stopLoadingImage();
 			} else if(tile.textureLoaded && !this.tilesWaitingToBeRemoved[tile.key]) {
@@ -216,7 +232,7 @@ class TileDrawer {
 		}
 		let batchIndex = Math.floor(tile.index / N_TILES_PER_TEXTURE);
 		if(this.batchOfTiles[batchIndex] == undefined){
-			this.batchOfTiles[batchIndex] = new BatchOfTiles(N_TILES_PER_ROW, batchIndex, this.vertexPositionBuffer, this.vertexTextureCoordBuffer, this.vertexIndexBuffer);
+			this.batchOfTiles[batchIndex] = new BatchOfTiles(N_TILES_PER_ROW, batchIndex, this.vertexPositionBuffer, this.vertexTextureCoordBuffer, this.vertexIndexBuffer, USE_MIPMAP);
 		}
 		this.batchOfTiles[batchIndex].addTile(tile);
 	}

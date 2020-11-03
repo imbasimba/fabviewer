@@ -3,13 +3,12 @@
 import global from '../Global';
 
 const N_PIXELS_PER_TILE = 512;
-const USE_MIPMAP = true;
 const MAX_TEXTURE_POSITION = 7;
 
 
 class BatchOfTiles {
 
-    constructor(tilesPerRow, batchIndex, vertexPositionBuffer, vertexTextureCoordBuffer, vertexIndexBuffer) {
+    constructor(tilesPerRow, batchIndex, vertexPositionBuffer, vertexTextureCoordBuffer, vertexIndexBuffer, useMipmap) {
         this.gl = global.gl;
         this.vertexPositionBuffer = vertexPositionBuffer;
         this.vertexTextureCoordBuffer = vertexTextureCoordBuffer;
@@ -17,6 +16,7 @@ class BatchOfTiles {
         this.tilesPerRow = tilesPerRow;
         this.tilesPerTexture = tilesPerRow * tilesPerRow;
         this.batchIndex = batchIndex;
+        this.useMipmap = useMipmap;
         this.texturePositionToBindTo = Math.min(MAX_TEXTURE_POSITION, batchIndex);
         
         this.changesToWriteToBuffer = [];
@@ -37,9 +37,9 @@ class BatchOfTiles {
         
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        if(USE_MIPMAP){
-            // this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR_MIPMAP_NEAREST);// 4 times per pixel
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR_MIPMAP_LINEAR);// 8 times per pixel
+        if(this.useMipmap){
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR_MIPMAP_NEAREST);// 4 times per pixel
+            // this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR_MIPMAP_LINEAR);// 8 times per pixel
             setInterval(()=> {this.updateMipmapAndWriteToBuffer();}, 300);
             this.anyMipmapCreated = false;
         } else {
@@ -78,7 +78,7 @@ class BatchOfTiles {
             this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         }
         this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, ix * N_PIXELS_PER_TILE, iy * N_PIXELS_PER_TILE,  this.gl.RGBA, this.gl.UNSIGNED_BYTE, tile.image);
-        if(USE_MIPMAP){
+        if(this.useMipmap){
             this.changesToWriteToBuffer.push({i: i, tile: tile, tileTextureCoordinates : tileTextureCoordinates, tileVertexIndices : tileVertexIndices});
         } else {
             this.writeToBuffer(i, tile, tileTextureCoordinates, tileVertexIndices);
@@ -89,7 +89,7 @@ class BatchOfTiles {
         if(this.tilesToDraw < this.tilesPerTexture){
             this.tilesToDraw++;
         }
-        if(USE_MIPMAP && !this.anyMipmapCreated){
+        if(this.useMipmap && !this.anyMipmapCreated){
             this.updateMipmapAndWriteToBuffer();
         }
     }
@@ -141,7 +141,7 @@ class BatchOfTiles {
     draw(sampler){
         if(!this.anythingToRender){return;}
         let drawsPerTexture = 6 * this.tilesToDraw;
-        if(USE_MIPMAP){
+        if(this.useMipmap){
             drawsPerTexture = 6 * this.tilesToDrawAtLastMipmapCreation;
         }
         this.gl.activeTexture(this.gl.TEXTURE0 + this.texturePositionToBindTo);
