@@ -22,6 +22,12 @@ class Tile {
 
 		this.initBuffer();
 		this.initImage();
+
+		this.getExistingChildren().forEach((child) =>{
+			if(child.imageLoaded){
+				this.numberOfVisibleChildrenReadyToDraw++;
+			}
+		});
 	}
 
 	initBuffer () {
@@ -215,7 +221,7 @@ class Tile {
 
 	getParent(){
 		if(this.parent == null && this.order > 0){
-			this.parent = tileBufferSingleton.getTile(this.order - 1, Math.floor(this.ipix / 4));
+			this.parent = tileBufferSingleton.getIfAlreadyExist(this.order - 1, Math.floor(this.ipix / 4));
 		}
 		return this.parent;
 	}
