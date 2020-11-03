@@ -18,6 +18,7 @@ class BatchOfTiles {
         this.batchIndex = batchIndex;
         this.useMipmap = useMipmap;
         this.texturePositionToBindTo = Math.min(MAX_TEXTURE_POSITION, batchIndex);
+        this.halfPixelCorrection = 0.5 / (this.tilesPerRow * N_PIXELS_PER_TILE);
         
         this.changesToWriteToBuffer = [];
         this.createTexture();
@@ -55,14 +56,14 @@ class BatchOfTiles {
         let size = 1.0 / this.tilesPerRow;
 
         let tileTextureCoordinates = new Float32Array(8);
-        tileTextureCoordinates[0] = (ix + 1.0) * size;
-        tileTextureCoordinates[1] = iy*size;
-        tileTextureCoordinates[2] = (ix + 1.0) * size;
-        tileTextureCoordinates[3] = (iy + 1.0) * size;
-        tileTextureCoordinates[4] = ix*size;
-        tileTextureCoordinates[5] = (iy + 1.0) * size;
-        tileTextureCoordinates[6] = ix*size;
-        tileTextureCoordinates[7] = iy*size;
+        tileTextureCoordinates[0] = (ix + 1.0) * size - this.halfPixelCorrection;
+        tileTextureCoordinates[1] = iy*size + this.halfPixelCorrection;
+        tileTextureCoordinates[2] = (ix + 1.0) * size - this.halfPixelCorrection;
+        tileTextureCoordinates[3] = (iy + 1.0) * size - this.halfPixelCorrection;
+        tileTextureCoordinates[4] = ix*size + this.halfPixelCorrection;
+        tileTextureCoordinates[5] = (iy + 1.0) * size - this.halfPixelCorrection;
+        tileTextureCoordinates[6] = ix*size + this.halfPixelCorrection;
+        tileTextureCoordinates[7] = iy*size + this.halfPixelCorrection;
 
         let tileVertexIndices = new Uint16Array(6);
         let baseFaceIndex = 4 * i + this.batchIndex * this.tilesPerTexture * 4;
