@@ -110,7 +110,7 @@ class HealpixGridTileDrawer {
 	draw(pMatrix, vMatrix, modelMatrix){
 		this.enableGridShader(pMatrix, vMatrix, modelMatrix);
 		Object.keys(this.tiles).forEach(tileKey => {
-			this.drawTile(this.tiles[tileKey]);
+			// this.drawTile(this.tiles[tileKey]);
 		});
 	}
 
