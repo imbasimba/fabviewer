@@ -199,6 +199,7 @@ class HiPS extends AbstractSkyEntity{
 		let maxX = this.gl.canvas.width;
 		let maxY = this.gl.canvas.height;
 		let xyPollingPoints = 3;
+		this.pollPoint(maxX / 2, maxY / 2, previouslyVisibleKeys, tilesRemoved, tilesAdded, tilesToAddInOrder);
 		for (let i = maxX / xyPollingPoints; i <= maxX * 2 / xyPollingPoints; i += maxX / xyPollingPoints) {
 			for (let j = maxY / xyPollingPoints; j <= maxY * 2 / xyPollingPoints; j += maxY / xyPollingPoints) {
 				this.pollPoint(i, j, previouslyVisibleKeys, tilesRemoved, tilesAdded, tilesToAddInOrder);
