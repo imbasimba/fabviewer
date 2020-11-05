@@ -254,12 +254,7 @@ class FVPresenter{
 					}	
 					
 				}
-				
-				
 			}
-			
-			
-			
 
 			this.lastMouseX = newX;
 			this.lastMouseY = newY;
@@ -379,16 +374,20 @@ class FVPresenter{
 	
 
 	refreshViewAndModel(pan) {
-
 		this.neareastModel = RayPickingUtils.getNearestObjectOnRay(this.view.canvas.width / 2, this.view.canvas.height / 2, this.modelRepo);
-		var fovObj = this.refreshFov(this.neareastModel.idx);
-		this.view.updateFoV(fovObj);
-		this.refreshModel(this.neareastModel.idx, fovObj.minFoV, pan);
+		this.fovObj = this.refreshFov(this.neareastModel.idx);
+
+		if(this.updateFovTimer == null){
+			this.updateFovTimer = setTimeout(()=>this.updateFov(), 100);
+		}
+		this.refreshModel(this.neareastModel.idx, this.fovObj.minFoV, pan);
 	};
-	
-	
-	
-	
+
+	updateFov(){
+		this.view.updateFoV(this.fovObj);
+		this.updateFovTimer = null;
+	}
+
 	draw(){
 		this.systemPresenter.refreshModel();
 		this.aspectRatio = this.view.canvas.width / this.view.canvas.height;
