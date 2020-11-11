@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/imbasimba/fabviewer.git"
+    "url": "git+https://github.com/fab77/fabviewer.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/imbasimba/fabviewer/issues"
+    "url": "https://github.com/fab77/fabviewer/issues"
   },
-  "homepage": "https://github.com/imbasimba/fabviewer#readme",
+  "homepage": "https://github.com/fab77/fabviewer#readme",
   "devDependencies": {
     "@babel/core": "^7.11.4",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
@@ -40,6 +40,6 @@
   },
   "dependencies": {
     "gl-matrix": "^3.3.0",
-    "healpix": "file:../healpix"
+    "healpix": "file:../../healpixjs"
   }
 }

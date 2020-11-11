@@ -1,6 +1,6 @@
 "use strict";
 
-import Healpix from "../../../healpix/src/Healpix";
+import Healpix from "../../../../healpixjs/src/Healpix";
 
 class Global{
 	
@@ -10,6 +10,7 @@ class Global{
 	#camera = null;		// the camera object
 	#gl = null;			// GL context
 	#rayPicker = null;	// TODO probably useless here ince all methods are static
+	#hipsStack = [];
 	
 	constructor(){
 		this._pMatrix = null;
@@ -86,6 +87,17 @@ class Global{
 		return this._order;
 	}
 	
+  get hipsStack(){
+		return this.#hipsStack;
+	}
+  
+  set hipsStack(in_hipsStack){
+		this.#hipsStack = in_hipsStack;
+	}
+  
+  pushHips(in_hips){
+		this.#hipsStack.push(in_hips);
+	}
 }
 
 var global = new Global();

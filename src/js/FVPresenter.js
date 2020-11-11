@@ -9,6 +9,8 @@ import SystemView from './view/SystemView';
 import SystemPresenter from './presenter/SystemPresenter';
 import CatalogueListView from './view/CatalogueListView';
 import CatalogueListPresenter from './presenter/CatalogueListPresenter';
+import FITSView from './view/FITSView';
+import FITSPresenter from './presenter/FITSPresenter';
 import SourceSelectionView from './view/SourceSelectionView';
 import SourceSelectionPresenter from './presenter/SourceSelectionPresenter';
 import CatalogueRepo from './repos/CatalogueRepo';
@@ -36,7 +38,7 @@ class FVPresenter{
 			console.log("[FVPresenter::init]");
 		}
 		this.view = in_view;
-		
+		this.enableCatalogues = true;
 		this.then = 0;
 		this.camera = new Camera2([0.0, 0.0, 3.0]);
 		global.camera = this.camera;
@@ -91,9 +93,15 @@ class FVPresenter{
 		this.view.setPickedObjectName(this.modelRepo.objModels[this.nearestVisibleObjectIdx].name);
 		
 		this.lastDrawTime = (new Date()).getTime() * 0.001;
-		
-//		this.refreshViewAndModel();
 
+
+	};
+	
+	enableFitsCallback (enableFits){
+		let engaged = this.modelRepo.objModels[0];
+		if (engaged.name == 'HiPS'){
+			engaged.fitsEnabled = enableFits;
+		}
 	};
 	
 	initPresenter(){
@@ -110,6 +118,10 @@ class FVPresenter{
 		var sourceSelView = new SourceSelectionView();
 		this.sourceSelectionPresenter = new SourceSelectionPresenter(sourceSelView);
 		this.view.appendChild(sourceSelView.html);
+		
+		var fitsView = new FITSView();
+		this.view.appendChild(fitsView.html);
+		this.fitsPresenter = new FITSPresenter(fitsView, this.enableFitsCallback);		
 		
 	};
 	
@@ -372,6 +384,7 @@ class FVPresenter{
 		this.view.updateFoV(fovObj);
 		this.refreshModel(this.neareastModel.idx, fovObj.minFoV, pan);
 	};
+	
 	
 	
 	

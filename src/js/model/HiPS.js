@@ -26,6 +26,8 @@ class HiPS extends AbstractSkyEntity{
 		this.radius = in_radius;
 		this.gl = in_gl;
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA  );
+    this.fitsEnabled = false;
+		this.fitsReader = null;
 
 		this.updateOnFoV = true;
 
@@ -34,9 +36,12 @@ class HiPS extends AbstractSkyEntity{
 
 		// below this value we switch from AllSky to HEALPix geometry/texture
 		this.allskyFovLimit = 32.0;
-		this.URL = "https://skies.esac.esa.int/DSSColor/";
+
+    this.URL = "http://skies.esac.esa.int//Herschel/normalized/hips250_pnorm_allsky/";
+    this.imgFormat = "png";
+		//this.URL = "https://skies.esac.esa.int/DSSColor/";
 		// this.orders[this.order] = new AllSky(this.gl, this.shaderProgram, this.order, this.URL, this.radius);
-		this.maxOrder = 9;
+		this.maxOrder = 7;
 		this.visibleTiles = {};
 
 		this.showSphericalGrid = false;
