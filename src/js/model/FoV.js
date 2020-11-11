@@ -5,7 +5,6 @@
 import RayPickingUtils from '../utils/RayPickingUtils';
 import {radToDeg} from '../utils/Utils';
 import {vec3, mat4} from 'gl-matrix';
-import FabFit from 'f'
 import global from '../Global';
 class FoV{
 	#minFoV = 180;
